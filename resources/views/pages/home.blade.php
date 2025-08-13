@@ -55,7 +55,7 @@
         $thClass = function($key) use ($currentSort) {
             return $currentSort === $key ? 'bg-lime-100 font-bold' : '';
         };
-    @endphp
+    @endphpg
     <tr class="text-left">
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Date') }}">
             <div class="flex items-center gap-1">
