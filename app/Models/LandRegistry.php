@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class LandRegistry extends Model
 {
@@ -16,6 +17,8 @@ class LandRegistry extends Model
     protected $primaryKey = 'TransactionID';
     public $incrementing = false;
     protected $keyType = 'string';
+
+
 
     // Casts for data types
     protected $casts = [
@@ -42,4 +45,18 @@ class LandRegistry extends Model
         'PPDCategoryType',
         'RecordStatus',
     ];
+
+    public function primeCategory()
+    {
+        return $this->hasOne(PrimePostcode::class, 'postcode', 'Postcode')
+            ->whereRaw('TRIM(UPPER(prime_postcodes.postcode)) = TRIM(UPPER(land_registry.Postcode))');
+    }
+
+    protected function postcode(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => strtoupper(str_replace(' ', '', trim($value)))
+        );
+    }
+
 }
