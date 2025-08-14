@@ -227,8 +227,13 @@
     @endif
 </div>
 
+@if(empty($postcode))
 <div class="max-w-4xl mx-auto my-10 border p-2">
     <canvas id="salesChart"></canvas>
+</div>
+
+<div class="max-w-4xl mx-auto my-10 border p-2">
+    <canvas id="avgPriceChart"></canvas>
 </div>
 
 <script>
@@ -256,5 +261,32 @@
         }
     });
 </script>
+
+<script>
+    const ctxAvg = document.getElementById('avgPriceChart').getContext('2d');
+
+    new Chart(ctxAvg, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($avgPriceByYear->pluck('year')) !!},
+            datasets: [{
+                label: 'Average Price per Year',
+                data: {!! json_encode($avgPriceByYear->pluck('avg_price')) !!},
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+</script>
+@endif
 
 @endsection

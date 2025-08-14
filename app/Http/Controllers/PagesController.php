@@ -85,7 +85,14 @@ class PagesController extends Controller
                 ->get();
         });
 
-        return view('pages.home', compact('postcode', 'results', 'records', 'salesByYear'))
+        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        return view('pages.home', compact('postcode', 'results', 'records', 'salesByYear', 'avgPriceByYear'))
             ->with(['sort' => $sort ?? 'Date', 'dir' => $dir ?? 'desc']);
     }
 }
