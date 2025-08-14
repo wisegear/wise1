@@ -3,14 +3,15 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-semibold">Land Registry Lookup</h1>
-    <p class="mb-10 text-zinc-500 text-sm">Patience may be required, there are currently <span class="text-lime-700">{{ number_format($records) }} </span> records in this table</p>
+    <p class="text-zinc-500 text-sm">There are currently <span class="text-lime-700">{{ number_format($records) }} </span> records in this table.  Only England & Wales are currently available</p>
+    <p class="mb-10 text-zinc-500 text-sm">Data covers the period from January 1995 to June 2025</p>
 
     {{-- Search form --}}
     <div class="flex justify-center">
         <form method="GET" action="{{ route('home') }}" class="mb-6 w-1/2 mx-auto">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
-                    <label for="postcode" class="block text-sm font-medium mb-1">Postcode</label>
+                    <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995.</label>
                     <input
                         id="postcode"
                         name="postcode"
@@ -267,7 +268,15 @@
                 data: {!! json_encode($salesByYear->pluck('total')) !!},
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.1
+                tension: 0.1,
+                pointBackgroundColor: function(ctx) {
+                    const index = ctx.dataIndex;
+                    const data = ctx.dataset.data;
+                    if (index === 0) return 'rgb(54, 162, 235)';
+                    return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+                },
+                pointRadius: 3,
+                pointHoverRadius: 5
             }]
         },
         options: {
@@ -293,7 +302,15 @@
                 data: {!! json_encode($avgPriceByYear->pluck('avg_price')) !!},
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.1
+                tension: 0.1,
+                pointBackgroundColor: function(ctx) {
+                    const index = ctx.dataIndex;
+                    const data = ctx.dataset.data;
+                    if (index === 0) return 'rgb(54, 162, 235)';
+                    return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+                },
+                pointRadius: 3,
+                pointHoverRadius: 5
             }]
         },
         options: {
@@ -319,7 +336,15 @@
                 data: {!! json_encode($avgPricePrimeCentralByYear->pluck('avg_price')) !!},
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.1
+                tension: 0.1,
+                pointBackgroundColor: function(ctx) {
+                    const index = ctx.dataIndex;
+                    const data = ctx.dataset.data;
+                    if (index === 0) return 'rgb(54, 162, 235)';
+                    return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+                },
+                pointRadius: 3,
+                pointHoverRadius: 5
             }]
         },
         options: {
@@ -345,7 +370,15 @@ new Chart(primeCentralSalesCtx, {
             data: @json($primeCentralSalesByYear->pluck('total_sales')),
             borderColor: 'rgb(54, 162, 235)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.1
+            tension: 0.1,
+            pointBackgroundColor: function(ctx) {
+                const index = ctx.dataIndex;
+                const data = ctx.dataset.data;
+                if (index === 0) return 'rgb(54, 162, 235)';
+                return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+            },
+            pointRadius: 3,
+            pointHoverRadius: 5
         }]
     },
     options: {
@@ -371,7 +404,15 @@ new Chart(avgPriceUltraPrimeCtx, {
             data: @json($avgPriceUltraPrimeByYear->pluck('avg_price')),
             borderColor: 'rgb(54, 162, 235)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.1
+            tension: 0.1,
+            pointBackgroundColor: function(ctx) {
+                const index = ctx.dataIndex;
+                const data = ctx.dataset.data;
+                if (index === 0) return 'rgb(54, 162, 235)';
+                return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+            },
+            pointRadius: 3,
+            pointHoverRadius: 5
         }]
     },
     options: {
@@ -397,7 +438,15 @@ new Chart(ultraPrimeSalesCtx, {
             data: @json($ultraPrimeSalesByYear->pluck('total_sales')),
             borderColor: 'rgb(54, 162, 235)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.1
+            tension: 0.1,
+            pointBackgroundColor: function(ctx) {
+                const index = ctx.dataIndex;
+                const data = ctx.dataset.data;
+                if (index === 0) return 'rgb(54, 162, 235)';
+                return data[index] < data[index-1] ? 'red' : 'rgb(54, 162, 235)';
+            },
+            pointRadius: 3,
+            pointHoverRadius: 5
         }]
     },
     options: {
