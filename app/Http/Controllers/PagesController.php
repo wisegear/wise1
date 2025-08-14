@@ -78,7 +78,12 @@ class PagesController extends Controller
             return LandRegistry::count();
         });
 
-        return view('pages.home', compact('postcode', 'results', 'records'))
+        $salesByYear = LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+
+        return view('pages.home', compact('postcode', 'results', 'records', 'salesByYear'))
             ->with(['sort' => $sort ?? 'Date', 'dir' => $dir ?? 'desc']);
     }
 }

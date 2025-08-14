@@ -226,4 +226,35 @@
         @endif
     @endif
 </div>
+
+<div class="max-w-4xl mx-auto my-10 border p-2">
+    <canvas id="salesChart"></canvas>
+</div>
+
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($salesByYear->pluck('year')) !!},
+            datasets: [{
+                label: 'Number of Sales per Year across England & Wales',
+                data: {!! json_encode($salesByYear->pluck('total')) !!},
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
 @endsection
