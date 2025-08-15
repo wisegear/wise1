@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class PropertyController extends Controller
 {
@@ -15,7 +16,7 @@ class PropertyController extends Controller
         $street   = strtoupper(trim($request->input('street')));
         $saon     = $request->filled('saon') ? strtoupper(trim($request->input('saon'))) : null;
 
-        $query = DB::table('land_registry')
+        $query = DB::table(DB::raw('land_registry USE INDEX (idx_full_property, idx_postcode_date)'))
             ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'TownCity', 'District', 'County')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
@@ -24,7 +25,10 @@ class PropertyController extends Controller
         if (!empty($saon)) {
             $query->where('SAON', $saon);
         } else {
-            $query->whereNull('SAON');
+            // treat empty string and NULL the same to maximize matches and use index
+            $query->where(function ($q) {
+                $q->whereNull('SAON')->orWhere('SAON', '');
+            });
         }
 
         $records = $query->orderBy('Date', 'desc')->limit(100)->get();
@@ -44,7 +48,7 @@ class PropertyController extends Controller
         $addressParts[] = trim($first->Postcode);
         $address = implode(' ', $addressParts);
 
-        $priceHistoryQuery = DB::table('land_registry')
+        $priceHistoryQuery = DB::table(DB::raw('land_registry USE INDEX (idx_full_property)'))
             ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
@@ -53,38 +57,52 @@ class PropertyController extends Controller
         if (!empty($saon)) {
             $priceHistoryQuery->where('SAON', $saon);
         } else {
-            $priceHistoryQuery->whereNull('SAON');
+            $priceHistoryQuery->where(function ($q) {
+                $q->whereNull('SAON')->orWhere('SAON', '');
+            });
         }
 
         $priceHistory = $priceHistoryQuery->groupBy('YearDate')->orderBy('YearDate', 'asc')->get();
 
-        $postcodePriceHistory = DB::table('land_registry')
+        $postcodePriceHistory = DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
             ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
             ->groupBy('YearDate')
             ->orderBy('YearDate', 'asc')
             ->get();
 
-        $postcodeSalesHistory = DB::table('land_registry')
+        $postcodeSalesHistory = DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
             ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
             ->where('Postcode', $postcode)
             ->groupBy('YearDate')
             ->orderBy('YearDate', 'asc')
             ->get();
 
-        $countyPriceHistory = DB::table('land_registry')
-            ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
-            ->where('County', $first->County)
-            ->groupBy('YearDate')
-            ->orderBy('YearDate', 'asc')
-            ->get();
+        $countyPriceHistory = Cache::remember(
+            'county:priceHistory:v1:' . $first->County,
+            60 * 60 * 24 * 7,
+            function () use ($first) {
+                return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
+                    ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                    ->where('County', $first->County)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
 
-        $countySalesHistory = DB::table('land_registry')
-            ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
-            ->where('County', $first->County)
-            ->groupBy('YearDate')
-            ->orderBy('YearDate', 'asc')
-            ->get();
+        $countySalesHistory = Cache::remember(
+            'county:salesHistory:v1:' . $first->County,
+            60 * 60 * 24 * 7,
+            function () use ($first) {
+                return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
+                    ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                    ->where('County', $first->County)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
 
         $propertyTypeMap = [
             'D' => 'Detached',
@@ -94,18 +112,24 @@ class PropertyController extends Controller
             'O' => 'Other',
         ];
 
-        $countyPropertyTypes = DB::table('land_registry')
-            ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
-            ->where('County', $first->County)
-            ->groupBy('PropertyType')
-            ->orderByDesc('property_count')
-            ->get()
-            ->map(function ($row) use ($propertyTypeMap) {
-                return [
-                    'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
-                    'value' => $row->property_count
-                ];
-            });
+        $countyPropertyTypes = Cache::remember(
+            'county:types:v1:' . $first->County,
+            60 * 60 * 24 * 7,
+            function () use ($first, $propertyTypeMap) {
+                return DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
+                    ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
+                    ->where('County', $first->County)
+                    ->groupBy('PropertyType')
+                    ->orderByDesc('property_count')
+                    ->get()
+                    ->map(function ($row) use ($propertyTypeMap) {
+                        return [
+                            'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
+                            'value' => $row->property_count
+                        ];
+                    });
+            }
+        );
 
         return view('property.show', [
             'results' => $records,
