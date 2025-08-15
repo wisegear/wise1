@@ -36,6 +36,8 @@
                             Semi-Detached
                         @elseif($row->PropertyType === 'F')
                             Flat
+                        @elseif($row->PropertyType === 'O')
+                            Other
                         @else
                             {{ $row->PropertyType }}
                         @endif
@@ -94,6 +96,14 @@
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-xl font-bold mb-4">Property Types in this County</h2>
         <canvas id="countyPropertyTypesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-xl font-bold mb-4">Number of Sales in this Post Code</h2>
+        <canvas id="postcodeSalesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-xl font-bold mb-4">Number of Sales in this County</h2>
+        <canvas id="countySalesChart"></canvas>
     </div>
 </div>
 
@@ -163,8 +173,8 @@ new Chart(ctxPostcode, {
         datasets: [{
             label: 'Average Price (£)',
             data: postcodePriceData,
-            borderColor: 'rgb(255, 159, 64)',
-            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
             tension: 0.1,
             pointRadius: 3,
             pointHoverRadius: 5,
@@ -172,7 +182,7 @@ new Chart(ctxPostcode, {
                 const index = context.dataIndex;
                 const value = context.dataset.data[index];
                 const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'orange';
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
@@ -218,8 +228,8 @@ new Chart(ctxCounty, {
         datasets: [{
             label: 'Average Price (£)',
             data: countyPriceData,
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
             tension: 0.1,
             pointRadius: 3,
             pointHoverRadius: 5,
@@ -227,7 +237,7 @@ new Chart(ctxCounty, {
                 const index = context.dataIndex;
                 const value = context.dataset.data[index];
                 const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'teal';
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
@@ -308,6 +318,116 @@ new Chart(ctxCountyTypes, {
                     display: true,
                     text: 'Count'
                 },
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+const ctxPostcodeSales = document.getElementById('postcodeSalesChart').getContext('2d');
+const postcodeSalesData = @json($postcodeSalesHistory->pluck('total_sales'));
+new Chart(ctxPostcodeSales, {
+    type: 'line',
+    data: {
+        labels: @json($postcodeSalesHistory->pluck('year')),
+        datasets: [{
+            label: 'Sales Count',
+            data: postcodeSalesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + value.toLocaleString();
+                    }
+                }
+            },
+            title: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+const ctxCountySales = document.getElementById('countySalesChart').getContext('2d');
+const countySalesData = @json($countySalesHistory->pluck('total_sales'));
+new Chart(ctxCountySales, {
+    type: 'line',
+    data: {
+        labels: @json($countySalesHistory->pluck('year')),
+        datasets: [{
+            label: 'Sales Count',
+            data: countySalesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + value.toLocaleString();
+                    }
+                }
+            },
+            title: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
                 ticks: {
                     precision: 0
                 }

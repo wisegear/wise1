@@ -65,9 +65,23 @@ class PropertyController extends Controller
             ->orderBy('year', 'asc')
             ->get();
 
+        $postcodeSalesHistory = DB::table('land_registry')
+            ->select(DB::raw('YEAR(Date) as year'), DB::raw('COUNT(*) as total_sales'))
+            ->where('Postcode', $postcode)
+            ->groupBy(DB::raw('YEAR(Date)'))
+            ->orderBy('year', 'asc')
+            ->get();
+
         $countyPriceHistory = DB::table('land_registry')
             ->where('County', $first->County)
             ->select(DB::raw('YEAR(Date) as year'), DB::raw('ROUND(AVG(Price)) as avg_price'))
+            ->groupBy(DB::raw('YEAR(Date)'))
+            ->orderBy('year', 'asc')
+            ->get();
+
+        $countySalesHistory = DB::table('land_registry')
+            ->select(DB::raw('YEAR(Date) as year'), DB::raw('COUNT(*) as total_sales'))
+            ->where('County', $first->County)
             ->groupBy(DB::raw('YEAR(Date)'))
             ->orderBy('year', 'asc')
             ->get();
@@ -98,7 +112,9 @@ class PropertyController extends Controller
             'address' => $address,
             'priceHistory' => $priceHistory,
             'postcodePriceHistory' => $postcodePriceHistory,
+            'postcodeSalesHistory' => $postcodeSalesHistory,
             'countyPriceHistory' => $countyPriceHistory,
+            'countySalesHistory' => $countySalesHistory,
             'countyPropertyTypes' => $countyPropertyTypes
         ]);
 

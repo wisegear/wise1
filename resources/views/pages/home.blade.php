@@ -143,6 +143,8 @@
                                         Semi-Detached
                                     @elseif($row->PropertyType === 'F')
                                         Flat
+                                    @elseif($row->PropertyType === 'O')
+                                        Other
                                     @else
                                         {{ $row->PropertyType }}
                                     @endif
