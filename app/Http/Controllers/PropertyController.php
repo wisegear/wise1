@@ -45,7 +45,7 @@ class PropertyController extends Controller
         $address = implode(' ', $addressParts);
 
         $priceHistoryQuery = DB::table('land_registry')
-            ->selectRaw('YEAR(Date) as year, ROUND(AVG(Price)) as avg_price')
+            ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
             ->where('Street', $street);
@@ -56,34 +56,34 @@ class PropertyController extends Controller
             $priceHistoryQuery->whereNull('SAON');
         }
 
-        $priceHistory = $priceHistoryQuery->groupBy('year')->orderBy('year', 'asc')->get();
+        $priceHistory = $priceHistoryQuery->groupBy('YearDate')->orderBy('YearDate', 'asc')->get();
 
         $postcodePriceHistory = DB::table('land_registry')
-            ->selectRaw('YEAR(Date) as year, ROUND(AVG(Price)) as avg_price')
+            ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
-            ->groupBy('year')
-            ->orderBy('year', 'asc')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate', 'asc')
             ->get();
 
         $postcodeSalesHistory = DB::table('land_registry')
-            ->select(DB::raw('YEAR(Date) as year'), DB::raw('COUNT(*) as total_sales'))
+            ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
             ->where('Postcode', $postcode)
-            ->groupBy(DB::raw('YEAR(Date)'))
-            ->orderBy('year', 'asc')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate', 'asc')
             ->get();
 
         $countyPriceHistory = DB::table('land_registry')
+            ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('County', $first->County)
-            ->select(DB::raw('YEAR(Date) as year'), DB::raw('ROUND(AVG(Price)) as avg_price'))
-            ->groupBy(DB::raw('YEAR(Date)'))
-            ->orderBy('year', 'asc')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate', 'asc')
             ->get();
 
         $countySalesHistory = DB::table('land_registry')
-            ->select(DB::raw('YEAR(Date) as year'), DB::raw('COUNT(*) as total_sales'))
+            ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
             ->where('County', $first->County)
-            ->groupBy(DB::raw('YEAR(Date)'))
-            ->orderBy('year', 'asc')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate', 'asc')
             ->get();
 
         $propertyTypeMap = [
@@ -98,7 +98,7 @@ class PropertyController extends Controller
             ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
             ->where('County', $first->County)
             ->groupBy('PropertyType')
-            ->orderBy('property_count', 'desc')
+            ->orderByDesc('property_count')
             ->get()
             ->map(function ($row) use ($propertyTypeMap) {
                 return [
