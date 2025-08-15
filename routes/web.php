@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\PagesController;
+use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
+Route::get('/property', [PropertyController::class, 'show'])->name('property.show');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

@@ -66,10 +66,11 @@ class PagesController extends Controller
                     'TownCity',
                     'District',
                     'County',
+                    'Postcode',
                 ])
                 ->where('Postcode', $postcode)
                 ->orderBy($sort, $dir)
-                ->simplePaginate(50)
+                ->simplePaginate(20)
                 ->appends(['postcode' => $postcode, 'sort' => $sort, 'dir' => $dir]); // keep query on pagination links
         }
 

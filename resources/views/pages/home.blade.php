@@ -8,7 +8,7 @@
 
     {{-- Search form --}}
     <div class="flex justify-center">
-        <form method="GET" action="{{ route('home') }}" class="mb-6 w-1/2 mx-auto">
+        <form method="GET" action="{{ route('home') }}" class="mb-10 w-1/2 mx-auto">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995.</label>
@@ -27,8 +27,7 @@
 
                 <button
                     type="submit"
-                    class="bg-lime-600 hover:bg-lime-500 text-white font-medium px-4 py-2 rounded-md transition"
-                >
+                    class="bg-lime-600 hover:bg-lime-500 text-white font-medium px-4 py-2 rounded-md transition">
                     Search
                 </button>
             </div>
@@ -42,6 +41,9 @@
                 No results for <span class="font-semibold">{{ $postcode }}</span>.
             </div>
         @else
+            <div class="flex justify-center mb-4 text-sm text-zinc-500">
+                <p>Click on the magnifying glass on the right hand side to get more detail about a specific property</p>
+            </div>
             <div class="overflow-x-auto border border-zinc-200 rounded-md">
                 <table class="min-w-full text-sm">
                     <thead class="bg-zinc-50">
@@ -56,7 +58,7 @@
         $thClass = function($key) use ($currentSort) {
             return $currentSort === $key ? 'bg-lime-100 font-bold' : '';
         };
-    @endphpg
+    @endphp
     <tr class="text-left">
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Date') }}">
             <div class="flex items-center gap-1">
@@ -81,7 +83,7 @@
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('NewBuild') }}">
             <div class="flex items-center gap-1">
-                <span class="font-medium">New{!! $dirBadge('NewBuild') !!}</span>
+                <span class="font-medium">New Build?{!! $dirBadge('NewBuild') !!}</span>
                 <a href="{{ route('home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
                 <a href="{{ route('home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
@@ -114,27 +116,6 @@
                 <a href="{{ route('home', array_merge($base, ['sort' => 'Street', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Locality') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Locality{!! $dirBadge('Locality') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Locality', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Locality', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('TownCity') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Town/City{!! $dirBadge('TownCity') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'TownCity', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'TownCity', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('District') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">District{!! $dirBadge('District') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'District', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'District', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('County') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">County{!! $dirBadge('County') !!}</span>
@@ -160,6 +141,8 @@
                                         Terraced
                                     @elseif($row->PropertyType === 'S')
                                         Semi-Detached
+                                    @elseif($row->PropertyType === 'F')
+                                        Flat
                                     @else
                                         {{ $row->PropertyType }}
                                     @endif
@@ -183,11 +166,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-2">
-                                    @if(empty($row->PAON))
-                                        N/A
-                                    @else
-                                        {{ $row->PAON }}
-                                    @endif
+                                    {{ $row->PAON }}
                                 </td>
                                 <td class="px-3 py-2">
                                     @if(empty($row->SAON))
@@ -198,23 +177,26 @@
                                 </td>
                                 <td class="px-3 py-2">
                                     {{ $row->Street }}
-                                </td>
-                                <td class="px-3 py-2">
-                                    @if(empty($row->Locality))
-                                        N/A
-                                    @else
-                                        {{ $row->Locality }}
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2">
-                                    {{ $row->TownCity }}
-                                </td>        
-                                <td class="px-3 py-2">
-                                    {{ $row->District }}
-                                </td>   
+                                </td> 
                                 <td class="px-3 py-2">
                                     {{ $row->County }}
-                                </td>                           
+                                </td>
+                                <td class="px-3 py-2">
+                                    <a
+                                        href="{{ route('property.show', [
+                                            'postcode' => $row->Postcode ?? '',
+                                            'paon'     => $row->PAON,
+                                            'street'   => $row->Street ?? '',
+                                            'saon'     => $row->SAON ?? ''
+                                        ]) }}"
+                                        class="bg-lime-600 hover:bg-lime-500 text-white p-2 rounded inline-flex items-center"
+                                        title="View property details"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentcolor" viewBox="0 0 20 20" width="16" height="16">
+                                            <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387zM14 8a6 6 0 11-12 0 6 6 0 0112 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -229,7 +211,8 @@
 </div>
 
 @if(empty($postcode))
-<div class="max-w-7xl mx-auto my-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex justify-center text-zinc-500 text-sm mb-4">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</div>
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="border p-4 bg-white rounded shadow h-full">
         <canvas id="salesChart" class="w-full h-96"></canvas>
     </div>
