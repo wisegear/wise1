@@ -35,6 +35,14 @@
         <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-gradient-to-br from-lime-100 to-emerald-100 blur-2xl"></div>
     </section>
 
+    {{-- Usage note: desktop-first layout --}}
+    <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-amber-900">Best viewed on larger screens</h2>
+        <p class="mt-1 text-sm text-amber-800">
+            This is a data‑heavy site with large tables and dashboards. It is designed primarily for desktop or large‑tablet use and is not fully optimised for small screens. On phones, some pages may require horizontal scrolling. For the best experience, use a wider display.
+        </p>
+    </section>
+
     {{-- Highlights --}}
     <section class="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">

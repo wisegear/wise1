@@ -74,71 +74,71 @@
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Date') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Date{!! $dirBadge('Date') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Date', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Date', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Date', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Date', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Price') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Price{!! $dirBadge('Price') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Price', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Price', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Price', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Price', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PropertyType') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Type{!! $dirBadge('PropertyType') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('NewBuild') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">New Build?{!! $dirBadge('NewBuild') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Duration') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Tenure{!! $dirBadge('Duration') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Duration', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Duration', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Duration', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Duration', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PAON') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Primary{!! $dirBadge('PAON') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('SAON') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Secondary{!! $dirBadge('SAON') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'SAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'SAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'SAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'SAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Street') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Street{!! $dirBadge('Street') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Street', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'Street', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Street', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'Street', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('County') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">County{!! $dirBadge('County') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'County', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'County', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'County', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'County', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
             <div class="flex items-center gap-1">
                 <span class="font-medium">Category{!! $dirBadge('PPDCategoryType') !!}</span>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('sales.home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
     </tr>
