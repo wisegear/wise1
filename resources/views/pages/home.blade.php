@@ -20,7 +20,7 @@
                 @endphp
 
                 <a href="{{ Route::has('sales.home') ? $salesUrl : url('/sales') }}"
-                   class="inline-flex items-center rounded-lg bg-lime-500 px-4 py-2 text-sm font-medium text-white hover:bg-lime-400">
+                   class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
                     Explore Sales
                 </a>
 
@@ -28,13 +28,6 @@
                    class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
                     Repossessions
                 </a>
-
-                @if (Route::has('about'))
-                    <a href="{{ route('about') }}"
-                       class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
-                        About
-                    </a>
-                @endif
             </div>
         </div>
 
