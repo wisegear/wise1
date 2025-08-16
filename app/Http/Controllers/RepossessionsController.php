@@ -33,11 +33,22 @@ class RepossessionsController extends Controller
             'type'       => 'nullable|string',
             'action'     => 'nullable|string',
             'per_page'   => 'nullable|integer|min:10|max:500',
+            'stage'      => 'nullable|string',
         ]);
 
         $period = $validated['period'] ?? 'quarterly';           // 'quarterly' | 'yearly'
         $by     = $validated['by']     ?? 'type';                // 'type' | 'action'
         $byCol  = $by === 'action' ? 'possession_action' : 'possession_type';
+        $stage  = isset($validated['stage']) ? trim($validated['stage']) : null;
+        $stageNorm = $stage ? strtolower(preg_replace('/\s+/', ' ', $stage)) : null;
+        $stageLike = $stageNorm ? "%{$stageNorm}%" : null;
+
+        $actionNorm = isset($validated['action']) && $validated['action'] !== ''
+            ? strtolower(preg_replace('/\s+/', ' ', trim($validated['action'])))
+            : null;
+        $typeNorm = isset($validated['type']) && $validated['type'] !== ''
+            ? strtolower(preg_replace('/\s+/', ' ', trim($validated['type'])))
+            : null;
 
         // Data for dropdowns (distinct lists)
         $years    = Repo::query()->select('year')->distinct()->orderBy('year')->pluck('year');
@@ -73,9 +84,18 @@ class RepossessionsController extends Controller
                 ->whereBetween('year', [$yearFrom, $yearTo])
                 ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
                 ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                // If the user picked a specific type/action, apply it
-                ->when(($by === 'type') && ($validated['type'] ?? null),   fn($q,$v)=>$q->where('possession_type',$v))
-                ->when(($by === 'action') && ($validated['action'] ?? null), fn($q,$v)=>$q->where('possession_action',$v))
+                ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
+                    $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
+                })
+                ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
+                    $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
+                })
+                ->when($stageLike, function ($q) use ($stageLike) {
+                    $q->where(function ($qq) use ($stageLike) {
+                        $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
+                           ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
+                    });
+                })
                 ->groupBy('year','county_ua',$byCol)
                 ->orderBy('year')->orderBy('county_ua')->orderBy('reason');
             
@@ -97,8 +117,18 @@ class RepossessionsController extends Controller
                 ->where('quarter', $quarter)
                 ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
                 ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                ->when(($by === 'type') && ($validated['type'] ?? null),   fn($q,$v)=>$q->where('possession_type',$v))
-                ->when(($by === 'action') && ($validated['action'] ?? null), fn($q,$v)=>$q->where('possession_action',$v))
+                ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
+                    $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
+                })
+                ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
+                    $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
+                })
+                ->when($stageLike, function ($q) use ($stageLike) {
+                    $q->where(function ($qq) use ($stageLike) {
+                        $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
+                           ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
+                    });
+                })
                 ->groupBy('county_ua',$byCol)
                 ->orderBy('county_ua')->orderBy('reason');
 
@@ -122,15 +152,35 @@ class RepossessionsController extends Controller
             $base->whereBetween('year', [$yearFrom, $yearTo])
                  ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
                  ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                 ->when(($by === 'type') && ($validated['type'] ?? null),   fn($q,$v)=>$q->where('possession_type',$v))
-                 ->when(($by === 'action') && ($validated['action'] ?? null), fn($q,$v)=>$q->where('possession_action',$v));
+                 ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
+                     $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
+                 })
+                 ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
+                     $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
+                 })
+                 ->when($stageLike, function ($q) use ($stageLike) {
+                     $q->where(function ($qq) use ($stageLike) {
+                         $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
+                            ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
+                     });
+                 });
         } else {
             $base->where('year', $year)
                  ->where('quarter', $quarter)
                  ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
                  ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                 ->when(($by === 'type') && ($validated['type'] ?? null),   fn($q,$v)=>$q->where('possession_type',$v))
-                 ->when(($by === 'action') && ($validated['action'] ?? null), fn($q,$v)=>$q->where('possession_action',$v));
+                 ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
+                     $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
+                 })
+                 ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
+                     $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
+                 })
+                 ->when($stageLike, function ($q) use ($stageLike) {
+                     $q->where(function ($qq) use ($stageLike) {
+                         $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
+                            ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
+                     });
+                 });
         }
 
         // Total cases for the current filters (sum of raw values)

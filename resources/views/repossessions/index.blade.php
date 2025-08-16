@@ -149,6 +149,85 @@
         </div>
     </form>
 
+    {{-- Glossary: what do Reason & Stage mean? --}}
+    <section class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        @php
+            $norm = fn($s) => strtolower(trim(preg_replace('/\s+/', ' ', str_replace('_',' ', (string)$s))));
+            $typeHelp = [
+                'mortgage'              => 'Cases brought by a mortgage lender because of arrears or breach of the mortgage.',
+                'landlord'              => 'Possession cases brought by a landlord against tenants.',
+                'private landlord'      => 'Claims issued by private (non-social) landlords.',
+                'social landlord'       => 'Claims issued by local authorities or housing associations.',
+                'accelerated'           => 'Section 21 “no‑fault” route for landlords; usually paper‑based and quicker. No money claim for arrears.',
+                'accelerated claim'     => 'Section 21 “no‑fault” route for landlords; usually paper‑based and quicker. No money claim for arrears.',
+                'accelerated landlord'  => 'Landlord claim via the accelerated (Section 21) route; typically no hearing and no money claim for arrears.',
+                'standard'              => 'Standard possession route (e.g., Section 8 or mortgage claims). Can include a money claim for arrears.',
+                'other'                 => 'Reason category used when a case does not fit a listed type.',
+            ];
+            $actionHelp = [
+                'claim issued'                 => 'The case is started at County Court (N5/N119 standard or N5B accelerated). This is the first court step.',
+                'possession claim issued'      => 'The case is started at County Court (N5/N119 standard or N5B accelerated). This is the first court step.',
+                'claims'                       => 'The case is started at County Court (possession claim lodged). First step in the process.',
+
+                'order'                        => 'Court grants a possession order. If outright, a date is set to give up possession; may include a money judgment.',
+                'possession order'             => 'Court grants a possession order. If outright, a date is set to give up possession; may include a money judgment.',
+                'order for possession'         => 'Court grants a possession order. If outright, a date is set to give up possession; may include a money judgment.',
+                'outright possession order'    => 'Immediate/dated possession required. Breach can lead straight to a warrant of possession.',
+                'outright orders'              => 'Outright possession orders granted by the court (possession required).',
+
+                'suspended order'              => 'Possession order made but paused on conditions (e.g., repay arrears). Breach allows enforcement by warrant.',
+                'suspended possession order'   => 'Possession order made but paused on conditions (e.g., repay arrears). Breach allows enforcement by warrant.',
+                'suspended orders'             => 'Suspended possession orders (possession paused on conditions).',
+
+                'warrant'                      => 'Enforcement step authorising County Court bailiffs to evict. Can sometimes be suspended on application.',
+                'warrant of possession'        => 'Enforcement step authorising County Court bailiffs to evict. Can sometimes be suspended on application.',
+                'warrant issued'               => 'Enforcement step authorising County Court bailiffs to evict. Can sometimes be suspended on application.',
+                'warrants'                     => 'Warrants of possession granted (enforcement stage authorising bailiffs).',
+
+                'repossession'                 => 'Eviction completed by County Court bailiffs (property recovered). Final stage in the court statistics.',
+                'repossessions'                => 'Eviction completed by County Court bailiffs (property recovered). Final stage in the court statistics.',
+                'evictions'                    => 'Eviction completed by County Court bailiffs (property recovered). Final stage in the court statistics.',
+            ];
+        @endphp
+
+        <details class="group">
+            <summary class="cursor-pointer select-none text-sm font-semibold text-gray-800">
+                What do “Reason” and “Stage” mean?
+                <span class="ml-2 text-gray-500 font-normal">(click to expand)</span>
+            </summary>
+            <div class="mt-3 grid gap-6 md:grid-cols-2">
+                <div>
+                    <h3 class="mb-2 text-sm font-medium text-gray-700">Reason (Type)</h3>
+                    <p class="mb-3 text-sm text-gray-600">Why the case exists — e.g. whether it’s a <em>mortgage</em> possession or a <em>landlord</em> possession. This is the category of the case.</p>
+                    <ul class="space-y-2">
+                        @forelse($types as $t)
+                            <li class="text-sm text-gray-700">
+                                <span class="font-medium">{{ $t }}</span>
+                                <span class="text-gray-500">— {{ $typeHelp[$norm($t)] ?? 'Reason category for the case.' }}</span>
+                            </li>
+                        @empty
+                            <li class="text-sm text-gray-500">No reason types available for the current filters.</li>
+                        @endforelse
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="mb-2 text-sm font-medium text-gray-700">Stage (Action)</h3>
+                    <p class="mb-3 text-sm text-gray-600">The legal step in the County Court process. Typical flow: <em>Claim issued</em> → <em>Possession order</em> (outright or suspended) → <em>Warrant of possession</em> → <em>Repossession by County Court bailiffs</em>. Landlords may also use the <em>accelerated</em> route (usually paper‑based) for Section 21 claims.</p>
+                    <ul class="space-y-2">
+                        @forelse($actions as $a)
+                            <li class="text-sm text-gray-700">
+                                <span class="font-medium">{{ $a }}</span>
+                                <span class="text-gray-500">— {{ $actionHelp[$norm($a)] ?? 'Process stage within the possession pathway.' }}</span>
+                            </li>
+                        @empty
+                            <li class="text-sm text-gray-500">No stages available for the current filters.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </section>
+
     {{-- Totals / chips --}}
     <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
