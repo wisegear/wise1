@@ -384,46 +384,6 @@
             actionFilter.classList.add('hidden');
         }
     }));
-
-    // Compact, scrollable selects for long lists (year & county)
-    const compactTargets = document.querySelectorAll(
-        'select[name="year"], select[name="year_from"], select[name="year_to"], select[name="county"]'
-    );
-
-    compactTargets.forEach((sel) => {
-        const open = () => {
-            const maxRows = 8; // visible rows when expanded
-            sel.size = Math.min(maxRows, sel.options.length);
-            sel.style.maxHeight = '16rem';
-            sel.style.overflowY = 'auto';
-            sel.style.zIndex = 20; // keep above neighbors
-            sel.scrollIntoView({ block: 'nearest' });
-        };
-        const close = () => {
-            sel.removeAttribute('size');
-            sel.style.maxHeight = '';
-            sel.style.overflowY = '';
-            sel.style.zIndex = '';
-        };
-
-        // Open on focus or first click; collapse on blur/change/Escape
-        sel.addEventListener('focus', open);
-        sel.addEventListener('mousedown', (e) => {
-            if (!sel.hasAttribute('size')) {
-                e.preventDefault();
-                open();
-            }
-        });
-        sel.addEventListener('change', close);
-        sel.addEventListener('blur', close);
-        sel.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                close();
-                sel.blur();
-            }
-        });
-    });
 })();
 </script>
 @endsection
