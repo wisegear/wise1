@@ -3,13 +3,14 @@
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\RepossessionsController;
+use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
 Route::get('/about', [PagesController::class, 'about'])->name('about');
 Route::get('/property', [PropertyController::class, 'show'])->name('property.show');
+Route::get('/sales', [SalesController::class, 'home'])->name('sales.home');
 
 Route::get('/repossessions', [RepossessionsController::class, 'index'])
      ->name('repossessions.index');

@@ -4,7 +4,7 @@
 
 <div class="max-w-7xl mx-auto">
 
-    Put some stuff in here about how amazing I am, data god, social influencer, general good guy.
+    Put some stuff in here about how amazing I am, data god, social influencer, general good guy bollocks.
 
 </div>
 
