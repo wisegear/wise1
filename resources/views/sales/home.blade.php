@@ -2,13 +2,24 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-semibold">Property Search</h1>
-    <p class="text-zinc-500 text-sm">There are currently <span class="text-lime-700">{{ number_format($records) }} </span> records in this table.  <span class="font-semibold">Only England & Wales are currently available</span></p>
-    <p class="mb-10 text-zinc-500 text-sm">Data covers the period from January 1995 to June 2025</p>
+    {{-- Hero / summary card --}}
+    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Search</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-700">
+                There are currently <span class="text-lime-700">{{ number_format($records) }}</span> records in this table.
+                <span class="font-semibold">Only England &amp; Wales are currently available</span>
+            </p>
+            <p class="mt-1 text-sm leading-6 text-gray-700">
+                Data covers the period from January 1995 to June 2025
+            </p>
+        </div>
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-emerald-100 blur-2xl"></div>
+    </section>
 
     {{-- Search form --}}
     <div class="flex justify-center">
-        <form method="GET" action="{{ route('home') }}" class="mb-10 w-1/2 mx-auto">
+        <form method="GET" action="{{ route('sales.home') }}" class="mb-10 w-1/2 mx-auto">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995.</label>

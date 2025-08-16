@@ -7,7 +7,7 @@
     <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-8 shadow-sm">
         <div class="max-w-3xl">
             <h1 class="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">
-                {{ config('app.name', 'Property Insights') }}
+                Property Insights
             </h1>
             <p class="mt-3 text-base leading-7 text-gray-700">
                 Independent, data‑led analysis of sales and repossessions across England &amp; Wales.
@@ -88,7 +88,7 @@
         <h3 class="text-sm font-semibold text-gray-900">Data provenance</h3>
         <p class="mt-2 text-sm leading-6 text-gray-700">
             Sales data from HM Land Registry. Repossessions derived from official court statistics at local‑authority level.
-            County rollups are normalised for naming consistency. For methodology notes or feedback, see the About page.
+            County rollups are normalised for naming consistency. For methodology notes or feedback, see the about page.
         </p>
     </section>
 </div>

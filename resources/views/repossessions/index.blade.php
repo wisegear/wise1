@@ -2,13 +2,18 @@
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8">
-    <header class="mb-6">
-        <h1 class="text-2xl font-semibold">Repossessions</h1>
-        <p class="text-sm text-gray-600">
-            {{ $meta['period'] === 'yearly' ? 'Yearly' : 'Quarterly' }} view · grouped by
-            <span class="font-medium">{{ $meta['by'] === 'action' ? 'Stage (Action)' : 'Reason (Type)' }}</span>
-        </p>
-    </header>
+    {{-- Hero / summary card --}}
+    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Repossessions</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-700">
+                {{ $meta['period'] === 'yearly' ? 'Yearly' : 'Quarterly' }} view · grouped by
+                <span class="font-medium">{{ $meta['by'] === 'action' ? 'Stage (Action)' : 'Reason (Type)' }}</span>
+            </p>
+        </div>
+        {{-- subtle orange accent --}}
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 blur-2xl"></div>
+    </section>
 
     {{-- Filters --}}
     <form method="GET" action="{{ route('repossessions.index') }}" class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">

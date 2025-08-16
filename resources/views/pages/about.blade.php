@@ -66,7 +66,7 @@
     </section>
 
     <p class="text-xs leading-6 text-gray-500">
-        Built with Laravel 11 and Tailwind CSS. Hosted sensibly. No dark patterns, minimal cookies, and absolutely no “accept all” confetti.
+        Built with Laravel 11, mySQL and Tailwind CSS. Hosted on <a href="https://www.hetzner.com/cloud" target="_blank" rel="noopener">Hetzner Cloud</a>. No dark patterns, minimal cookies, and absolutely no “accept all” confetti.
     </p>
 </div>
 @endsection
