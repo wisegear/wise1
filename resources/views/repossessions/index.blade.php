@@ -7,10 +7,6 @@
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Repossessions</h1>
             <p class="text-zinc-500 text-sm">Data from 2003 to June 2025 provided by the court service.</p>
-            <p class="mt-2 text-sm leading-6 text-red-700">
-                {{ $meta['period'] === 'yearly' ? 'Yearly' : 'Quarterly' }} view · grouped by
-                <span class="font-medium">{{ $meta['by'] === 'action' ? 'Stage (Action)' : 'Reason (Type)' }}</span>
-            </p>
         </div>
         {{-- subtle orange accent --}}
         <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 blur-2xl"></div>
@@ -227,6 +223,19 @@
                 </div>
             </div>
         </details>
+    </section>
+
+    <section class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-gray-800">
+            <span class="font-medium">Current view:</span>
+            {{ $meta['period'] === 'yearly' ? 'Yearly' : 'Quarterly' }} view · grouped by
+            <span class="font-medium">{{ $meta['by'] === 'action' ? 'Stage (Action)' : 'Reason (Type)' }}</span>
+            @if(($meta['period'] ?? 'quarterly')==='quarterly')
+                <span class="text-gray-500"> — Period:</span> {{ $meta['year'] }} {{ $meta['quarter'] }}
+            @else
+                <span class="text-gray-500"> — Years:</span> {{ $meta['year_from'] }}–{{ $meta['year_to'] }}
+            @endif
+        </div>
     </section>
 
     {{-- Totals / chips --}}
