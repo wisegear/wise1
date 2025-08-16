@@ -1,16 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-5xl mx-auto">
-    <h1 class="text-2xl font-semibold mb-2">Property History</h1>
-    <p class="text-zinc-500 mb-10">{{ $address }}</p>
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-semibold mb-4">Property History</h1>
+    <p class="text-zin-500 font-semibold mb-1">{{ $address }}</p>
+    
+    {{-- PPD Category note --}}
+    @php
+        $ppdSet = $results->pluck('PPDCategoryType')->filter()->unique();
+        $hasA = $ppdSet->contains('A');
+        $hasB = $ppdSet->contains('B');
+    @endphp
+    @if($ppdSet->isNotEmpty())
+        @if($hasA && !$hasB)
+            <div class="mb-6 text-sm text-zinc-600">
+                All transactions shown for this property are <span class="font-semibold">Category A</span> sales.  This means all sales were at market value in an arms length transaction.
+            </div>
+        @elseif($hasB && !$hasA)
+            <div class="mb-6 text-sm text-zinc-600">
+                All transactions shown for this property are <span class="font-bold">Category B</span> sales.  It may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
+                may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
+            </div>
+        @elseif($hasA && $hasB)
+            <div class="mb-6 text-sm text-zinc-600">
+                This property has a <span class="font-semibold">mix of Category A and Category B</span> sales.
+            </div>
+        @else
+            <div class="mb-6 text-sm text-zinc-600">
+                Note: Transactions include categories: {{ $ppdSet->join(', ') }}.
+            </div>
+        @endif
+    @endif
+    
 
     <!-- Links: Google Maps & Zoopla -->
     @php
         $postcode = trim(optional($results->first())->Postcode ?? '');
         $town = trim(optional($results->first())->TownCity ?? '');
         $street = trim(optional($results->first())->Street ?? '');
-
+        $county = trim(optional($results->first())->County ?? '');
         // Build slugs for path when possible (e.g. worcester/barneshall-avenue/wr5-3eu)
         $pcLower = strtolower($postcode);
         $pcSlug = str_replace(' ', '-', $pcLower);
@@ -44,6 +72,7 @@
             </svg>
             <span>For sale on Zoopla</span>
         </a>
+
         @endif
     </div>
 
@@ -62,6 +91,7 @@
                     <th class="px-3 py-2">Street</th>
                     <th class="px-3 py-2">Post Code</th>
                     <th class="px-3 py-2">County</th>
+                    <th class="px-3 py-2">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,6 +146,9 @@
                     <td class="px-3 py-2">
                         {{ $row->County }}
                     </td>
+                    <td class="px-3 py-2">
+                        {{ $row->PPDCategoryType }}
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
@@ -128,23 +161,23 @@
         <canvas id="priceHistoryChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $row->Postcode }}</h2>
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $postcode }}</h2>
         <canvas id="postcodePriceChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($row->County)) }}</h2>
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
         <canvas id="countyPriceChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($row->County)) }}</h2>
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
         <canvas id="countyPropertyTypesChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $row->Postcode }}</h2>
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
         <canvas id="postcodeSalesChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($row->County)) }}</h2>
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
         <canvas id="countySalesChart"></canvas>
     </div>
 </div>

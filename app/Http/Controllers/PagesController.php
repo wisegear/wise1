@@ -38,6 +38,7 @@ class PagesController extends Controller
                 'TownCity',
                 'District',
                 'County',
+                'PPDCategoryType',
             ];
 
             $sort = $request->query('sort', 'Date');
@@ -67,15 +68,16 @@ class PagesController extends Controller
                     'District',
                     'County',
                     'Postcode',
+                    'PPDCategoryType',
                 ])
                 ->where('Postcode', $postcode)
                 ->orderBy($sort, $dir)
-                ->simplePaginate(20)
+                ->Paginate(15)
                 ->appends(['postcode' => $postcode, 'sort' => $sort, 'dir' => $dir]); // keep query on pagination links
         }
 
         // Total record count (cached to avoid heavy COUNT(*) on every request)
-        $records = Cache::remember('land_registry_total_count', 3600, function () {
+        $records = Cache::remember('land_registry_total_count', 86400, function () {
             return LandRegistry::count();
         });
 

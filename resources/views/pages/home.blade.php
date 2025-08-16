@@ -123,6 +123,13 @@
                 <a href="{{ route('home', array_merge($base, ['sort' => 'County', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>
         </th>
+        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
+            <div class="flex items-center gap-1">
+                <span class="font-medium">Status{!! $dirBadge('PPDCategoryType') !!}</span>
+                <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+            </div>
+        </th>
     </tr>
 </thead>
                     <tbody>
@@ -184,6 +191,9 @@
                                     {{ $row->County }}
                                 </td>
                                 <td class="px-3 py-2">
+                                    {{ $row->PPDCategoryType }}
+                                </td>
+                                <td class="px-3 py-2">
                                     <a
                                         href="{{ route('property.show', [
                                             'postcode' => $row->Postcode ?? '',
@@ -205,8 +215,18 @@
                 </table>
             </div>
 
+            {{-- was: <div class="mt-4 flex justify-center"> --}}
             <div class="mt-4">
-                {{ $results->links() }}
+                <div class="w-full">
+                    {{ $results->links() }}
+                </div>
+            </div>
+
+            <div class="mt-10 text-zinc-500 text-sm">
+                <h2 class="font-bold mb-2">Notes:</h2>
+                <p class="mb-2">The status column indicates a clean sale at market value on an arms legnth basis if set to A.</p>
+                <p>If set to B.  repossessions / power-of-sale, buy-to-let where identifiable by a mortgage, sales to companies or social landlords, transfers of part, 
+                    transactions not clearly at full market value, or where the property type is unknown.</p>
             </div>
         @endif
     @endif

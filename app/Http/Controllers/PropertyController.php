@@ -17,7 +17,7 @@ class PropertyController extends Controller
         $saon     = $request->filled('saon') ? strtoupper(trim($request->input('saon'))) : null;
 
         $query = DB::table(DB::raw('land_registry USE INDEX (idx_full_property, idx_postcode_date)'))
-            ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'TownCity', 'District', 'County')
+            ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'TownCity', 'District', 'County', 'PPDCategoryType')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
             ->where('Street', $street);
