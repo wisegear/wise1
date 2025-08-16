@@ -48,7 +48,7 @@
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li>Names aren’t keys. Where things must join, I use codes or a small alias map.</li>
             <li>Data lags exist. Official releases aren’t real‑time, and YTD isn’t a full year.</li>
-            <li>This is analysis, not advice. Please don’t base a life decision on a single chart.</li>
+            <li class="text-red-500">This is analysis, not advice. Please don’t base a life decision on a single chart.</li>
         </ul>
     </section>
 

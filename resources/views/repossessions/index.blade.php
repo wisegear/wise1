@@ -5,7 +5,7 @@
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6">
         <div class="max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Repossessions</h1>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Repossessions</h1>
             <p class="text-zinc-500 text-sm">Data from 2003 to June 2025 provided by the court service.</p>
         </div>
         {{-- subtle orange accent --}}
