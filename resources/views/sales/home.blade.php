@@ -136,7 +136,7 @@
         </th>
         <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
             <div class="flex items-center gap-1">
-                <span class="font-medium">Status{!! $dirBadge('PPDCategoryType') !!}</span>
+                <span class="font-medium">Category{!! $dirBadge('PPDCategoryType') !!}</span>
                 <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
                 <a href="{{ route('home', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
             </div>

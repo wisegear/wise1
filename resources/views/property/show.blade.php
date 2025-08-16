@@ -91,7 +91,7 @@
                     <th class="px-3 py-2">Street</th>
                     <th class="px-3 py-2">Post Code</th>
                     <th class="px-3 py-2">County</th>
-                    <th class="px-3 py-2">Status</th>
+                    <th class="px-3 py-2">Category</th>
                 </tr>
             </thead>
             <tbody>
