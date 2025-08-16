@@ -12,8 +12,8 @@
         {{-- Nav --}}
         <nav class="bg-white border-b border-zinc-200 p-4">
             <div class="max-w-7xl mx-auto flex items-center">
-                <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch.uk</a>
-                <div class="flex items-center gap-2 ml-8">
+                <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
+                <div class="flex items-center gap-2 ml-8 text-sm">
                     <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
                     <a href="{{ url('/sales') }}" class="px-3 py-2 rounded {{ request()->is('sales') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Sales</a>
                     <a href="{{ url('/repossessions') }}" class="px-3 py-2 rounded {{ request()->is('repossessions') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Repossessions</a>
