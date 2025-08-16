@@ -6,8 +6,8 @@
     {{-- Hero --}}
     <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-8 shadow-sm">
         <div class="max-w-3xl">
-            <h1 class="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">
-                Property Insights
+            <h1 class="text-xl font-semibold tracking-tight text-gray-900 md:text-2xl">
+                Property Research
             </h1>
             <p class="mt-3 text-base leading-7 text-gray-700">
                 Independent, data‑led analysis of sales and repossessions across England &amp; Wales.
