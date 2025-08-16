@@ -5,7 +5,7 @@
     <header class="mb-8">
         <h1 class="text-3xl font-semibold tracking-tight text-gray-900">About this site</h1>
         <p class="mt-3 text-base leading-7 text-gray-700">
-            I’m Lee Wisener — Glasgow-based mortgage veteran, data enthusiast, and repeat offender in the art of overthinking.
+            I’m Lee Wisener, Glasgow-based mortgage veteran, data enthusiast, and repeat offender in the art of overthinking.
             This site is my tidy corner for <span class="font-medium">clean, independent, data‑led</span> insight on UK property:
             sales from HM Land Registry and repossession activity from official court statistics, presented without spin.
         </p>
@@ -16,7 +16,7 @@
         <h2 class="text-xl font-semibold text-gray-900">What you’ll find</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">Sales Explorer</span> — search by postcode, street, or county; roll up to yearly trends.</li>
-            <li><span class="font-medium">Repossessions Dashboard</span> — counts by local authority &amp; county, broken down by reason (type) and stage (action).</li>
+            <li><span class="font-medium">Repossessions Dashboard</span> — counts by local authority &amp; county by reason (type) and stage (action).</li>
             <li><span class="font-medium">Simple visuals</span> — clear tables and charts, no fireworks, no fiddly legends.</li>
         </ul>
     </section>
@@ -26,17 +26,17 @@
         <h2 class="text-xl font-semibold text-gray-900">Data sources</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
-            <li><span class="font-medium">Official court statistics</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
+            <li><span class="font-medium">Official court stats</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
         </ul>
-        <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I’ll surface Scottish metrics where appropriate.</p>
+        <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I'll find data on Scotland soon.</p>
     </section>
 
     {{-- Method --}}
     <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Method, in short</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
-            <li><span class="font-medium">Normalise names</span> — county labels vary (“UA”, “City of …”). For display I clean the labels; under the bonnet I prefer official codes.</li>
-            <li><span class="font-medium">Aggregate sensibly</span> — quarterly data can be rolled up to yearly; 2025 is clearly marked as year‑to‑date where applicable.</li>
+            <li><span class="font-medium">Normalise names</span> — county labels vary (“UA”, “City of …”). I clean the labels; I prefer official codes.</li>
+            <li><span class="font-medium">Aggregate sensibly</span> — quarterly data can be rolled up to yearly; 2025 is clearly marked as year‑to‑date.</li>
             <li><span class="font-medium">Minimal transformation</span> — keep imports faithful; document any adjustments.</li>
             <li><span class="font-medium">Reproducible</span> — built with Laravel 11 + MySQL and Tailwind; queries are plain and auditable.</li>
         </ul>
@@ -56,7 +56,7 @@
     <section class="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Contact</h2>
         <p class="mt-3 text-sm leading-6 text-gray-800">
-            Feedback, corrections, or heckling welcome. The tone here is deliberately plain and occasionally dry —
+            Feedback, corrections, or heckling welcome. The tone here is deliberately plain and occasionally dry,
             if you prefer more personality, you’ll probably enjoy my blog.
         </p>
         <div class="mt-4 flex flex-wrap gap-3 text-sm">

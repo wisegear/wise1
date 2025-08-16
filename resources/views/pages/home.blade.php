@@ -41,6 +41,7 @@
             <div class="text-xs uppercase tracking-wide text-gray-500">Scope</div>
             <div class="mt-1 text-sm text-gray-800">
                 Land Registry sales (England &amp; Wales) with postcode‑level exploration and county rollups.
+                <span class="block pt-1 text-gray-500">Latest data loaded: <strong>June 2025</strong></span>
             </div>
         </div>
 
@@ -56,7 +57,7 @@
             <div class="text-xs uppercase tracking-wide text-gray-500">Method</div>
             <div class="mt-1 text-sm text-gray-800">
                 Clean imports, transparent transformations, and conservative aggregation.
-                Where names differ, we normalise labels and prefer code‑based joins.
+                Where names differ, I normalise labels and prefer code‑based joins.
             </div>
         </div>
     </section>
