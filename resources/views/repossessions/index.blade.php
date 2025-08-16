@@ -194,7 +194,7 @@
             </summary>
             <div class="mt-3 grid gap-6 md:grid-cols-2">
                 <div>
-                    <h3 class="mb-2 text-sm font-medium text-gray-700">Reason (Type)</h3>
+                    <h3 class="mb-2 text-sm font-bold text-gray-700">Reason (Type)</h3>
                     <p class="mb-3 text-sm text-gray-600">Why the case exists — e.g. whether it’s a <em>mortgage</em> possession or a <em>landlord</em> possession. This is the category of the case.</p>
                     <ul class="space-y-2">
                         @forelse($types as $t)
@@ -208,7 +208,7 @@
                     </ul>
                 </div>
                 <div>
-                    <h3 class="mb-2 text-sm font-medium text-gray-700">Stage (Action)</h3>
+                    <h3 class="mb-2 text-sm font-bold text-gray-700">Stage (Action)</h3>
                     <p class="mb-3 text-sm text-gray-600">The legal step in the County Court process. Typical flow: <em>Claim issued</em> → <em>Possession order</em> (outright or suspended) → <em>Warrant of possession</em> → <em>Repossession by County Court bailiffs</em>. Landlords may also use the <em>accelerated</em> route (usually paper‑based) for Section 21 claims.</p>
                     <ul class="space-y-2">
                         @forelse($actions as $a)
@@ -384,6 +384,46 @@
             actionFilter.classList.add('hidden');
         }
     }));
+
+    // Compact, scrollable selects for long lists (year & county)
+    const compactTargets = document.querySelectorAll(
+        'select[name="year"], select[name="year_from"], select[name="year_to"], select[name="county"]'
+    );
+
+    compactTargets.forEach((sel) => {
+        const open = () => {
+            const maxRows = 8; // visible rows when expanded
+            sel.size = Math.min(maxRows, sel.options.length);
+            sel.style.maxHeight = '16rem';
+            sel.style.overflowY = 'auto';
+            sel.style.zIndex = 20; // keep above neighbors
+            sel.scrollIntoView({ block: 'nearest' });
+        };
+        const close = () => {
+            sel.removeAttribute('size');
+            sel.style.maxHeight = '';
+            sel.style.overflowY = '';
+            sel.style.zIndex = '';
+        };
+
+        // Open on focus or first click; collapse on blur/change/Escape
+        sel.addEventListener('focus', open);
+        sel.addEventListener('mousedown', (e) => {
+            if (!sel.hasAttribute('size')) {
+                e.preventDefault();
+                open();
+            }
+        });
+        sel.addEventListener('change', close);
+        sel.addEventListener('blur', close);
+        sel.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                close();
+                sel.blur();
+            }
+        });
+    });
 })();
 </script>
 @endsection
