@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
+Route::get('/about', [PagesController::class, 'about'])->name('about');
 Route::get('/property', [PropertyController::class, 'show'])->name('property.show');
 
 Route::get('/dashboard', function () {

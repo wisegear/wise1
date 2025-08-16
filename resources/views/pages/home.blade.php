@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-semibold">Property Search</h1>
-    <p class="text-zinc-500 text-sm">There are currently <span class="text-lime-700">{{ number_format($records) }} </span> records in this table.  Only England & Wales are currently available</p>
+    <p class="text-zinc-500 text-sm">There are currently <span class="text-lime-700">{{ number_format($records) }} </span> records in this table.  <span class="font-semibold">Only England & Wales are currently available</span></p>
     <p class="mb-10 text-zinc-500 text-sm">Data covers the period from January 1995 to June 2025</p>
 
     {{-- Search form --}}
