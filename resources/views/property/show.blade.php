@@ -2,11 +2,28 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto">
-    <h1 class="text-2xl font-semibold mb-4">Property History</h1>
-    <p class="text-zinc-500">{{ $address }}</p>
+    <h1 class="text-2xl font-semibold mb-2">Property History</h1>
+    <p class="text-zinc-500 mb-10">{{ $address }}</p>
 
-    <!-- Link to property in Google Maps -->
-    <div class="mb-6 flex justify-end text-sm">
+    <!-- Links: Google Maps & Zoopla -->
+    @php
+        $postcode = trim(optional($results->first())->Postcode ?? '');
+        $town = trim(optional($results->first())->TownCity ?? '');
+        $street = trim(optional($results->first())->Street ?? '');
+
+        // Build slugs for path when possible (e.g. worcester/barneshall-avenue/wr5-3eu)
+        $pcLower = strtolower($postcode);
+        $pcSlug = str_replace(' ', '-', $pcLower);
+        $townSlug = \Illuminate\Support\Str::slug($town);
+        $streetSlug = \Illuminate\Support\Str::slug($street);
+
+        $zooplaPath = ($town && $street)
+            ? "/for-sale/property/{$townSlug}/{$streetSlug}/{$pcSlug}/"
+            : "/for-sale/property/"; // fallback to generic search path
+
+        $zooplaUrl = "https://www.zoopla.co.uk{$zooplaPath}?q=" . urlencode($postcode) . "&search_source=home";
+    @endphp
+    <div class="mb-6 flex flex-wrap items-center justify-end gap-2 text-sm">
         <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($address) }}"
            target="_blank"
            rel="noopener noreferrer"
@@ -16,6 +33,18 @@
             </svg>
             <span>View in Google Maps</span>
         </a>
+
+        @if($postcode !== '')
+        <a href="{{ $zooplaUrl }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 shadow-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
+            </svg>
+            <span>For sale on Zoopla</span>
+        </a>
+        @endif
     </div>
 
     @if($results->isEmpty())

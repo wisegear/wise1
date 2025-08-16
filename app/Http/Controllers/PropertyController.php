@@ -46,7 +46,7 @@ class PropertyController extends Controller
         }
         $addressParts[] = trim($first->Street);
         $addressParts[] = trim($first->Postcode);
-        $address = implode(' ', $addressParts);
+        $address = implode(', ', $addressParts);
 
         $priceHistoryQuery = DB::table(DB::raw('land_registry USE INDEX (idx_full_property)'))
             ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
