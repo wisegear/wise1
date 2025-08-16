@@ -3,7 +3,20 @@
 @section('content')
 <div class="max-w-5xl mx-auto">
     <h1 class="text-2xl font-semibold mb-4">Property History</h1>
-    <p class="text-zinc-500 mb-6">{{ $address }}</p>
+    <p class="text-zinc-500">{{ $address }}</p>
+
+    <!-- Link to property in Google Maps -->
+    <div class="mb-6 flex justify-end text-sm">
+        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($address) }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 shadow-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2a7 7 0 00-7 7c0 5.25 7 12 7 12s7-6.75 7-12a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            <span>View in Google Maps</span>
+        </a>
+    </div>
 
     @if($results->isEmpty())
         <p>No transactions found for this property.</p>
@@ -82,27 +95,27 @@
 
 <div class="my-6 grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Price History of this property</h2>
+        <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
         <canvas id="priceHistoryChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Average Price of property in this Post Code</h2>
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $row->Postcode }}</h2>
         <canvas id="postcodePriceChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Average Price of property in this County</h2>
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($row->County)) }}</h2>
         <canvas id="countyPriceChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Property Types in this County</h2>
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($row->County)) }}</h2>
         <canvas id="countyPropertyTypesChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Number of Sales in this Post Code</h2>
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $row->Postcode }}</h2>
         <canvas id="postcodeSalesChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-xl font-bold mb-4">Number of Sales in this County</h2>
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($row->County)) }}</h2>
         <canvas id="countySalesChart"></canvas>
     </div>
 </div>
