@@ -14,7 +14,7 @@
                 Data covers the period from January 1995 to June 2025
             </p>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-emerald-100 blur-2xl"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-blue-100 to-blue-400 blur-2xl"></div>
     </section>
 
     {{-- Search form --}}
