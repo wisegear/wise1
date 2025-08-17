@@ -14,21 +14,6 @@
                 Explore clean, well‑sourced figures with county and local‑authority breakdowns.
             </p>
 
-            <div class="mt-6 flex flex-wrap gap-3">
-                @php
-                    $salesUrl = route('sales.home', [], false);
-                @endphp
-
-                <a href="{{ Route::has('sales.home') ? $salesUrl : url('/sales') }}"
-                   class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
-                    Explore Sales
-                </a>
-
-                <a href="{{ Route::has('repossessions.index') ? route('repossessions.index') : url('/repossessions') }}"
-                   class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
-                    Repossessions
-                </a>
-            </div>
         </div>
 
         {{-- subtle background accent --}}
@@ -45,33 +30,36 @@
 
     {{-- Highlights --}}
     <section class="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {{-- Sales (HM Land Registry) --}}
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="text-xs uppercase tracking-wide text-gray-500">Scope</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Sales (HM Land Registry)</div>
             <div class="mt-1 text-sm text-gray-800">
-                Land Registry sales (England &amp; Wales) with postcode‑level exploration and county rollups.
-                <span class="block pt-1 text-gray-500">Latest data loaded: <strong>June 2025</strong></span>
+                Residential transactions recorded by HM Land Registry (England &amp; Wales), with postcode, street and county roll‑ups.
+                <span class="block pt-1 text-gray-500">Latest month loaded: <strong>June 2025</strong></span>
             </div>
         </div>
 
+        {{-- Repossessions (MoJ Court Statistics) --}}
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="text-xs uppercase tracking-wide text-gray-500">Repossessions</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Repossessions (MoJ court stats)</div>
             <div class="mt-1 text-sm text-gray-800">
-                Quarterly counts by local authority and county, with breakdowns by reason (type) and stage (action).
+                Claims and orders for possession by local authority and county, with breakdowns by reason (type) and process stage (action).
                 <span class="block pt-1 text-gray-500">Latest quarter loaded: <strong>2025 Q2</strong></span>
             </div>
         </div>
 
+        {{-- Methodology & coverage --}}
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="text-xs uppercase tracking-wide text-gray-500">Method</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Methodology &amp; coverage</div>
             <div class="mt-1 text-sm text-gray-800">
-                Clean imports, transparent transformations, and conservative aggregation.
-                Where names differ, I normalise labels and prefer code‑based joins.
+                Coverage: England &amp; Wales. Sources: HM Land Registry (sales), MoJ court statistics (repossessions), Bank of England (interest rates &amp; approvals).
+                Names are standardised and joins prefer official codes (e.g. GSS) for consistency.
             </div>
         </div>
     </section>
 
     {{-- Explore panels --}}
-    <section class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <section class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
         <a href="{{ Route::has('sales.home') ? route('sales.home') : url('/sales') }}"
            class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <h2 class="text-lg font-semibold text-gray-900">Sales Explorer</h2>
@@ -102,6 +90,15 @@
             </p>
             <div class="mt-4 text-sm font-medium text-lime-700 group-hover:underline">Open Interest Rates →</div>
         </a>
+
+        <a href="{{ Route::has('mortgages.home') ? route('mortgages.home') : url('/mortgages') }}"
+           class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <h2 class="text-lg font-semibold text-gray-900">Mortgage Approvals</h2>
+            <p class="mt-1 text-sm text-gray-700">
+                Monthly Bank of England approvals for house purchase, remortgaging, and other secured lending.
+            </p>
+            <div class="mt-4 text-sm font-medium text-lime-700 group-hover:underline">Open Approvals →</div>
+        </a>
     </section>
 
     {{-- Small print / provenance --}}
@@ -109,7 +106,7 @@
         <h3 class="text-sm font-semibold text-gray-900">Data provenance</h3>
         <p class="mt-2 text-sm leading-6 text-gray-700">
             Sales data from HM Land Registry. Repossessions derived from official court statistics at local‑authority level.
-            County rollups are normalised for naming consistency. For methodology notes or feedback, see the about page.
+            County rollups are normalised for naming consistency. Interest rates and mortgage approvals from BoE. For methodology notes or feedback, see the about page.
         </p>
     </section>
 </div>

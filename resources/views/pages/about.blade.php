@@ -7,7 +7,7 @@
         <p class="mt-3 text-base leading-7 text-gray-700">
             I’m Lee Wisener, Glasgow-based mortgage veteran, data enthusiast, and repeat offender in the art of overthinking.
             This site is my tidy corner for <span class="font-medium">clean, independent, data‑led</span> insight on UK property:
-            sales from HM Land Registry and repossession activity from official court statistics, presented without spin.
+            sales from HM Land Registry, repossession activity from official court statistics, and Bank of England interest rates &amp; approvals, presented without spin.
         </p>
     </header>
 
@@ -17,6 +17,8 @@
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">Sales Explorer</span> — search by postcode, street, or county; roll up to yearly trends.</li>
             <li><span class="font-medium">Repossessions Dashboard</span> — counts by local authority &amp; county by reason (type) and stage (action).</li>
+            <li><span class="font-medium">Interest Rates</span> — Bank Rate history with latest change, streaks, and a clean monthly chart.</li>
+            <li><span class="font-medium">Mortgage Approvals</span> — BoE approvals for house purchase, remortgaging, and other secured lending.</li>
             <li><span class="font-medium">Simple visuals</span> — clear tables and charts, no fireworks, no fiddly legends.</li>
         </ul>
     </section>
@@ -27,7 +29,7 @@
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
             <li><span class="font-medium">Official court stats</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
-            <li><span class="font-medium">Bank of England</span> — Interest rate history from MPC meetings since 1975.</li>
+            <li><span class="font-medium">Bank of England</span> — Bank Rate history and mortgage approvals (lending secured on dwellings).</li>
         </ul>
         <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I'll find data on Scotland soon.</p>
     </section>
