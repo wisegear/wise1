@@ -9,7 +9,7 @@
             <p class="text-zinc-500 text-sm">Data from 2003 to June 2025 provided by the court service.</p>
         </div>
         {{-- subtle orange accent --}}
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-red-100 to-red-400 blur-2xl"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
     {{-- Filters --}}
