@@ -71,7 +71,7 @@
     </section>
 
     {{-- Explore panels --}}
-    <section class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <section class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <a href="{{ Route::has('sales.home') ? route('sales.home') : url('/sales') }}"
            class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <h2 class="text-lg font-semibold text-gray-900">Sales Explorer</h2>
@@ -88,6 +88,19 @@
                 Compare counties, switch between quarterly and yearly views, and break down by reason or stage.
             </p>
             <div class="mt-4 text-sm font-medium text-lime-700 group-hover:underline">Open Repossessions →</div>
+        </a>
+
+        <a href="{{ Route::has('interest.home') 
+                    ? route('interest.home') 
+                    : (Route::has('rates.index') 
+                        ? route('rates.index') 
+                        : url('/interest')) }}"
+           class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <h2 class="text-lg font-semibold text-gray-900">Interest Rates</h2>
+            <p class="mt-1 text-sm text-gray-700">
+                Track the Bank of England Bank Rate over time with monthly updates and a clean historical view.
+            </p>
+            <div class="mt-4 text-sm font-medium text-lime-700 group-hover:underline">Open Interest Rates →</div>
         </a>
     </section>
 

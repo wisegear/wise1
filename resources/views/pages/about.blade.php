@@ -27,6 +27,7 @@
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
             <li><span class="font-medium">Official court stats</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
+            <li><span class="font-medium">Bank of England</span> — Interest rate history from MPC meetings since 1975.</li>
         </ul>
         <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I'll find data on Scotland soon.</p>
     </section>
