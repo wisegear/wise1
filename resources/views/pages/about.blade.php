@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-3xl px-4 py-10 md:py-12">
+<div class="mx-auto max-w-4xl px-4 py-10 md:py-12">
     <header class="mb-8">
         <h1 class="text-3xl font-semibold tracking-tight text-gray-900">About this site</h1>
         <p class="mt-3 text-base leading-7 text-gray-700">

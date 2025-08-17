@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-6xl px-4 py-8 md:py-12">
+<div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
 
     {{-- Hero / summary card --}}
     @php
