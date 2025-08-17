@@ -87,6 +87,8 @@
                     </div>
                 </div>
             </div>
+                <p class="mt-4 text-sm text-zinc-500">Other secured - This refers to anything not a purchase or remortgage.  These could be further advances from the same lender, 
+                    a 2nd charge loan, debt consolidation, internal refinancing with the same lender or something else. </p>
         </div>
         <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-sky-100 to-sky-300 blur-2xl"></div>
     </section>
@@ -98,6 +100,16 @@
         $dataHP     = $hp['values'] ?? collect();
         $dataRe     = $re['values'] ?? collect();
         $dataOther  = $os['values'] ?? collect();
+
+        // Labels per series (used for 24-month charts)
+        $labelsHP = $hp['labels'] ?? collect();
+        $labelsRe = $re['labels'] ?? collect();
+
+        // Always show the most recent 24 months (last two years) per series
+        $hpLabels24 = collect($labelsHP)->take(-24)->values();
+        $hpData24   = collect($dataHP)->take(-24)->values();
+        $reLabels24 = collect($labelsRe)->take(-24)->values();
+        $reData24   = collect($dataRe)->take(-24)->values();
     @endphp
     <section class="mb-6">
         <div class="border p-4 bg-white rounded shadow">
@@ -107,6 +119,30 @@
             @else
                 <div class="h-96">
                     <canvas id="approvalsChart"></canvas>
+                </div>
+            @endif
+        </div>
+    </section>
+
+    {{-- House purchase & Remortgaging: last 24 months --}}
+    <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="border p-4 bg-white rounded shadow">
+            <div class="mb-2 text-sm font-medium text-gray-700">Mortgage Aprovals over the last 24 months</div>
+            @if(($hpLabels24 instanceof \Illuminate\Support\Collection ? $hpLabels24->isEmpty() : empty($hpLabels24)))
+                <p class="text-sm text-gray-500">No recent data available.</p>
+            @else
+                <div class="h-72">
+                    <canvas id="hpChart"></canvas>
+                </div>
+            @endif
+        </div>
+        <div class="border p-4 bg-white rounded shadow">
+            <div class="mb-2 text-sm font-medium text-gray-700">Remortgaging over the last 24 months</div>
+            @if(($reLabels24 instanceof \Illuminate\Support\Collection ? $reLabels24->isEmpty() : empty($reLabels24)))
+                <p class="text-sm text-gray-500">No recent data available.</p>
+            @else
+                <div class="h-72">
+                    <canvas id="reChart"></canvas>
                 </div>
             @endif
         </div>
@@ -163,6 +199,12 @@
     const hp     = @json($dataHP ?? []);
     const re     = @json($dataRe ?? []);
     const other  = @json($dataOther ?? []);
+
+    // Last 24 months (per series)
+    const hpLabels24 = @json($hpLabels24 ?? []);
+    const hp24       = @json($hpData24 ?? []);
+    const reLabels24 = @json($reLabels24 ?? []);
+    const re24       = @json($reData24 ?? []);
 
     const el = document.getElementById('approvalsChart');
     if (!el) return;
@@ -265,6 +307,74 @@
             }
         }
     });
+
+    // House purchase (24 months)
+    const hpEl = document.getElementById('hpChart');
+    if (hpEl && hpLabels24.length && hp24.length) {
+        const hpCtx = hpEl.getContext('2d');
+        if (window._hpChart) { window._hpChart.destroy(); }
+        if (hpEl.parentElement) { hpEl.height = hpEl.parentElement.clientHeight; }
+        window._hpChart = new Chart(hpCtx, {
+            type: 'line',
+            data: {
+                labels: hpLabels24,
+                datasets: [{
+                    label: 'House purchase',
+                    data: hp24,
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.10)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { legend: { display: false }, decimation: { enabled: true, algorithm: 'min-max' } },
+                scales: {
+                    x: { ticks: { autoSkip: true, maxTicksLimit: 12 } },
+                    y: { beginAtZero: true, grace: '5%', ticks: { callback: (v) => Number(v).toLocaleString() } }
+                }
+            }
+        });
+    }
+
+    // Remortgaging (24 months)
+    const reEl = document.getElementById('reChart');
+    if (reEl && reLabels24.length && re24.length) {
+        const reCtx = reEl.getContext('2d');
+        if (window._reChart) { window._reChart.destroy(); }
+        if (reEl.parentElement) { reEl.height = reEl.parentElement.clientHeight; }
+        window._reChart = new Chart(reCtx, {
+            type: 'line',
+            data: {
+                labels: reLabels24,
+                datasets: [{
+                    label: 'Remortgaging',
+                    data: re24,
+                    borderColor: 'rgb(139, 92, 246)',
+                    backgroundColor: 'rgba(139, 92, 246, 0.10)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { legend: { display: false }, decimation: { enabled: true, algorithm: 'min-max' } },
+                scales: {
+                    x: { ticks: { autoSkip: true, maxTicksLimit: 12 } },
+                    y: { beginAtZero: true, grace: '5%', ticks: { callback: (v) => Number(v).toLocaleString() } }
+                }
+            }
+        });
+    }
 })();
 </script>
 @endsection
