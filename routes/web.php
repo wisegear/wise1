@@ -6,6 +6,7 @@ use App\Http\Controllers\RepossessionsController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\InterestRateController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MortgageApprovalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
@@ -13,6 +14,7 @@ Route::get('/about', [PagesController::class, 'about'])->name('about');
 Route::get('/property', [PropertyController::class, 'show'])->name('property.show');
 Route::get('/sales', [SalesController::class, 'home'])->name('sales.home');
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
+Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
 
 Route::get('/repossessions', [RepossessionsController::class, 'index'])
      ->name('repossessions.index');
