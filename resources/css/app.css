@@ -1,3 +1,133 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* (optional) your tokens */
+@theme {
+  /* examples */
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+.border { @apply border-zinc-300}
+
+/* Standard Styles */
+
+a { @apply hover:text-lime-500; }
+
+.standard-button {
+
+  @apply rounded p-2 mt-4 bg-slate-500 text-white text-sm hover:bg-slate-400 cursor-pointer;
+
+}
+
+
+/* Wise1text Styles */
+
+.wise1text h2:first-child, .wise1text p:first-child {
+  margin-top: 0;
+
+}
+
+.wise1text blockquote {
+  @apply border-l-4 border-l-teal-500 my-6 px-4 ml-6;
+}
+
+.wise1text blockquote > p {
+  @apply text-teal-500;
+}
+
+.wise1text img {
+  @apply mx-auto;
+  @apply border;
+  @apply border-slate-300;
+}
+
+.gallery > img {
+  @apply shadow-md;
+}
+
+.wise1text h1 { font-size: 2rem; @apply font-bold;}
+
+.wise1text h2 { font-size: 1.6rem; @apply font-bold;}
+
+.wise1text h3 { font-size: 1.3rem; @apply font-bold;}
+
+.wise1text h4 { font-size: 1.0rem; @apply font-bold;}
+.wise1text h5 { font-size: 0.8rem; @apply font-bold;}
+.wise1text h6 { font-size: 1rem; @apply font-bold;}
+
+.wise1text h2, .wise1text h3, .wise1text h4 {
+  @apply mt-6;
+  @apply mb-2;
+}
+
+.wise1text p {
+  @apply mt-4;
+  @apply mb-4;
+  @apply text-gray-700;
+
+}
+
+.wise1text a {
+  @apply underline;
+}
+
+.wise1text strong {
+  @apply font-bold;
+  @apply text-gray-800;
+}
+
+.wise1text u {
+  text-decoration: none;
+  border-bottom: 2px solid;
+  @apply border-b-teal-700;
+}
+
+.wise1text a:link, .wise1text a:visited { @apply text-teal-700; @apply hover:text-teal-500; }
+
+/* Force the anchor tags within wise1text to not be red */
+
+.wise1text h2 > a:link, .wise1text h2 > a:visited { @apply text-gray-900; @apply not-italic; @apply no-underline; @apply hover:text-gray-900; @apply font-bold; }
+.wise1text h3 > a:link, .wise1text h3 > a:visited { @apply text-gray-600; @apply not-italic; @apply no-underline; @apply hover:text-gray-900; @apply font-bold; }
+.wise1text h4 > a:link, .wise1text h4 > a:visited { @apply text-gray-900; @apply not-italic; @apply no-underline; @apply hover:text-gray-900; @apply font-bold; }
+
+.wise1text ol {
+  @apply my-2;
+  list-style-type: decimal;
+  list-style-position: inside;
+  text-indent: -20px; /* This and line below prevent wrapping of text */
+  margin-left: 20px; 
+}
+
+.wise1text ol li::marker { @apply text-teal-500; }
+
+.wise1text ul {
+  @apply my-4;
+  list-style-type: square;
+  list-style-position: inside;
+  text-indent: -20px; /* This and line below prevent wrapping of text */
+  margin-left: 20px; 
+}
+
+.wise1text ul li::marker { @apply text-teal-500;}
+
+.wise1text li { @apply pb-2; }
+
+.wise1text table {
+  margin: 25px auto;
+  width: 100%;
+}
+
+.wise1text table, th, td {
+  border: 1px solid lightgray;
+
+}
+
+.wise1text table, th, td {
+  padding: 5px 10px;
+}
+
+.wise1text th {
+  @apply bg-gray-500;
+  @apply bg-slate-500;
+  @apply text-white;
+  text-align: left;
+}
