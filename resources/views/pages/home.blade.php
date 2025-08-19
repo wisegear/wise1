@@ -113,7 +113,7 @@
     <!-- Blog posts -->
     <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
         @foreach ($posts as $post)
-            <a href="{{ route('blog.show', $post->slug) }}"
+            <a href="/blog/{{ $post->slug }}"
                class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
                 <img src="{{ '/assets/images/uploads/' . 'medium_' . $post->original_image }}"
                      class="rounded-xl w-full h-40 object-cover"
