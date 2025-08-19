@@ -68,7 +68,15 @@
         </div>
     </section>
 
-    <p class="text-xs leading-6 text-gray-500">
+    {{-- Thanks --}}
+    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900">Thanks</h2>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            Special thanks to Bob for his help testing the site and suggesting improvements.
+        </p>
+    </section>
+
+    <p class="flex justify-center text-xs leading-6 text-gray-500">
         Built with Laravel 11, mySQL and Tailwind CSS. Hosted on <a href="https://www.hetzner.com/cloud" target="_blank" rel="noopener">Hetzner Cloud</a>. No dark patterns, minimal cookies, and absolutely no “accept all” confetti.
     </p>
 </div>
