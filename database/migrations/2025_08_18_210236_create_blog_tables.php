@@ -26,9 +26,9 @@ return new class extends Migration
             $table->text('small_image')->nullable();
             $table->text('medium_image')->nullable();
             $table->text('large_image')->nullable();
-            $table->date('date')->nullable();
             $table->string('title', 150);
             $table->string('slug', 200);
+            $table->date('date')->nullable();
             $table->text('excerpt');
             $table->boolean('featured')->default(false);
             $table->boolean('published')->default(true);

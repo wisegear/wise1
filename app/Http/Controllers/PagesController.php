@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\BlogPosts;
 
 /**
  * PagesController
@@ -16,7 +17,10 @@ class PagesController extends Controller
 
     public function home()
     {
-        return view('pages.home');
+        // Get the 4 most recent blog posts
+        $posts = BlogPosts::where('published', true)->orderBy('date', 'desc')->take(4)->get();
+
+        return view('pages.home', compact('posts'));
     }
 
     /**

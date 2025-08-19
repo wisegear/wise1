@@ -109,5 +109,26 @@
             County rollups are normalised for naming consistency. Interest rates and mortgage approvals from BoE. For methodology notes or feedback, see the about page.
         </p>
     </section>
+
+    <!-- Blog posts -->
+    <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
+        @foreach ($posts as $post)
+            <a href="{{ route('blog.show', $post->slug) }}"
+               class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                <img src="{{ '/assets/images/uploads/' . 'medium_' . $post->original_image }}"
+                     class="rounded-xl w-full h-40 object-cover"
+                     alt="blog-post-picture">
+                <h2 class="mt-4 text-lg font-semibold text-gray-900 group-hover:text-lime-700">
+                    {{ $post->title }}
+                </h2>
+                @if (!empty($post->summary))
+                    <div class="mt-1 text-sm text-gray-700">
+                        {{ $post->summary }}
+                    </div>
+                @endif
+            </a>
+        @endforeach
+    </div>
+
 </div>
 @endsection
