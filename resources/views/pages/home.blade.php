@@ -115,7 +115,7 @@
         @foreach ($posts as $post)
             <a href="/blog/{{ $post->slug }}"
                class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
-                <img src="{{ '/assets/images/uploads/' . 'medium_' . $post->original_image }}"
+                <img src="{{ '/assets/images/uploads/' . 'small_' . $post->original_image }}"
                      class="rounded-xl w-full h-40 object-cover"
                      alt="blog-post-picture">
                 <h2 class="mt-4 text-lg font-semibold text-gray-900 group-hover:text-lime-700">
