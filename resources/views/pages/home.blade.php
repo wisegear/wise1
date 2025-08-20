@@ -124,11 +124,6 @@
                 <div class="mt-1 text-xs text-gray-500">
                     {{ $post->date instanceof \Illuminate\Support\Carbon ? $post->date->format('d M Y') : $post->date }}
                 </div>
-                @if (!empty($post->summary))
-                    <div class="mt-1 text-sm text-gray-700">
-                        {{ $post->summary }}
-                    </div>
-                @endif
             </a>
         @endforeach
     </div>
