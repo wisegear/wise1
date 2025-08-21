@@ -30,6 +30,11 @@
         if ($postcode !== '') { $parts[] = $postcode; }
 
         $displayAddress = implode(', ', $parts);
+        // Determine if locality charts should be shown (locality must be non-empty and distinct from TownCity, District, County)
+        $showLocalityCharts = ($locality !== '')
+            && ($norm($locality) !== $norm($town))
+            && ($norm($locality) !== $norm($district))
+            && ($norm($locality) !== $norm($county));
     @endphp
     <p class="text-zinc-500 font-semibold mb-1">{{ $displayAddress }}</p>
     
@@ -51,7 +56,8 @@
             </div>
         @elseif($hasA && $hasB)
             <div class="mb-6 text-sm text-zinc-600">
-                This property has a <span class="font-semibold">mix of Category A and Category B</span> sales.
+                This property has a <span class="font-semibold">mix of Category A and Category B</span> sales.  Category A means all sales were at market value in an arms length transaction.  Category B may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
+                may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
             </div>
         @else
             <div class="mb-6 text-sm text-zinc-600">
@@ -177,6 +183,38 @@
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
         <canvas id="postcodeSalesChart"></canvas>
     </div>
+    <!-- Locality Charts (moved up) -->
+    @if($showLocalityCharts)
+    <!-- Locality Charts (shown only when locality is present and distinct) -->
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
+        <canvas id="localityPropertyTypesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($locality)) }}</h2>
+        <canvas id="localityPriceChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($locality)) }}</h2>
+        <canvas id="localitySalesChart"></canvas>
+    </div>
+    @endif
+    @if(!empty($town))
+    <!-- Town/City Charts -->
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
+        <canvas id="townPropertyTypesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($town)) }}</h2>
+        <canvas id="townPriceChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($town)) }}</h2>
+        <canvas id="townSalesChart"></canvas>
+    </div>
+    @endif
+    <!-- District Charts -->
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
         <canvas id="districtPropertyTypesChart"></canvas>
@@ -189,6 +227,21 @@
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
         <canvas id="districtSalesChart"></canvas>
     </div>
+    @if(!empty($county))
+    <!-- County Charts -->
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
+        <canvas id="countyPropertyTypesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
+        <canvas id="countyPriceChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
+        <canvas id="countySalesChart"></canvas>
+    </div>
+    @endif
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -357,6 +410,150 @@ new Chart(ctxDistrict, {
         }
     }
 });
+@if(!empty($county))
+// County Price Chart
+const ctxCountyPrice = document.getElementById('countyPriceChart').getContext('2d');
+const countyPriceData = @json(($countyPriceHistory ?? collect())->pluck('avg_price'));
+new Chart(ctxCountyPrice, {
+    type: 'line',
+    data: {
+        labels: @json(($countyPriceHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Average Price (£)',
+            data: countyPriceData,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + '£' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: { beginAtZero: false, ticks: { callback: function(value) { return '£' + value.toLocaleString(); } } }
+        }
+    }
+});
+@endif
+@if(!empty($town))
+// Town/City Price Chart
+const ctxTownPrice = document.getElementById('townPriceChart').getContext('2d');
+const townPriceData = @json(($townPriceHistory ?? collect())->pluck('avg_price'));
+new Chart(ctxTownPrice, {
+    type: 'line',
+    data: {
+        labels: @json(($townPriceHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Average Price (£)',
+            data: townPriceData,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + '£' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: {
+                beginAtZero: false,
+                ticks: { callback: function(value) { return '£' + value.toLocaleString(); } }
+            }
+        }
+    }
+});
+@endif
+@if($showLocalityCharts)
+// Locality Price Chart
+const ctxLocality = document.getElementById('localityPriceChart').getContext('2d');
+const localityPriceData = @json(($localityPriceHistory ?? $districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('avg_price'));
+new Chart(ctxLocality, {
+    type: 'line',
+    data: {
+        labels: @json(($localityPriceHistory ?? $districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Average Price (£)',
+            data: localityPriceData,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + '£' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: {
+                beginAtZero: false,
+                ticks: { callback: function(value) { return '£' + value.toLocaleString(); } }
+            }
+        }
+    }
+});
+@endif
 </script>
 <script>
 const ctxDistrictTypes = document.getElementById('districtPropertyTypesChart').getContext('2d');
@@ -388,7 +585,6 @@ new Chart(ctxDistrictTypes, {
         responsive: true,
         plugins: {
             legend: { display: false },
-            title: { display: true, text: 'Property Types in this District' }
         },
         scales: {
             y: {
@@ -399,6 +595,98 @@ new Chart(ctxDistrictTypes, {
         }
     }
 });
+@if($showLocalityCharts)
+// Locality Property Types Chart
+const ctxLocalityTypes = document.getElementById('localityPropertyTypesChart').getContext('2d');
+const localityTypeLabels = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
+const localityTypeCounts = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+new Chart(ctxLocalityTypes, {
+    type: 'bar',
+    data: {
+        labels: localityTypeLabels,
+        datasets: [{
+            label: 'Count',
+            data: localityTypeCounts,
+            backgroundColor: barColors.slice(0, localityTypeLabels.length),
+            borderColor: barColors.slice(0, localityTypeLabels.length).map(c => c.replace('0.7', '1')),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Count' },
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+@endif
+@if(!empty($town))
+// Town/City Property Types Chart
+const ctxTownTypes = document.getElementById('townPropertyTypesChart').getContext('2d');
+const townTypeLabels = @json(($townPropertyTypes ?? collect())->pluck('label'));
+const townTypeCounts = @json(($townPropertyTypes ?? collect())->pluck('value'));
+new Chart(ctxTownTypes, {
+    type: 'bar',
+    data: {
+        labels: townTypeLabels,
+        datasets: [{
+            label: 'Count',
+            data: townTypeCounts,
+            backgroundColor: barColors.slice(0, townTypeLabels.length),
+            borderColor: barColors.slice(0, townTypeLabels.length).map(c => c.replace('0.7', '1')),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Count' },
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+@endif
+@if(!empty($county))
+// County Property Types Chart
+const ctxCountyTypes = document.getElementById('countyPropertyTypesChart').getContext('2d');
+const countyTypeLabels = @json(($countyPropertyTypes ?? collect())->pluck('label'));
+const countyTypeCounts = @json(($countyPropertyTypes ?? collect())->pluck('value'));
+new Chart(ctxCountyTypes, {
+    type: 'bar',
+    data: {
+        labels: countyTypeLabels,
+        datasets: [{
+            label: 'Count',
+            data: countyTypeCounts,
+            backgroundColor: barColors.slice(0, countyTypeLabels.length),
+            borderColor: barColors.slice(0, countyTypeLabels.length).map(c => c.replace('0.7', '1')),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+        },
+        scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Count' }, ticks: { precision: 0 } }
+        }
+    }
+});
+@endif
 const ctxPostcodeSales = document.getElementById('postcodeSalesChart').getContext('2d');
 const postcodeSalesData = @json($postcodeSalesHistory->pluck('total_sales'));
 new Chart(ctxPostcodeSales, {
@@ -505,6 +793,150 @@ new Chart(ctxDistrictSales, {
         }
     }
 });
+@if(!empty($county))
+// County Sales Chart
+const ctxCountySales = document.getElementById('countySalesChart').getContext('2d');
+const countySalesData = @json(($countySalesHistory ?? collect())->pluck('total_sales'));
+new Chart(ctxCountySales, {
+    type: 'line',
+    data: {
+        labels: @json(($countySalesHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Sales Count',
+            data: countySalesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + value.toLocaleString();
+                    }
+                }
+            },
+            title: { display: false }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    }
+});
+@endif
+@if(!empty($town))
+// Town/City Sales Chart
+const ctxTownSales = document.getElementById('townSalesChart').getContext('2d');
+const townSalesData = @json(($townSalesHistory ?? collect())->pluck('total_sales'));
+new Chart(ctxTownSales, {
+    type: 'line',
+    data: {
+        labels: @json(($townSalesHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Sales Count',
+            data: townSalesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + value.toLocaleString();
+                    }
+                }
+            },
+            title: { display: false }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    }
+});
+@endif
+@if($showLocalityCharts)
+// Locality Sales Chart
+const ctxLocalitySales = document.getElementById('localitySalesChart').getContext('2d');
+const localitySalesData = @json(($localitySalesHistory ?? $districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('total_sales'));
+new Chart(ctxLocalitySales, {
+    type: 'line',
+    data: {
+        labels: @json(($localitySalesHistory ?? $districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('year')),
+        datasets: [{
+            label: 'Sales Count',
+            data: localitySalesData,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: function(context) {
+                const index = context.dataIndex;
+                const value = context.dataset.data[index];
+                const prev = index > 0 ? context.dataset.data[index - 1] : value;
+                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
+                        return label + value.toLocaleString();
+                    }
+                }
+            },
+            title: { display: false }
+        },
+        scales: {
+            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+    }
+});
+@endif
 </script>
 
 <!-- Notes -->

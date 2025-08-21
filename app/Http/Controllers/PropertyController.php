@@ -61,6 +61,19 @@ class PropertyController extends Controller
         }
         $address = implode(', ', $addressParts);
 
+        // --- Locality visibility gate to avoid unnecessary locality queries ---
+        $locality     = trim((string) $first->Locality);
+        $town         = trim((string) $first->TownCity);
+        $districtName = trim((string) $first->District);
+        $countyName   = trim((string) $first->County);
+        $norm = function ($v) {
+            return strtolower(trim((string) $v));
+        };
+        $showLocalityCharts = ($locality !== '')
+            && ($norm($locality) !== $norm($town))
+            && ($norm($locality) !== $norm($districtName))
+            && ($norm($locality) !== $norm($countyName));
+
         $priceHistoryQuery = DB::table(DB::raw('land_registry USE INDEX (idx_full_property)'))
             ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
@@ -156,7 +169,7 @@ class PropertyController extends Controller
             60 * 60 * 24 * 7,
             function () use ($first, $propertyTypeMap) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
-                    ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
+                    ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                     ->where('County', $first->County)
                     ->groupBy('PropertyType')
                     ->orderByDesc('property_count')
@@ -175,7 +188,7 @@ class PropertyController extends Controller
             60 * 60 * 24 * 7,
             function () use ($first, $propertyTypeMap) {
                 return DB::table('land_registry')
-                    ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
+                    ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                     ->where('District', $first->District)
                     ->groupBy('PropertyType')
                     ->orderByDesc('property_count')
@@ -189,6 +202,119 @@ class PropertyController extends Controller
             }
         );
 
+        // --- Town/City datasets (mirrors district/locality structures) ---
+        if (!empty(trim((string) $first->TownCity))) {
+            $townPriceHistory = Cache::remember(
+                'town:priceHistory:v1:' . $first->TownCity,
+                60 * 60 * 24 * 7,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                        ->where('TownCity', $first->TownCity)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+
+            $townSalesHistory = Cache::remember(
+                'town:salesHistory:v1:' . $first->TownCity,
+                60 * 60 * 24 * 7,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                        ->where('TownCity', $first->TownCity)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+
+            $townPropertyTypes = Cache::remember(
+                'town:types:v1:' . $first->TownCity,
+                60 * 60 * 24 * 7,
+                function () use ($first, $propertyTypeMap) {
+                    return DB::table('land_registry')
+                        ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
+                        ->where('TownCity', $first->TownCity)
+                        ->groupBy('PropertyType')
+                        ->orderByDesc('property_count')
+                        ->get()
+                        ->map(function ($row) use ($propertyTypeMap) {
+                            return [
+                                'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
+                                'value' => $row->property_count,
+                            ];
+                        });
+                }
+            );
+        } else {
+            $townPriceHistory = collect();
+            $townSalesHistory = collect();
+            $townPropertyTypes = collect();
+        }
+
+        // Locality datasets (only compute when locality is meaningful & distinct)
+        if ($showLocalityCharts) {
+            $localityPriceHistory = Cache::remember(
+                'locality:priceHistory:v1:' . $first->Locality,
+                60 * 60 * 24 * 7,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                        ->where('Locality', $first->Locality)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+
+            $localitySalesHistory = Cache::remember(
+                'locality:salesHistory:v1:' . $first->Locality,
+                60 * 60 * 24 * 7,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                        ->where('Locality', $first->Locality)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+
+            $propertyTypeMap = [
+                'D' => 'Detached',
+                'S' => 'Semi',
+                'T' => 'Terraced',
+                'F' => 'Flat',
+                'O' => 'Other',
+            ];
+
+            $localityPropertyTypes = Cache::remember(
+                'locality:types:v1:' . $first->Locality,
+                60 * 60 * 24 * 7,
+                function () use ($first, $propertyTypeMap) {
+                    return DB::table('land_registry')
+                        ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
+                        ->where('Locality', $first->Locality)
+                        ->groupBy('PropertyType')
+                        ->orderByDesc('property_count')
+                        ->get()
+                        ->map(function ($row) use ($propertyTypeMap) {
+                            return [
+                                'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
+                                'value' => $row->property_count,
+                            ];
+                        });
+                }
+            );
+        } else {
+            // Keep view happy but avoid work
+            $localityPriceHistory = collect();
+            $localitySalesHistory = collect();
+            $localityPropertyTypes = collect();
+        }
+
         return view('property.show', [
             'results' => $records,
             'address' => $address,
@@ -201,6 +327,12 @@ class PropertyController extends Controller
             'districtPriceHistory' => $districtPriceHistory,
             'districtSalesHistory' => $districtSalesHistory,
             'districtPropertyTypes' => $districtPropertyTypes,
+            'townPriceHistory' => $townPriceHistory,
+            'townSalesHistory' => $townSalesHistory,
+            'townPropertyTypes' => $townPropertyTypes,
+            'localityPriceHistory' => $localityPriceHistory,
+            'localitySalesHistory' => $localitySalesHistory,
+            'localityPropertyTypes' => $localityPropertyTypes,
         ]);
 
 
