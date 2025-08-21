@@ -42,7 +42,7 @@
 
             <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600" for="per_page">Per page</label>
-                <select name="per_page" id="per_page" class="rounded-md border-gray-300 text-sm">
+                <select name="per_page" id="per_page" class="rounded-md border border-zinc-300 ring-0 bg-white text-sm">
                     @foreach([50,100,200,500] as $opt)
                         <option value="{{ $opt }}" {{ (request('per_page', 100)==$opt) ? 'selected' : '' }}>{{ $opt }}</option>
                     @endforeach
@@ -56,7 +56,7 @@
             <div id="quarterly-fields" class="{{ ($meta['period'] ?? 'quarterly') === 'quarterly' ? '' : 'hidden' }} grid grid-cols-2 gap-4 md:col-span-3">
                 <div>
                     <label class="mb-1 block text-sm text-gray-600">Year</label>
-                    <select name="year" class="w-full rounded-md border-gray-300">
+                    <select name="year" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                         @foreach($years as $y)
                             <option value="{{ $y }}" {{ ( ($meta['year'] ?? null) == $y ) ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -64,7 +64,7 @@
                 </div>
                 <div>
                     <label class="mb-1 block text-sm text-gray-600">Quarter</label>
-                    <select name="quarter" class="w-full rounded-md border-gray-300">
+                    <select name="quarter" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                         @foreach($meta['quarters'] as $q)
                             <option value="{{ $q }}" {{ ( ($meta['quarter'] ?? null) == $q ) ? 'selected' : '' }}>{{ $q }}</option>
                         @endforeach
@@ -76,7 +76,7 @@
             <div id="yearly-fields" class="{{ ($meta['period'] ?? 'quarterly') === 'yearly' ? '' : 'hidden' }} grid grid-cols-2 gap-4 md:col-span-3">
                 <div>
                     <label class="mb-1 block text-sm text-gray-600">From year</label>
-                    <select name="year_from" class="w-full rounded-md border-gray-300">
+                    <select name="year_from" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                         @foreach($years as $y)
                             <option value="{{ $y }}" {{ ( ($meta['year_from'] ?? null) == $y ) ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -84,7 +84,7 @@
                 </div>
                 <div>
                     <label class="mb-1 block text-sm text-gray-600">To year</label>
-                    <select name="year_to" class="w-full rounded-md border-gray-300">
+                    <select name="year_to" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                         @foreach($years as $y)
                             <option value="{{ $y }}" {{ ( ($meta['year_to'] ?? null) == $y ) ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
@@ -97,7 +97,7 @@
         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
                 <label class="mb-1 block text-sm text-gray-600">Region</label>
-                <select name="region" class="w-full rounded-md border-gray-300">
+                <select name="region" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All regions</option>
                     @foreach($regions as $r)
                         <option value="{{ $r }}" {{ request('region')===$r ? 'selected' : '' }}>{{ $r }}</option>
@@ -107,7 +107,7 @@
 
             <div>
                 <label class="mb-1 block text-sm text-gray-600">County</label>
-                <select name="county" class="w-full rounded-md border-gray-300">
+                <select name="county" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All counties</option>
                     @foreach($counties as $c)
                         <option value="{{ $c }}" {{ request('county')===$c ? 'selected' : '' }}>
@@ -120,7 +120,7 @@
             {{-- Show/hide these two depending on "by" --}}
             <div id="type-filter" class="{{ ($meta['by'] ?? 'type') === 'type' ? '' : 'hidden' }}">
                 <label class="mb-1 block text-sm text-gray-600">Reason (Type)</label>
-                <select name="type" class="w-full rounded-md border-gray-300">
+                <select name="type" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All types</option>
                     @foreach($types as $t)
                         <option value="{{ $t }}" {{ request('type')===$t ? 'selected' : '' }}>{{ $t }}</option>
@@ -130,7 +130,7 @@
 
             <div id="action-filter" class="{{ ($meta['by'] ?? 'type') === 'action' ? '' : 'hidden' }}">
                 <label class="mb-1 block text-sm text-gray-600">Stage (Action)</label>
-                <select name="action" class="w-full rounded-md border-gray-300">
+                <select name="action" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All actions</option>
                     @foreach($actions as $a)
                         <option value="{{ $a }}" {{ request('action')===$a ? 'selected' : '' }}>{{ $a }}</option>
@@ -273,32 +273,32 @@
     </div>
 
     {{-- Results table --}}
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full border-separate border-spacing-0">
                 <thead class="bg-gray-50 text-left text-sm text-gray-600">
-                    <tr>
+                    <tr class="">
                         @if(($meta['period'] ?? 'quarterly')==='yearly')
-                            <th class="sticky left-0 z-10 border-b border-gray-200 px-4 py-2 bg-gray-50">Year</th>
+                            <th class="sticky left-0 z-10 px-4 py-2 bg-gray-50">Year</th>
                         @endif
-                        <th class="border-b border-gray-200 px-4 py-2">County</th>
-                        <th class="border-b border-gray-200 px-4 py-2">{{ $meta['by']==='action' ? 'Stage (Action)' : 'Reason (Type)' }}</th>
-                        <th class="border-b border-gray-200 px-4 py-2 text-right">Cases</th>
+                        <th class=" px-4 py-2">County</th>
+                        <th class=" px-4 py-2">{{ $meta['by']==='action' ? 'Stage (Action)' : 'Reason (Type)' }}</th>
+                        <th class=" px-4 py-2 text-right">Cases</th>
                     </tr>
                 </thead>
                 <tbody class="text-sm">
                     @forelse($rows as $row)
                         <tr class="hover:bg-gray-50">
                             @if(($meta['period'] ?? 'quarterly')==='yearly')
-                                <td class="sticky left-0 z-10 border-b border-gray-100 px-4 py-2 bg-white">{{ $row->year }}</td>
+                                <td class="sticky left-0 z-10 px-4 py-2 bg-white">{{ $row->year }}</td>
                             @endif
-                            <td class="border-b border-gray-100 px-4 py-2">
+                            <td class="border-b border-zinc-300 px-4 py-2">
                                 {{ str_replace(' UA','', (string)($row->county_ua ?? '')) }}
                             </td>
-                            <td class="border-b border-gray-100 px-4 py-2">
+                            <td class="px-4 py-2">
                                 {{ $row->reason }}
                             </td>
-                            <td class="border-b border-gray-100 px-4 py-2 text-right font-medium">
+                            <td class="px-4 py-2 text-right font-medium">
                                 {{ number_format($row->cases) }}
                             </td>
                         </tr>
@@ -314,7 +314,7 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="border-t border-gray-200 px-4 py-3">
+        <div class="border-t border-zinc-200 px-4 py-3">
             {{ $rows->links() }}
         </div>
     </div>

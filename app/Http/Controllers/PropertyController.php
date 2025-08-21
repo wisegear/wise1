@@ -17,7 +17,7 @@ class PropertyController extends Controller
         $saon     = $request->filled('saon') ? strtoupper(trim($request->input('saon'))) : null;
 
         $query = DB::table(DB::raw('land_registry USE INDEX (idx_full_property, idx_postcode_date)'))
-            ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'TownCity', 'District', 'County', 'PPDCategoryType')
+            ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'Locality', 'TownCity', 'District', 'County', 'PPDCategoryType')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
             ->where('Street', $street);
@@ -37,15 +37,28 @@ class PropertyController extends Controller
             abort(404, 'Property not found');
         }
 
-        // Build address
+        // Build address (PAON, SAON, Street, Locality, Postcode, TownCity, District, County)
         $first = $records->first();
+        $district = $first->District;
         $addressParts = [];
         $addressParts[] = trim($first->PAON);
         if (!empty(trim($first->SAON))) {
             $addressParts[] = trim($first->SAON);
         }
         $addressParts[] = trim($first->Street);
+        if (!empty(trim($first->Locality))) {
+            $addressParts[] = trim($first->Locality);
+        }
         $addressParts[] = trim($first->Postcode);
+        if (!empty(trim($first->TownCity))) {
+            $addressParts[] = trim($first->TownCity);
+        }
+        if (!empty(trim($first->District))) {
+            $addressParts[] = trim($first->District);
+        }
+        if (!empty(trim($first->County))) {
+            $addressParts[] = trim($first->County);
+        }
         $address = implode(', ', $addressParts);
 
         $priceHistoryQuery = DB::table(DB::raw('land_registry USE INDEX (idx_full_property)'))
@@ -91,6 +104,19 @@ class PropertyController extends Controller
             }
         );
 
+        $districtPriceHistory = Cache::remember(
+            'district:priceHistory:v1:' . $first->District,
+            60 * 60 * 24 * 7,
+            function () use ($first) {
+                return DB::table('land_registry')
+                    ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                    ->where('District', $first->District)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
+
         $countySalesHistory = Cache::remember(
             'county:salesHistory:v1:' . $first->County,
             60 * 60 * 24 * 7,
@@ -98,6 +124,19 @@ class PropertyController extends Controller
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                     ->where('County', $first->County)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
+
+        $districtSalesHistory = Cache::remember(
+            'district:salesHistory:v1:' . $first->District,
+            60 * 60 * 24 * 7,
+            function () use ($first) {
+                return DB::table('land_registry')
+                    ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                    ->where('District', $first->District)
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -131,6 +170,25 @@ class PropertyController extends Controller
             }
         );
 
+        $districtPropertyTypes = Cache::remember(
+            'district:types:v1:' . $first->District,
+            60 * 60 * 24 * 7,
+            function () use ($first, $propertyTypeMap) {
+                return DB::table('land_registry')
+                    ->select('PropertyType', DB::raw('COUNT(DISTINCT CONCAT(PAON, Street, Postcode)) as property_count'))
+                    ->where('District', $first->District)
+                    ->groupBy('PropertyType')
+                    ->orderByDesc('property_count')
+                    ->get()
+                    ->map(function ($row) use ($propertyTypeMap) {
+                        return [
+                            'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
+                            'value' => $row->property_count,
+                        ];
+                    });
+            }
+        );
+
         return view('property.show', [
             'results' => $records,
             'address' => $address,
@@ -139,7 +197,10 @@ class PropertyController extends Controller
             'postcodeSalesHistory' => $postcodeSalesHistory,
             'countyPriceHistory' => $countyPriceHistory,
             'countySalesHistory' => $countySalesHistory,
-            'countyPropertyTypes' => $countyPropertyTypes
+            'countyPropertyTypes' => $countyPropertyTypes,
+            'districtPriceHistory' => $districtPriceHistory,
+            'districtSalesHistory' => $districtSalesHistory,
+            'districtPropertyTypes' => $districtPropertyTypes,
         ]);
 
 

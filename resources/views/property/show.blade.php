@@ -3,7 +3,35 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-semibold mb-4">Property History</h1>
-    <p class="text-zin-500 font-semibold mb-1">{{ $address }}</p>
+    @php
+        $firstRow = $results->first();
+        $parts = [];
+        $norm = function($s) { return strtolower(trim((string) $s)); };
+        $seen = [];
+
+        // Core address lines
+        if (!empty(trim($firstRow->PAON ?? ''))) { $parts[] = trim($firstRow->PAON); }
+        if (!empty(trim($firstRow->SAON ?? ''))) { $parts[] = trim($firstRow->SAON); }
+        if (!empty(trim($firstRow->Street ?? ''))) { $parts[] = trim($firstRow->Street); }
+
+        // Location hierarchy with de-duplication
+        $locality = trim((string) ($firstRow->Locality ?? ''));
+        $town     = trim((string) ($firstRow->TownCity ?? ''));
+        $district = trim((string) ($firstRow->District ?? ''));
+        $county   = trim((string) ($firstRow->County ?? ''));
+        $postcode = trim((string) ($firstRow->Postcode ?? ''));
+
+        if ($locality !== '') { $parts[] = $locality; $seen[] = $norm($locality); }
+        if ($town !== '' && !in_array($norm($town), $seen, true)) { $parts[] = $town; $seen[] = $norm($town); }
+        if ($district !== '' && !in_array($norm($district), $seen, true)) { $parts[] = $district; $seen[] = $norm($district); }
+        if ($county !== '' && !in_array($norm($county), $seen, true)) { $parts[] = $county; $seen[] = $norm($county); }
+
+        // Postcode always last if present
+        if ($postcode !== '') { $parts[] = $postcode; }
+
+        $displayAddress = implode(', ', $parts);
+    @endphp
+    <p class="text-zinc-500 font-semibold mb-1">{{ $displayAddress }}</p>
     
     {{-- PPD Category note --}}
     @php
@@ -39,6 +67,7 @@
         $town = trim(optional($results->first())->TownCity ?? '');
         $street = trim(optional($results->first())->Street ?? '');
         $county = trim(optional($results->first())->County ?? '');
+        $district = trim(optional($results->first())->District ?? '');
         // Build slugs for path when possible (e.g. worcester/barneshall-avenue/wr5-3eu)
         $pcLower = strtolower($postcode);
         $pcSlug = str_replace(' ', '-', $pcLower);
@@ -81,16 +110,12 @@
     @else
         <table class="min-w-full text-sm border border-zinc-200 rounded-md">
             <thead class="bg-zinc-50">
-                <tr>
+                <tr class="text-left">
                     <th class="px-3 py-2">Date</th>
                     <th class="px-3 py-2">Price</th>
                     <th class="px-3 py-2">Type</th>
                     <th class="px-3 py-2">Tenure</th>
-                    <th class="px-3 py-2">Primary</th>
-                    <th class="px-3 py-2">Secondary</th>
-                    <th class="px-3 py-2">Street</th>
-                    <th class="px-3 py-2">Post Code</th>
-                    <th class="px-3 py-2">County</th>
+                    <th class="px-3 py-2">New Build?</th>
                     <th class="px-3 py-2">Category</th>
                 </tr>
             </thead>
@@ -124,27 +149,11 @@
                         @endif
                     </td>
                     <td class="px-3 py-2">
-                        @if(empty($row->PAON))
-                            N/A
-                        @else
-                            {{ $row->PAON }}
-                        @endif
-                    </td>
-                    <td class="px-3 py-2">
-                        @if(empty($row->SAON))
-                            N/A
-                        @else
-                            {{ $row->SAON }}
-                        @endif
-                    </td>
-                    <td class="px-3 py-2">
-                        {{ $row->Street }}
-                    </td> 
-                    <td class="px-3 py-2">
-                        {{ $row->Postcode }}
-                    </td>
-                    <td class="px-3 py-2">
-                        {{ $row->County }}
+                       @if($row->NewBuild === 'N')
+                        No 
+                       @elseif($row->NewBuild === 'Y')
+                       Yes
+                       @endif
                     </td>
                     <td class="px-3 py-2">
                         {{ $row->PPDCategoryType }}
@@ -155,7 +164,7 @@
         </table>
     @endif
 
-<div class="my-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
         <canvas id="priceHistoryChart"></canvas>
@@ -165,20 +174,20 @@
         <canvas id="postcodePriceChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPriceChart"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPropertyTypesChart"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
         <canvas id="postcodeSalesChart"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countySalesChart"></canvas>
+        <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+        <canvas id="districtPropertyTypesChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+        <canvas id="districtPriceChart"></canvas>
+    </div>
+    <div class="border border-zinc-200 rounded-md p-2">
+        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+        <canvas id="districtSalesChart"></canvas>
     </div>
 </div>
 
@@ -227,6 +236,9 @@ new Chart(ctx, {
             }
         },
         scales: {
+            x: {
+                ticks: { minRotation: 90, maxRotation: 90 }
+            },
             y: {
                 beginAtZero: false,
                 ticks: {
@@ -282,6 +294,9 @@ new Chart(ctxPostcode, {
             }
         },
         scales: {
+            x: {
+                ticks: { minRotation: 90, maxRotation: 90 }
+            },
             y: {
                 beginAtZero: false,
                 ticks: {
@@ -294,15 +309,15 @@ new Chart(ctxPostcode, {
     }
 });
 
-const ctxCounty = document.getElementById('countyPriceChart').getContext('2d');
-const countyPriceData = @json($countyPriceHistory->pluck('avg_price'));
-new Chart(ctxCounty, {
+const ctxDistrict = document.getElementById('districtPriceChart').getContext('2d');
+const districtPriceData = @json(($districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('avg_price'));
+new Chart(ctxDistrict, {
     type: 'line',
     data: {
-        labels: @json($countyPriceHistory->pluck('year')),
+        labels: @json(($districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('year')),
         datasets: [{
             label: 'Average Price (£)',
-            data: countyPriceData,
+            data: districtPriceData,
             borderColor: 'rgba(54, 162, 235, 1)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             tension: 0.1,
@@ -319,17 +334,12 @@ new Chart(ctxCounty, {
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                position: 'top'
-            },
+            legend: { position: 'top' },
             tooltip: {
                 callbacks: {
                     label: function(context) {
-                        // Format as currency with commas
                         let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
+                        if (label) { label += ': '; }
                         let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
                         return label + '£' + value.toLocaleString();
                     }
@@ -337,65 +347,54 @@ new Chart(ctxCounty, {
             }
         },
         scales: {
+            x: {
+                ticks: { minRotation: 90, maxRotation: 90 }
+            },
             y: {
                 beginAtZero: false,
-                ticks: {
-                    callback: function(value) {
-                        return '£' + value.toLocaleString();
-                    }
-                }
+                ticks: { callback: function(value) { return '£' + value.toLocaleString(); } }
             }
         }
     }
 });
 </script>
 <script>
-const ctxCountyTypes = document.getElementById('countyPropertyTypesChart').getContext('2d');
-const countyTypeLabels = @json($countyPropertyTypes->pluck('label'));
-const countyTypeCounts = @json($countyPropertyTypes->pluck('value'));
+const ctxDistrictTypes = document.getElementById('districtPropertyTypesChart').getContext('2d');
+const districtTypeLabels = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
+const districtTypeCounts = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
 const barColors = [
-    'rgba(54, 162, 235, 0.7)',  // blue
-    'rgba(255, 99, 132, 0.7)',  // red
-    'rgba(255, 206, 86, 0.7)',  // yellow
-    'rgba(75, 192, 192, 0.7)',  // teal
-    'rgba(153, 102, 255, 0.7)', // purple
-    'rgba(255, 159, 64, 0.7)',  // orange
-    'rgba(99, 255, 132, 0.7)',  // green
-    'rgba(160, 160, 160, 0.7)'  // grey
+    'rgba(54, 162, 235, 0.7)',
+    'rgba(255, 99, 132, 0.7)',
+    'rgba(255, 206, 86, 0.7)',
+    'rgba(75, 192, 192, 0.7)',
+    'rgba(153, 102, 255, 0.7)',
+    'rgba(255, 159, 64, 0.7)',
+    'rgba(99, 255, 132, 0.7)',
+    'rgba(160, 160, 160, 0.7)'
 ];
-new Chart(ctxCountyTypes, {
+new Chart(ctxDistrictTypes, {
     type: 'bar',
     data: {
-        labels: countyTypeLabels,
+        labels: districtTypeLabels,
         datasets: [{
             label: 'Count',
-            data: countyTypeCounts,
-            backgroundColor: barColors.slice(0, countyTypeLabels.length),
-            borderColor: barColors.slice(0, countyTypeLabels.length).map(c => c.replace('0.7', '1')),
+            data: districtTypeCounts,
+            backgroundColor: barColors.slice(0, districtTypeLabels.length),
+            borderColor: barColors.slice(0, districtTypeLabels.length).map(c => c.replace('0.7', '1')),
             borderWidth: 1
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                display: false
-            },
-            title: {
-                display: true,
-                text: 'Property Types in this County'
-            }
+            legend: { display: false },
+            title: { display: true, text: 'Property Types in this District' }
         },
         scales: {
             y: {
                 beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Count'
-                },
-                ticks: {
-                    precision: 0
-                }
+                title: { display: true, text: 'Count' },
+                ticks: { precision: 0 }
             }
         }
     }
@@ -446,24 +445,25 @@ new Chart(ctxPostcodeSales, {
             }
         },
         scales: {
+            x: {
+                ticks: { minRotation: 90, maxRotation: 90 }
+            },
             y: {
                 beginAtZero: true,
-                ticks: {
-                    precision: 0
-                }
+                ticks: { precision: 0 }
             }
         }
     }
 });
-const ctxCountySales = document.getElementById('countySalesChart').getContext('2d');
-const countySalesData = @json($countySalesHistory->pluck('total_sales'));
-new Chart(ctxCountySales, {
+const ctxDistrictSales = document.getElementById('districtSalesChart').getContext('2d');
+const districtSalesData = @json(($districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('total_sales'));
+new Chart(ctxDistrictSales, {
     type: 'line',
     data: {
-        labels: @json($countySalesHistory->pluck('year')),
+        labels: @json(($districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('year')),
         datasets: [{
             label: 'Sales Count',
-            data: countySalesData,
+            data: districtSalesData,
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 2,
@@ -481,31 +481,26 @@ new Chart(ctxCountySales, {
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                display: true
-            },
+            legend: { display: true },
             tooltip: {
                 callbacks: {
                     label: function(context) {
                         let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
+                        if (label) { label += ': '; }
                         let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
                         return label + value.toLocaleString();
                     }
                 }
             },
-            title: {
-                display: false
-            }
+            title: { display: false }
         },
         scales: {
+            x: {
+                ticks: { minRotation: 90, maxRotation: 90 }
+            },
             y: {
                 beginAtZero: true,
-                ticks: {
-                    precision: 0
-                }
+                ticks: { precision: 0 }
             }
         }
     }

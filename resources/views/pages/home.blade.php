@@ -17,7 +17,7 @@
         </div>
 
         {{-- subtle background accent --}}
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-gradient-to-br from-lime-100 to-emerald-100 blur-2xl"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full md:bg-gradient-to-br md:from-lime-100 md:to-emerald-100 md:blur-2xl"></div>
     </section>
 
     {{-- Usage note: desktop-first layout --}}
