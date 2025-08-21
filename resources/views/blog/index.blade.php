@@ -21,6 +21,10 @@
                 <div>
                     @foreach($posts as $post)
                         <article class="mb-10 transition-colors duration-200 hover:bg-zinc-100 p-4 rounded-xl">
+                            <!-- Post image -->
+                            <div class="max-w-3xl mx-auto mb-4">
+                                <img src="{{ '/assets/images/uploads/' . 'medium_' . $post->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
+                            </div>  
                             <div class="flex justify-between items-center mb-2">
                                 <p class="text-zinc-400 text-sm border-l pl-4">
                                     {{ $post->date->format('F j, Y') }}

@@ -35,6 +35,10 @@
             && ($norm($locality) !== $norm($town))
             && ($norm($locality) !== $norm($district))
             && ($norm($locality) !== $norm($county));
+        // Determine if town charts should be shown (town must be non-empty and distinct from District, County)
+        $showTownCharts = ($town !== '')
+            && ($norm($town) !== $norm($district))
+            && ($norm($town) !== $norm($county));
     @endphp
     <p class="text-zinc-500 font-semibold mb-1">{{ $displayAddress }}</p>
     
@@ -199,7 +203,7 @@
         <canvas id="localitySalesChart"></canvas>
     </div>
     @endif
-    @if(!empty($town))
+    @if($showTownCharts)
     <!-- Town/City Charts -->
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
@@ -456,7 +460,7 @@ new Chart(ctxCountyPrice, {
     }
 });
 @endif
-@if(!empty($town))
+@if($showTownCharts)
 // Town/City Price Chart
 const ctxTownPrice = document.getElementById('townPriceChart').getContext('2d');
 const townPriceData = @json(($townPriceHistory ?? collect())->pluck('avg_price'));
@@ -627,7 +631,7 @@ new Chart(ctxLocalityTypes, {
     }
 });
 @endif
-@if(!empty($town))
+@if($showTownCharts)
 // Town/City Property Types Chart
 const ctxTownTypes = document.getElementById('townPropertyTypesChart').getContext('2d');
 const townTypeLabels = @json(($townPropertyTypes ?? collect())->pluck('label'));
@@ -841,7 +845,7 @@ new Chart(ctxCountySales, {
     }
 });
 @endif
-@if(!empty($town))
+@if($showTownCharts)
 // Town/City Sales Chart
 const ctxTownSales = document.getElementById('townSalesChart').getContext('2d');
 const townSalesData = @json(($townSalesHistory ?? collect())->pluck('total_sales'));

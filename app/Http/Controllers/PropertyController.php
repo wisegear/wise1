@@ -74,6 +74,11 @@ class PropertyController extends Controller
             && ($norm($locality) !== $norm($districtName))
             && ($norm($locality) !== $norm($countyName));
 
+        // Determine if town charts should be shown (town must be non-empty and distinct from District, County)
+        $showTownCharts = ($town !== '')
+            && ($norm($town) !== $norm($districtName))
+            && ($norm($town) !== $norm($countyName));
+
         $priceHistoryQuery = DB::table(DB::raw('land_registry USE INDEX (idx_full_property)'))
             ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
             ->where('Postcode', $postcode)
@@ -203,7 +208,7 @@ class PropertyController extends Controller
         );
 
         // --- Town/City datasets (mirrors district/locality structures) ---
-        if (!empty(trim((string) $first->TownCity))) {
+        if ($showTownCharts) {
             $townPriceHistory = Cache::remember(
                 'town:priceHistory:v1:' . $first->TownCity,
                 60 * 60 * 24 * 7,
