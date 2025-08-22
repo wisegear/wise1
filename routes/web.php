@@ -30,8 +30,12 @@ use App\Http\Controllers\AdminUserController;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
 Route::get('/about', [PagesController::class, 'about'])->name('about');
-Route::get('/property', [PropertyController::class, 'show'])->name('property.show');
-Route::get('/sales', [SalesController::class, 'home'])->name('sales.home');
+
+Route::get('/property', [PropertyController::class, 'home'])->name('property.home');
+Route::get('/property/search', [PropertyController::class, 'search'])->name('property.search');
+Route::get('/property/show', [PropertyController::class, 'show'])->name('property.show');
+
+
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
@@ -95,4 +99,5 @@ Route::get('/generate-sitemap', function () {
         return response('Sitemap generation failed. Check logs.', 500);
     }
 });
+
 require __DIR__.'/auth.php';

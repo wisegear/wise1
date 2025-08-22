@@ -23,3 +23,51 @@ Alpine.start();
             dropdown.classList.toggle('hidden');
         });
     });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const propBtn  = document.getElementById('propertyMenuButton');
+  const propMenu = document.getElementById('propertyDropdown');
+
+  if (!propBtn || !propMenu) return; // IDs missing in Blade
+
+  const openMenu = () => {
+    propMenu.classList.remove('hidden');
+    // Optional: smooth pop (only if your Blade has these classes available)
+    propMenu.classList.add('transition', 'duration-150', 'ease-out');
+    requestAnimationFrame(() => {
+      propMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+    });
+    propBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeMenu = () => {
+    // Optional animation out
+    propMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+    const onEnd = (e) => {
+      if (e.target !== propMenu) return;
+      propMenu.classList.add('hidden');
+      propMenu.removeEventListener('transitionend', onEnd);
+    };
+    propMenu.addEventListener('transitionend', onEnd);
+    propBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  propBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = propMenu.classList.contains('hidden');
+    isHidden ? openMenu() : closeMenu();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    const open = !propMenu.classList.contains('hidden');
+    if (!open) return;
+    if (!propMenu.contains(e.target) && !propBtn.contains(e.target)) closeMenu();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+});
