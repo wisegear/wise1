@@ -12,7 +12,102 @@ class PropertyController extends Controller
 
     public function home(Request $request)
     {
+
+        // =========================================================
+        // 2) CACHED AGGREGATES FOR HOMEPAGE CHARTS
+        //    These are cached for 1 day (86400s). When new monthly
+        //    data is imported you can clear cache to refresh.
+        // =========================================================
+
+        // Yearly transaction counts (all categories)
+        $salesByYear = Cache::remember('land_registry_sales_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total')
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // Yearly average price (all categories)
+        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // Prime Central London: yearly average price
+        //  - Uses prime_postcodes table, matching the outward code prefix
+        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->whereRaw("
+                    EXISTS (
+                        SELECT 1
+                        FROM prime_postcodes
+                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                        AND category = 'Prime Central'
+                    )
+                ")
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // Prime Central London: yearly sales counts
+        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
+                ->whereRaw("
+                    EXISTS (
+                        SELECT 1
+                        FROM prime_postcodes
+                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                        AND category = 'Prime Central'
+                    )
+                ")
+                ->groupBy('year')
+                ->orderBy('year', 'asc')
+                ->get();
+        });
+
+        // Ultra Prime: yearly average price
+        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->whereRaw("
+                    EXISTS (
+                        SELECT 1
+                        FROM prime_postcodes
+                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                        AND category = 'Ultra Prime'
+                    )
+                ")
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // Ultra Prime: yearly sales counts
+        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year', 86400, function () {
+            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
+                ->whereRaw("
+                    EXISTS (
+                        SELECT 1
+                        FROM prime_postcodes
+                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                        AND category = 'Ultra Prime'
+                    )
+                ") 
+                ->groupBy('year')
+                ->orderBy('year', 'asc')
+                ->get();
+        });
+
+        // =========================================================
+        // 3) RENDER: pass both search results (if any) and all
+        //    cached aggregates for charts to the Blade view
+        // =========================================================
+        return view('property.home', compact('salesByYear', 'avgPriceByYear', 'avgPricePrimeCentralByYear', 'primeCentralSalesByYear', 'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear'));
+
         return view('property.home');
+        
     }
 
     public function search(Request $request)
@@ -110,92 +205,13 @@ class PropertyController extends Controller
             return LandRegistry::count();
         });
 
-        // Yearly transaction counts (all categories)
-        $salesByYear = Cache::remember('land_registry_sales_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total')
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
 
-        // Yearly average price (all categories)
-        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        // Prime Central London: yearly average price
-        //  - Uses prime_postcodes table, matching the outward code prefix
-        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Prime Central'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        // Prime Central London: yearly sales counts
-        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Prime Central'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year', 'asc')
-                ->get();
-        });
-
-        // Ultra Prime: yearly average price
-        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Ultra Prime'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        // Ultra Prime: yearly sales counts
-        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year', 86400, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Ultra Prime'
-                    )
-                ") 
-                ->groupBy('year')
-                ->orderBy('year', 'asc')
-                ->get();
-        });
 
         // =========================================================
         // 3) RENDER: pass both search results (if any) and all
         //    cached aggregates for charts to the Blade view
         // =========================================================
-        return view('property.search', compact('postcode', 'results', 'records', 'salesByYear', 'avgPriceByYear', 'avgPricePrimeCentralByYear', 'primeCentralSalesByYear', 'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear'))
+        return view('property.search', compact('postcode', 'results', 'records'))
             ->with(['sort' => $sort ?? 'Date', 'dir' => $dir ?? 'desc']);
     }
 
