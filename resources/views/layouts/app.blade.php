@@ -22,8 +22,8 @@
 </head>
 <body class="bg-zinc-50">
     <div class="min-h-screen flex flex-col">
-        {{-- Nav --}}
-        <nav class="bg-white border-b border-zinc-200 p-4">
+        {{-- Desktop Nav --}}
+        <nav class="hidden md:block bg-white border-b border-zinc-200 p-4">
             <div class="max-w-7xl mx-auto flex items-center">
                 <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
                 <button id="navToggle" aria-controls="primaryNav" aria-expanded="false" class="md:hidden ml-auto inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none" type="button">
@@ -90,6 +90,61 @@
                 </ul>
             </div>
         </nav>
+    {{-- Mobile Nav --}}
+    <nav class="bg-white border-b border-zinc-200 p-4 md:hidden">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
+            <button id="mobileNavToggle" aria-controls="mobileNav" aria-expanded="false"
+                class="inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none"
+                type="button">
+                <span class="sr-only">Open main menu</span>
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+
+        {{-- Collapsible menu --}}
+        <div id="mobileNav" class="hidden flex-col mt-3 space-y-1">
+            <a href="{{ url('/') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Home</a>
+            <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Blog</a>
+            <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
+
+            {{-- Property dropdown for mobile --}}
+            <div class="">
+                <button id="mobilePropertyBtn"
+                    class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
+                    Property
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div id="mobilePropertyMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                    <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
+                    <a href="{{ url('/property/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Property Search</a>
+                </div>
+            </div>
+
+            <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
+            <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>
+            <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>
+
+            {{-- Auth links --}}
+            @auth
+                <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Profile</a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full text-left px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Logout</button>
+                </form>
+            @else
+                <div class="flex justify-between space-x-2 px-3">
+                    <a href="/login" class="flex-1 text-center py-1 px-2 rounded bg-lime-600 text-white text-sm hover:bg-lime-700 transition">Login</a>
+                    <a href="/register" class="flex-1 text-center py-1 px-2 rounded bg-zinc-200 text-zinc-700 text-sm hover:bg-zinc-300 transition">Register</a>
+                </div>
+            @endauth
+        </div>
+    </nav>
 
         {{-- Content --}}
         <main class="flex-1 p-6">

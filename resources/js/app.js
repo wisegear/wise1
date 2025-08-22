@@ -71,3 +71,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') closeMenu();
   });
 });
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Mobile main toggle
+  const mobileToggle = document.getElementById('mobileNavToggle');
+  const mobileNav = document.getElementById('mobileNav');
+
+  if (mobileToggle && mobileNav) {
+    mobileToggle.addEventListener('click', () => {
+      const isHidden = mobileNav.classList.contains('hidden');
+      mobileNav.classList.toggle('hidden', !isHidden);
+      mobileToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    });
+  }
+
+  // Mobile property submenu
+  const propBtn = document.getElementById('mobilePropertyBtn');
+  const propMenu = document.getElementById('mobilePropertyMenu');
+
+  if (propBtn && propMenu) {
+    propBtn.addEventListener('click', () => {
+      const isHidden = propMenu.classList.contains('hidden');
+      propMenu.classList.toggle('hidden', !isHidden);
+    });
+  }
+});
