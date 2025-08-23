@@ -111,7 +111,13 @@
             const p90 = (data.p90 || []).map(r => ({year: Number(r.year), p90: Number(r.p90)}));
             const top5 = (data.top5 || []).map(r => ({year: Number(r.year), top5_avg: Number(r.top5_avg)}));
             const topSalePerYear = (data.topSalePerYear || []).map(r => ({year: Number(r.year), top_sale: Number(r.top_sale)}));
-            const top3PerYear = (data.top3PerYear || []).map(r => ({year: Number(r.year), price: Number(r.Price)}));
+            const top3PerYear = (data.top3PerYear || []).map(r => ({
+                year: Number(r.year),
+                Date: r.Date,
+                Postcode: r.Postcode,
+                Price: Number(r.Price),
+                rn: Number(r.rn)
+            }));
 
             const years = [...new Set([
                 ...avgPrice.map(r => r.year),
@@ -209,6 +215,13 @@
                 tsCtx.width = tsCtx.clientWidth; tsCtx.height = tsCtx.clientHeight;
                 const tsId = `ts_${district}`; if (window.__upclCharts[tsId]) { window.__upclCharts[tsId].destroy(); }
 
+                // Build top3Index: Map from year -> array of top 3 sales (sorted by rn)
+                const top3Index = new Map();
+                for (const r of top3PerYear) {
+                    if (!top3Index.has(r.year)) top3Index.set(r.year, []);
+                    top3Index.get(r.year).push(r);
+                }
+
                 const tsByYear = new Map(topSalePerYear.map(r => [r.year, r.top_sale]));
                 const tsData = Array.from(tsByYear, ([year, value]) => ({x: year, y: value}));
 
@@ -232,7 +245,16 @@
                         parsing: false,
                         plugins: {
                             legend: { display: true },
-                            tooltip: { callbacks: { label: (ctx) => `Year ${ctx.raw.x}: ${fmtGBP(ctx.raw.y)}` } }
+                            tooltip: { callbacks: {
+                                label: (ctx) => {
+                                    const year = ctx.raw.x;
+                                    const rows = (top3Index.get(year) || []).slice().sort((a,b) => a.rn - b.rn);
+                                    if (!rows.length) return `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                    const header = `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                    const lines = rows.map(r => `#${r.rn} ${fmtGBP(r.Price)} – ${r.Postcode} (${new Date(r.Date).toLocaleDateString('en-GB')})`);
+                                    return [header, ...lines];
+                                }
+                            } }
                         },
                         scales: {
                             x: { type: 'linear', ticks: { stepSize: 1 }, title: { display: true, text: 'Year' } },
