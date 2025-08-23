@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\PagesController;
-use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\PrimeLondonController;
+use App\Http\Controllers\UltraLondonController;
 use App\Http\Controllers\RepossessionsController;
 use App\Http\Controllers\InterestRateController;
 use App\Http\Controllers\MortgageApprovalController;
@@ -34,6 +35,8 @@ Route::get('/about', [PagesController::class, 'about'])->name('about');
 Route::get('/property', [PropertyController::class, 'home'])->name('property.home');
 Route::get('/property/search', [PropertyController::class, 'search'])->name('property.search');
 Route::get('/property/show', [PropertyController::class, 'show'])->name('property.show');
+Route::get('/property/prime-central-london', [PrimeLondonController::class, 'home'])->name('property.pcl');
+Route::get('/property/ultra-prime-central-london', [UltraLondonController::class, 'home'])->name('property.upcl');
 
 
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
