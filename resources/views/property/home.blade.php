@@ -10,8 +10,10 @@
                 The dashboard allows you to create search patters by address variables.  Be aware though, with 35.3m records these searches can be slow.  Caching is in use but there is only
                 so much that can be cached to speed up the searches.
             </p>
-            <div class="mt-6">
-                <a href="/property/search" class="border text-sm p-2 rounded-sm bg-zinc-50">Property Search</a>
+            <div class="mt-6 space-x-4">
+                <a href="/property/search" class="border text-sm p-2 rounded-sm bg-zinc-200">Property Search</a>
+                <a href="/property/prime-central-london" class="border text-sm p-2 rounded-sm bg-zinc-200">Prime Central London</a>
+                <a href="/property/ultra-prime-central-london" class="border text-sm p-2 rounded-sm bg-zinc-200">Ultra Prime Central London</a>
             </div>
         </div>
         <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
