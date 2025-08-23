@@ -23,11 +23,21 @@
         <i class="fa-solid fa-city fa-6x text-slate-200 absolute right-5 opacity-70"></i>
     </div>
 
+    <div class="mb-6 flex items-center gap-3">
+        <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
+        <select id="districtFilter" class="border border-gray-300 rounded px-3 py-2 text-sm">
+            <option value="">All postcodes</option>
+            @foreach($districts as $d)
+                <option value="{{ $d }}">{{ $d }}</option>
+            @endforeach
+        </select>
+    </div>
+
     @if(($districts ?? collect())->isEmpty())
         <div class="rounded border p-6 bg-neutral-50">No Ultra Prime districts found.</div>
     @else
         @foreach($districts as $district)
-            <section class="mb-10">
+            <section class="mb-10 district-section" data-district="{{ $district }}">
                 <h2 class="text-xl font-semibold mb-4">{{ $district }} – Overview</h2>
                 @if(!empty($notes[$district] ?? null))
                     <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">{{ $notes[$district] }}</p>
@@ -75,7 +85,12 @@
         const fmtNum = (v) => new Intl.NumberFormat('en-GB').format(v);
         const baseColors = ['#60a5fa','#f472b6','#fbbf24','#34d399','#a78bfa'];
 
-        Object.keys(charts).forEach((district) => {
+        window.__renderedDistricts = window.__renderedDistricts || new Set();
+
+        function renderDistrict(district) {
+            if (!charts[district]) return;
+            if (window.__renderedDistricts.has(district)) return; // already rendered
+
             const data = charts[district] || {};
             const avgPrice = (data.avgPrice || []).map(r => ({year: Number(r.year), avg_price: Number(r.avg_price)}));
             const sales = (data.sales || []).map(r => ({year: Number(r.year), sales: Number(r.sales)}));
@@ -95,6 +110,7 @@
                     note.textContent = 'No data found for this district (check cache warm / filter logic).';
                     card.appendChild(note);
                 }
+                window.__renderedDistricts.add(district);
                 return;
             }
 
@@ -102,17 +118,11 @@
             const apCtx = document.getElementById(`ap_${district}`);
             if (apCtx) {
                 apCtx.style.display = 'block';
-                apCtx.width = apCtx.clientWidth;
-                apCtx.height = apCtx.clientHeight;
-                const apId = `ap_${district}`;
-                if (window.__upclCharts[apId]) { window.__upclCharts[apId].destroy(); }
+                apCtx.width = apCtx.clientWidth; apCtx.height = apCtx.clientHeight;
+                const apId = `ap_${district}`; if (window.__upclCharts[apId]) { window.__upclCharts[apId].destroy(); }
                 const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
                 const apData = years.map(y => apByYear.get(y) ?? null);
-                new Chart(apCtx, {
-                    type: 'line',
-                    data: { labels: years, datasets: [{ label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 }]},
-                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } }
-                });
+                new Chart(apCtx, { type: 'line', data: { labels: years, datasets: [{ label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 }]}, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } } });
                 window.__upclCharts[apId] = Chart.getChart(apCtx);
             }
 
@@ -120,17 +130,11 @@
             const scCtx = document.getElementById(`sc_${district}`);
             if (scCtx) {
                 scCtx.style.display = 'block';
-                scCtx.width = scCtx.clientWidth;
-                scCtx.height = scCtx.clientHeight;
-                const scId = `sc_${district}`;
-                if (window.__upclCharts[scId]) { window.__upclCharts[scId].destroy(); }
+                scCtx.width = scCtx.clientWidth; scCtx.height = scCtx.clientHeight;
+                const scId = `sc_${district}`; if (window.__upclCharts[scId]) { window.__upclCharts[scId].destroy(); }
                 const scByYear = new Map(sales.map(r => [r.year, r.sales]));
                 const scData = years.map(y => scByYear.get(y) ?? 0);
-                new Chart(scCtx, {
-                    type: 'line',
-                    data: { labels: years, datasets: [{ label: 'Sales Count', data: scData, pointRadius: 3, tension: 0.2 }]},
-                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtNum(v) } } } }
-                });
+                new Chart(scCtx, { type: 'line', data: { labels: years, datasets: [{ label: 'Sales Count', data: scData, pointRadius: 3, tension: 0.2 }]}, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtNum(v) } } } } });
                 window.__upclCharts[scId] = Chart.getChart(scCtx);
             }
 
@@ -138,25 +142,39 @@
             const ptCtx = document.getElementById(`pt_${district}`);
             if (ptCtx) {
                 ptCtx.style.display = 'block';
-                ptCtx.width = ptCtx.clientWidth;
-                ptCtx.height = ptCtx.clientHeight;
-                const ptId = `pt_${district}`;
-                if (window.__upclCharts[ptId]) { window.__upclCharts[ptId].destroy(); }
+                ptCtx.width = ptCtx.clientWidth; ptCtx.height = ptCtx.clientHeight;
+                const ptId = `pt_${district}`; if (window.__upclCharts[ptId]) { window.__upclCharts[ptId].destroy(); }
                 const yearTypeMap = new Map();
-                propertyTypes.forEach(r => {
-                    if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map());
-                    const m = yearTypeMap.get(r.year);
-                    m.set(r.type, (m.get(r.type) || 0) + r.count);
-                });
+                propertyTypes.forEach(r => { if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map()); const m = yearTypeMap.get(r.year); m.set(r.type, (m.get(r.type) || 0) + r.count); });
                 const allTypes = ['D','S','T','F','O'].filter(t => propertyTypes.some(r => r.type === t));
                 const datasets = allTypes.map((t, i) => ({ label: TYPE_LABELS[t] || t, data: years.map(y => (yearTypeMap.get(y)?.get(t)) || 0), backgroundColor: baseColors[i % baseColors.length], borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)' }));
-                new Chart(ptCtx, {
-                    type: 'bar', data: { labels: years, datasets },
-                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } }
-                });
+                new Chart(ptCtx, { type: 'bar', data: { labels: years, datasets }, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } } });
                 window.__upclCharts[ptId] = Chart.getChart(ptCtx);
             }
-        });
+
+            window.__renderedDistricts.add(district);
+        }
+
+        // Initial render based on current select value
+        const filterEl = document.getElementById('districtFilter');
+        function applyFilter() {
+            const val = filterEl.value;
+            const sections = document.querySelectorAll('.district-section');
+            if (val === '') {
+                sections.forEach(sec => sec.style.display = 'block');
+                Object.keys(charts).forEach(d => renderDistrict(d));
+            } else {
+                sections.forEach(sec => {
+                    const d = sec.getAttribute('data-district');
+                    sec.style.display = (d === val) ? 'block' : 'none';
+                });
+                renderDistrict(val);
+            }
+        }
+
+        // Render on load and on change
+        applyFilter();
+        filterEl.addEventListener('change', applyFilter);
     }
 
     function boot() {
