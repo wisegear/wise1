@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class PropertyController extends Controller
 {
+    private const CACHE_TTL = 60 * 60 * 24 * 45; // 45 days
 
     public function home(Request $request)
     {
@@ -20,7 +21,7 @@ class PropertyController extends Controller
         // =========================================================
 
         // Yearly transaction counts (all categories)
-        $salesByYear = Cache::remember('land_registry_sales_by_year', 86400, function () {
+        $salesByYear = Cache::remember('land_registry_sales_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total')
                 ->groupBy('year')
                 ->orderBy('year')
@@ -28,7 +29,7 @@ class PropertyController extends Controller
         });
 
         // Yearly average price (all categories)
-        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', 86400, function () {
+        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
                 ->groupBy('year')
                 ->orderBy('year')
@@ -37,7 +38,7 @@ class PropertyController extends Controller
 
         // Prime Central London: yearly average price
         //  - Uses prime_postcodes table, matching the outward code prefix
-        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year', 86400, function () {
+        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
                 ->whereRaw("
                     EXISTS (
@@ -53,7 +54,7 @@ class PropertyController extends Controller
         });
 
         // Prime Central London: yearly sales counts
-        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year', 86400, function () {
+        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
                 ->whereRaw("
                     EXISTS (
@@ -69,7 +70,7 @@ class PropertyController extends Controller
         });
 
         // Ultra Prime: yearly average price
-        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year', 86400, function () {
+        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
                 ->whereRaw("
                     EXISTS (
@@ -85,7 +86,7 @@ class PropertyController extends Controller
         });
 
         // Ultra Prime: yearly sales counts
-        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year', 86400, function () {
+        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
                 ->whereRaw("
                     EXISTS (
@@ -105,8 +106,6 @@ class PropertyController extends Controller
         //    cached aggregates for charts to the Blade view
         // =========================================================
         return view('property.home', compact('salesByYear', 'avgPriceByYear', 'avgPricePrimeCentralByYear', 'primeCentralSalesByYear', 'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear'));
-
-        return view('property.home');
         
     }
 
@@ -201,7 +200,7 @@ class PropertyController extends Controller
         // =========================================================
 
         // Total number of rows in land_registry
-        $records = Cache::remember('land_registry_total_count', 86400, function () {
+        $records = Cache::remember('land_registry_total_count', self::CACHE_TTL, function () {
             return LandRegistry::count();
         });
 
@@ -239,7 +238,17 @@ class PropertyController extends Controller
             });
         }
 
-        $records = $query->orderBy('Date', 'desc')->limit(100)->get();
+        // Build a base cache key for this property
+        $saonKey = $saon !== null && $saon !== '' ? $saon : 'NOSAON';
+        $propertyCacheKeyBase = sprintf('property:%s:%s:%s:%s', $postcode, $paon, $street, $saonKey);
+
+        $records = Cache::remember(
+            $propertyCacheKeyBase . ':records:v1',
+            self::CACHE_TTL,
+            function () use ($query) {
+                return $query->orderBy('Date', 'desc')->limit(100)->get();
+            }
+        );
 
         if ($records->isEmpty()) {
             abort(404, 'Property not found');
@@ -301,25 +310,43 @@ class PropertyController extends Controller
             });
         }
 
-        $priceHistory = $priceHistoryQuery->groupBy('YearDate')->orderBy('YearDate', 'asc')->get();
+        $priceHistory = Cache::remember(
+            $propertyCacheKeyBase . ':priceHistory:v1',
+            self::CACHE_TTL,
+            function () use ($priceHistoryQuery) {
+                return $priceHistoryQuery->groupBy('YearDate')->orderBy('YearDate', 'asc')->get();
+            }
+        );
 
-        $postcodePriceHistory = DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
-            ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
-            ->where('Postcode', $postcode)
-            ->groupBy('YearDate')
-            ->orderBy('YearDate', 'asc')
-            ->get();
+        $postcodePriceHistory = Cache::remember(
+            'postcode:' . $postcode . ':priceHistory:v1',
+            self::CACHE_TTL,
+            function () use ($postcode) {
+                return DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
+                    ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                    ->where('Postcode', $postcode)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
 
-        $postcodeSalesHistory = DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
-            ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
-            ->where('Postcode', $postcode)
-            ->groupBy('YearDate')
-            ->orderBy('YearDate', 'asc')
-            ->get();
+        $postcodeSalesHistory = Cache::remember(
+            'postcode:' . $postcode . ':salesHistory:v1',
+            self::CACHE_TTL,
+            function () use ($postcode) {
+                return DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
+                    ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                    ->where('Postcode', $postcode)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate', 'asc')
+                    ->get();
+            }
+        );
 
         $countyPriceHistory = Cache::remember(
             'county:priceHistory:v1:' . $first->County,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
                     ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
@@ -332,7 +359,7 @@ class PropertyController extends Controller
 
         $districtPriceHistory = Cache::remember(
             'district:priceHistory:v1:' . $first->District,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first) {
                 return DB::table('land_registry')
                     ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
@@ -345,7 +372,7 @@ class PropertyController extends Controller
 
         $countySalesHistory = Cache::remember(
             'county:salesHistory:v1:' . $first->County,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
@@ -358,7 +385,7 @@ class PropertyController extends Controller
 
         $districtSalesHistory = Cache::remember(
             'district:salesHistory:v1:' . $first->District,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first) {
                 return DB::table('land_registry')
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
@@ -379,7 +406,7 @@ class PropertyController extends Controller
 
         $countyPropertyTypes = Cache::remember(
             'county:types:v1:' . $first->County,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first, $propertyTypeMap) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
                     ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
@@ -398,7 +425,7 @@ class PropertyController extends Controller
 
         $districtPropertyTypes = Cache::remember(
             'district:types:v1:' . $first->District,
-            60 * 60 * 24 * 7,
+            self::CACHE_TTL,
             function () use ($first, $propertyTypeMap) {
                 return DB::table('land_registry')
                     ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
@@ -419,7 +446,7 @@ class PropertyController extends Controller
         if ($showTownCharts) {
             $townPriceHistory = Cache::remember(
                 'town:priceHistory:v1:' . $first->TownCity,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
@@ -432,7 +459,7 @@ class PropertyController extends Controller
 
             $townSalesHistory = Cache::remember(
                 'town:salesHistory:v1:' . $first->TownCity,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
@@ -445,7 +472,7 @@ class PropertyController extends Controller
 
             $townPropertyTypes = Cache::remember(
                 'town:types:v1:' . $first->TownCity,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
                         ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
@@ -471,7 +498,7 @@ class PropertyController extends Controller
         if ($showLocalityCharts) {
             $localityPriceHistory = Cache::remember(
                 'locality:priceHistory:v1:' . $first->Locality,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
@@ -484,7 +511,7 @@ class PropertyController extends Controller
 
             $localitySalesHistory = Cache::remember(
                 'locality:salesHistory:v1:' . $first->Locality,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
@@ -505,7 +532,7 @@ class PropertyController extends Controller
 
             $localityPropertyTypes = Cache::remember(
                 'locality:types:v1:' . $first->Locality,
-                60 * 60 * 24 * 7,
+                self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
                         ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
