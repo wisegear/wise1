@@ -33,6 +33,7 @@
                     <a href="/admin" class="hover:text-red-500">Admin Home</a>
                     <a href="/admin/users" class="hover:text-red-500">Users</a>
                     <a href="/admin/blog" class="hover:text-red-500">Blog</a>
+                    <a href="/admin/postcodes" class="hover:text-red-500">Postcodes</a>
                 </div>
             </div>
 

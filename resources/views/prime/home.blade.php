@@ -29,6 +29,9 @@
         @foreach($districts as $district)
             <section class="mb-10">
                 <h2 class="text-xl font-semibold mb-4">{{ $district }} – Overview</h2>
+                @if(!empty($notes[$district] ?? null))
+                    <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">{{ $notes[$district] }}</p>
+                @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Property Types (stacked bar) -->

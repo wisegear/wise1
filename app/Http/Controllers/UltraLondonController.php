@@ -18,6 +18,11 @@ class UltraLondonController extends Controller
             ->unique()
             ->values();
 
+        // Notes per postcode (Ultra Prime)
+        $notesByPostcode = DB::table('prime_postcodes')
+            ->where('category', 'Ultra Prime')
+            ->pluck('notes', 'postcode');
+
         $charts = [];
         $ttl = now()->addDays(45);
 
@@ -65,6 +70,7 @@ class UltraLondonController extends Controller
             'pageTitle' => 'Ultra Prime Central London',
             'districts' => $districts,
             'charts' => $charts,
+            'notes' => $notesByPostcode,
         ]);
     }
 }

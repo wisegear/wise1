@@ -18,6 +18,11 @@ class PrimeLondonController extends Controller
             ->unique()
             ->values();
 
+        // Notes per postcode (for display in the blade)
+        $notesByPostcode = DB::table('prime_postcodes')
+            ->where('category', 'Prime Central')
+            ->pluck('notes', 'postcode');
+
         $charts = [];
         $ttl = now()->addDays(45);
 
@@ -65,6 +70,7 @@ class PrimeLondonController extends Controller
             'pageTitle' => 'Prime Central London',
             'districts' => $districts,
             'charts' => $charts,
+            'notes' => $notesByPostcode,
         ]);
     }
 }

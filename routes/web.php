@@ -26,6 +26,7 @@ use App\Models\BlogPosts;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminBlogController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminPostCodesController;
 
 // Base Pages
 
@@ -54,11 +55,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/comments', [CommentsController::class, 'store'])->name('comments.store');
 
     // Protect the Dashboard routes behind both Auth and Can
-    Route::prefix('admin')->group(function () {
-        Route::resource('/', AdminController::class)->middleware('can:Admin');
-        Route::resource('/users', AdminUserController::class)->middleware('can:Admin');
-        Route::resource('/blog', AdminBlogController::class)->middleware('can:Admin');
-    });
+    Route::prefix('admin')
+        ->name('admin.')
+        ->middleware('can:Admin')
+        ->group(function () {
+            Route::resource('/', AdminController::class);
+            Route::resource('users', AdminUserController::class);
+            Route::resource('blog', AdminBlogController::class);
+            Route::resource('postcodes', AdminPostCodesController::class);
+        });
 
 // Logout route to clear session.
 
