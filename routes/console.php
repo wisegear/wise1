@@ -61,6 +61,65 @@ Artisan::command('upcl:warm', function () {
             ->orderBy('YearDate')
             ->get();
         Cache::put($keyBase . 'propertyTypes', $propertyTypes, $ttl);
+
+        // 90th percentile (threshold) per year via window function
+        $deciles = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, NTILE(10) OVER (PARTITION BY `YearDate` ORDER BY `Price`) as decile')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $p90 = DB::query()
+            ->fromSub($deciles, 't')
+            ->selectRaw('`YearDate` as year, MIN(`Price`) as p90')
+            ->where('decile', 10)
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'p90', $p90, $ttl);
+
+        // Top 5% average per year via window ranking
+        $rankedTop5 = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top5 = DB::query()
+            ->fromSub($rankedTop5, 'ranked')
+            ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as top5_avg')
+            ->whereRaw('rn <= CEIL(cnt * 0.05)')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'top5', $top5, $ttl);
+
+        // Top sale per year (for spike marker)
+        $topSalePerYear = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0)
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'topSalePerYear', $topSalePerYear, $ttl);
+
+        // Top 3 sales per year (for context/tooltips)
+        $rankedTop3 = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top3PerYear = DB::query()
+            ->fromSub($rankedTop3, 'r')
+            ->select('year', 'Date', 'Postcode', 'Price', 'rn')
+            ->where('rn', '<=', 3)
+            ->orderBy('year')
+            ->orderBy('rn')
+            ->get();
+        Cache::put($keyBase . 'top3PerYear', $top3PerYear, $ttl);
     });
 
     $this->newLine(2);
@@ -152,6 +211,65 @@ Artisan::command('pcl:warm', function () {
             ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
             ->groupBy('YearDate','type')->orderBy('YearDate')->get();
         Cache::put($keyBase . 'propertyTypes', $propertyTypes, $ttl);
+
+        // 90th percentile (threshold) per year via window function
+        $deciles = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, NTILE(10) OVER (PARTITION BY `YearDate` ORDER BY `Price`) as decile')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $p90 = DB::query()
+            ->fromSub($deciles, 't')
+            ->selectRaw('`YearDate` as year, MIN(`Price`) as p90')
+            ->where('decile', 10)
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'p90', $p90, $ttl);
+
+        // Top 5% average per year via window ranking
+        $rankedTop5 = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top5 = DB::query()
+            ->fromSub($rankedTop5, 'ranked')
+            ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as top5_avg')
+            ->whereRaw('rn <= CEIL(cnt * 0.05)')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'top5', $top5, $ttl);
+
+        // Top sale per year (for spike marker)
+        $topSalePerYear = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0)
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'topSalePerYear', $topSalePerYear, $ttl);
+
+        // Top 3 sales per year (for context/tooltips)
+        $rankedTop3 = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top3PerYear = DB::query()
+            ->fromSub($rankedTop3, 'r')
+            ->select('year', 'Date', 'Postcode', 'Price', 'rn')
+            ->where('rn', '<=', 3)
+            ->orderBy('year')
+            ->orderBy('rn')
+            ->get();
+        Cache::put($keyBase . 'top3PerYear', $top3PerYear, $ttl);
     });
 
     $this->newLine(2);

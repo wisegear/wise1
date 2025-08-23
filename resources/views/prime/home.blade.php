@@ -43,7 +43,7 @@
                     <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">{{ $notes[$district] }}</p>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Property Types (stacked bar) -->
                     <div class="rounded-xl border p-4">
                         <h3 class="font-semibold mb-2">Property Types in {{ $district }}</h3>
@@ -60,6 +60,18 @@
                     <div class="rounded-xl border p-4">
                         <h3 class="font-semibold mb-2">Number of Sales in {{ $district }}</h3>
                         <canvas id="sc_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    </div>
+
+                    <!-- Top Sale Marker (scatter) -->
+                    <div class="rounded-xl border p-4">
+                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $district }}</h3>
+                        <canvas id="ts_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    </div>
+
+                    <!-- Average + Prime Indicators (line) -->
+                    <div class="rounded-xl border p-4 col-span-2">
+                        <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $district }}</h3>
+                        <canvas id="api_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
                 </div>
             </section>
@@ -95,11 +107,25 @@
             const avgPrice = (data.avgPrice || []).map(r => ({year: Number(r.year), avg_price: Number(r.avg_price)}));
             const sales = (data.sales || []).map(r => ({year: Number(r.year), sales: Number(r.sales)}));
             const propertyTypes = (data.propertyTypes || []).map(r => ({year: Number(r.year), type: r.type, count: Number(r.count)}));
+            const p90 = (data.p90 || []).map(r => ({year: Number(r.year), p90: Number(r.p90)}));
+            const top5 = (data.top5 || []).map(r => ({year: Number(r.year), top5_avg: Number(r.top5_avg)}));
+            const topSalePerYear = (data.topSalePerYear || []).map(r => ({year: Number(r.year), top_sale: Number(r.top_sale)}));
+            const top3PerYear = (data.top3PerYear || []).map(r => ({
+                year: Number(r.year),
+                Date: r.Date,
+                Postcode: r.Postcode,
+                Price: Number(r.Price),
+                rn: Number(r.rn)
+            }));
 
             const years = [...new Set([
                 ...avgPrice.map(r => r.year),
                 ...sales.map(r => r.year),
-                ...propertyTypes.map(r => r.year)
+                ...propertyTypes.map(r => r.year),
+                ...p90.map(r => r.year),
+                ...top5.map(r => r.year),
+                ...topSalePerYear.map(r => r.year),
+                ...top3PerYear.map(r => r.year)
             ])].sort((a,b) => a-b);
 
             if (years.length === 0) {
@@ -114,7 +140,7 @@
                 return;
             }
 
-            // Average Price
+            // Average Price (only avgPrice line)
             const apCtx = document.getElementById(`ap_${district}`);
             if (apCtx) {
                 apCtx.style.display = 'block';
@@ -122,7 +148,27 @@
                 const apId = `ap_${district}`; if (window.__upclCharts[apId]) { window.__upclCharts[apId].destroy(); }
                 const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
                 const apData = years.map(y => apByYear.get(y) ?? null);
-                new Chart(apCtx, { type: 'line', data: { labels: years, datasets: [{ label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 }]}, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } } });
+
+                new Chart(apCtx, { 
+                    type: 'line',
+                    data: { 
+                        labels: years, 
+                        datasets: [
+                            { label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 }
+                        ]
+                    }, 
+                    options: { 
+                        animation: false, 
+                        responsiveAnimationDuration: 0, 
+                        responsive: false, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: true }, 
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } 
+                        }, 
+                        scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } 
+                    } 
+                });
                 window.__upclCharts[apId] = Chart.getChart(apCtx);
             }
 
@@ -150,6 +196,103 @@
                 const datasets = allTypes.map((t, i) => ({ label: TYPE_LABELS[t] || t, data: years.map(y => (yearTypeMap.get(y)?.get(t)) || 0), backgroundColor: baseColors[i % baseColors.length], borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)' }));
                 new Chart(ptCtx, { type: 'bar', data: { labels: years, datasets }, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } } });
                 window.__upclCharts[ptId] = Chart.getChart(ptCtx);
+            }
+
+            // Top Sale Marker (scatter)
+            const tsCtx = document.getElementById(`ts_${district}`);
+            if (tsCtx) {
+                tsCtx.style.display = 'block';
+                tsCtx.width = tsCtx.clientWidth; tsCtx.height = tsCtx.clientHeight;
+                const tsId = `ts_${district}`; if (window.__upclCharts[tsId]) { window.__upclCharts[tsId].destroy(); }
+
+                // Build top3Index: Map from year -> array of top 3 sales (sorted by rn)
+                const top3Index = new Map();
+                for (const r of top3PerYear) {
+                    if (!top3Index.has(r.year)) top3Index.set(r.year, []);
+                    top3Index.get(r.year).push(r);
+                }
+
+                const tsByYear = new Map(topSalePerYear.map(r => [r.year, r.top_sale]));
+                const tsData = Array.from(tsByYear, ([year, value]) => ({ x: year, y: value }));
+
+                new Chart(tsCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Top Sale (£)',
+                                data: tsData,
+                                pointRadius: 5,
+                                backgroundColor: '#ef4444'
+                            }
+                        ]
+                    },
+                    options: {
+                        animation: false,
+                        responsiveAnimationDuration: 0,
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        parsing: false,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const year = ctx.raw.x;
+                                        const rows = (top3Index.get(year) || []).slice().sort((a,b) => a.rn - b.rn);
+                                        if (!rows.length) return `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                        const header = `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                        const lines = rows.map(r => `#${r.rn} ${fmtGBP(r.Price)} – ${r.Postcode} (${new Date(r.Date).toLocaleDateString('en-GB')})`);
+                                        return [header, ...lines];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { type: 'linear', ticks: { stepSize: 1 }, title: { display: true, text: 'Year' } },
+                            y: { ticks: { callback: (v) => fmtGBP(v) } }
+                        }
+                    }
+                });
+                window.__upclCharts[tsId] = Chart.getChart(tsCtx);
+            }
+
+            // Average + Prime Indicators (line)
+            const apiCtx = document.getElementById(`api_${district}`);
+            if (apiCtx) {
+                apiCtx.style.display = 'block';
+                apiCtx.width = apiCtx.clientWidth; apiCtx.height = apiCtx.clientHeight;
+                const apiId = `api_${district}`; if (window.__upclCharts[apiId]) { window.__upclCharts[apiId].destroy(); }
+                const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
+                const apData = years.map(y => apByYear.get(y) ?? null);
+                const p90ByYear = new Map(p90.map(r => [r.year, r.p90]));
+                const p90Data = years.map(y => p90ByYear.get(y) ?? null);
+                const top5ByYear = new Map(top5.map(r => [r.year, r.top5_avg]));
+                const top5Data = years.map(y => top5ByYear.get(y) ?? null);
+
+                new Chart(apiCtx, { 
+                    type: 'line',
+                    data: { 
+                        labels: years, 
+                        datasets: [
+                            { label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 },
+                            { label: '90th Percentile (£)', data: p90Data, pointRadius: 0, borderDash: [6,4], tension: 0.1 },
+                            { label: 'Top 5% Average (£)', data: top5Data, pointRadius: 2, borderWidth: 1, tension: 0.15 }
+                        ]
+                    }, 
+                    options: { 
+                        animation: false, 
+                        responsiveAnimationDuration: 0, 
+                        responsive: false, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: true }, 
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } 
+                        }, 
+                        scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } 
+                    } 
+                });
+                window.__upclCharts[apiId] = Chart.getChart(apiCtx);
             }
 
             window.__renderedDistricts.add(district);
