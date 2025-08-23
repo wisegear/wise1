@@ -26,15 +26,16 @@ return new class extends Migration
             ['postcode' => 'SW3', 'category' => 'Prime Central'],
             ['postcode' => 'SW7', 'category' => 'Prime Central'],
             ['postcode' => 'NW8', 'category' => 'Prime Central'],
-            ['postcode' => 'NW3', 'category' => 'Prime Central'],
 
             // Ultra Prime
             ['postcode' => 'W1K', 'category' => 'Ultra Prime'],
             ['postcode' => 'SW1X', 'category' => 'Ultra Prime'],
             ['postcode' => 'W1J', 'category' => 'Ultra Prime'],
             ['postcode' => 'WC2', 'category' => 'Ultra Prime'],
-            ['postcode' => 'EC3', 'category' => 'Ultra Prime'],
-            ['postcode' => 'EC4V', 'category' => 'Ultra Prime'],
+            ['postcode' => 'SW1W', 'category' => 'Ultra Prime'],
+            ['postcode' => 'W1B', 'category' => 'Ultra Prime'],
+            ['postcode' => 'SW7', 'category' => 'Ultra Prime'],
+
         ]);
     }
 
