@@ -60,7 +60,7 @@
 
     {{-- Explore panels --}}
     <section class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
-        <a href="{{ Route::has('sales.home') ? route('sales.home') : url('/sales') }}"
+        <a href="{{ Route::has('property.search') ? route('property.search') : url('/property/search') }}"
            class="group block rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <h2 class="text-lg font-semibold text-gray-900">Sales Explorer</h2>
             <p class="mt-1 text-sm text-gray-700">
