@@ -35,7 +35,6 @@
                 <div id="primaryNav" class="hidden md:flex flex-1 gap-2 text-sm md:ml-8 flex-col md:flex-row mt-3 md:mt-0">
                     <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
                     <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
-                    <a href="{{ url('/approvals') }}" class="px-3 py-2 rounded {{ request()->is('approvals') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Mortgage Approvals</a>
 
                     <div class="relative">
                         <button id="propertyMenuButton" aria-haspopup="true" aria-controls="propertyDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -52,6 +51,8 @@
                             <a href="{{ url('/property/ultra-prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Ultra Prime Central London</a>
                         </div>
                     </div>
+
+                    <a href="{{ url('/approvals') }}" class="px-3 py-2 rounded {{ request()->is('approvals') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Mortgage Approvals</a>
 
                     <a href="{{ url('/repossessions') }}" class="px-3 py-2 rounded {{ request()->is('repossessions') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Repossessions</a>
                     <a href="{{ url('/interest-rates') }}" class="px-3 py-2 rounded {{ request()->is('interest-rates') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Interest Rates</a>
@@ -111,7 +112,6 @@
         <div id="mobileNav" class="hidden flex-col mt-3 space-y-1">
             <a href="{{ url('/') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Home</a>
             <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Blog</a>
-            <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
 
             {{-- Property dropdown for mobile --}}
             <div class="">
@@ -130,6 +130,7 @@
                 </div>
             </div>
 
+            <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
             <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
             <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>
             <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>
