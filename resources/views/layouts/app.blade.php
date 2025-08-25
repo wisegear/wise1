@@ -3,48 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @php
-        $defaultTitle = config('app.name', 'PropertyResearch') . ' – Independent UK property data & research';
-        $pageTitle = trim($__env->yieldContent('title')) ?: $defaultTitle;
-        $pageDesc = trim($__env->yieldContent('meta_description')) ?: 'Independent UK property data: dashboards for prime & ultra‑prime London, repossessions, mortgage approvals, and interest rates. Clean, objective analysis.';
-        $pageImage = trim($__env->yieldContent('meta_image')) ?: asset('/assets/images/site/og-default.jpg');
-        $robots = trim($__env->yieldContent('meta_robots')) ?: (request()->has('page') ? 'noindex,follow' : 'index,follow');
-    @endphp
-    <title>{{ $pageTitle }}</title>
-    <meta name="description" content="{{ $pageDesc }}">
-    <meta name="robots" content="{{ $robots }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="{{ $pageTitle }}">
-    <meta property="og:description" content="{{ $pageDesc }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:site_name" content="{{ config('app.name', 'PropertyResearch') }}">
-    <meta property="og:image" content="{{ $pageImage }}">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $pageTitle }}">
-    <meta name="twitter:description" content="{{ $pageDesc }}">
-    <meta name="twitter:image" content="{{ $pageImage }}">
-
-    <!-- Theme color -->
-    <meta name="theme-color" content="#ffffff">
-
-    <!-- JSON-LD: Website -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "{{ config('app.name', 'PropertyResearch') }}",
-      "url": "{{ url('/') }}",
-      "description": "{{ $pageDesc }}",
-      "inLanguage": "en-GB"
-    }
-    </script>
-
-    @stack('meta')
+    <title>{{ config('app.name', 'PropertyResearch') }}</title>
     <!-- moved this to the top due to FOUC -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Favicon -->
