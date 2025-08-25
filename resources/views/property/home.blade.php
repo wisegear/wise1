@@ -4,16 +4,16 @@
 <div class="max-w-7xl mx-auto">
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
-        <div class="max-w-4xl">
+        <div class="max-w-5xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 The dashboard allows various options and search patters by address variables.  Land registry data is provided monthly.  In total there are over 32m records dating back to 1995.  Given the large dataset
                 all of the static charts that are not interactive, therefore will not change during the month are cached so that visitors do not have to wait for queries to run.
             </p>
-            <div class="mt-6 space-x-4">
-                <a href="/property/search" class="border text-sm p-2 rounded-lg bg-zinc-200">Property Search</a>
-                <a href="/property/prime-central-london" class="border text-sm p-2 rounded-lg bg-zinc-200">Prime Central London</a>
-                <a href="/property/ultra-prime-central-london" class="border text-sm p-2 rounded-lg bg-zinc-200">Ultra Prime Central London</a>
+            <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
+                <a href="/property/search" class="standard-button">Property Search</a>
+                <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
+                <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
             </div>
         </div>
     </section>

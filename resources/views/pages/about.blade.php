@@ -12,7 +12,7 @@
     </header>
 
     {{-- What this is --}}
-    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">What you’ll find</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">Sales Explorer</span> — search by postcode, street, or county; roll up to yearly trends.</li>
@@ -24,7 +24,7 @@
     </section>
 
     {{-- Sources --}}
-    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Data sources</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
@@ -35,7 +35,7 @@
     </section>
 
     {{-- Method --}}
-    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Method, in short</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li><span class="font-medium">Normalise names</span> — county labels vary (“UA”, “City of …”). I clean the labels; I prefer official codes.</li>
@@ -46,7 +46,7 @@
     </section>
 
     {{-- Caveats --}}
-    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Caveats &amp; common sense</h2>
         <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
             <li>Names aren’t keys. Where things must join, I use codes or a small alias map.</li>
@@ -56,7 +56,7 @@
     </section>
 
     {{-- Contact --}}
-    <section class="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-10 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Contact</h2>
         <p class="mt-3 text-sm leading-6 text-gray-800">
             Feedback, corrections, or heckling welcome. The tone here is deliberately plain and occasionally dry,
@@ -69,7 +69,7 @@
     </section>
 
     {{-- Thanks --}}
-    <section class="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Thanks</h2>
         <p class="mt-3 text-sm leading-6 text-gray-800">
             Special thanks to Bob for his help testing the site and suggesting improvements.

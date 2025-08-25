@@ -49,31 +49,31 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Property Types (stacked bar) -->
-                    <div class="rounded-lg border p-4">
+                    <div class="rounded-lg border p-4 bg-white">
                         <h3 class="font-semibold mb-2">Property Types in {{ $district }}</h3>
                         <canvas id="pt_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Average Price (line) -->
-                    <div class="rounded-lg border p-4">
+                    <div class="rounded-lg border p-4 bg-white">
                         <h3 class="font-semibold mb-2">Average Price of property in {{ $district }}</h3>
                         <canvas id="ap_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Number of Sales (line) -->
-                    <div class="rounded-lg border p-4">
+                    <div class="rounded-lg border p-4 bg-white">
                         <h3 class="font-semibold mb-2">Number of Sales in {{ $district }}</h3>
                         <canvas id="sc_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-lg border p-4">
+                    <div class="rounded-lg border p-4 bg-white">
                         <h3 class="font-semibold mb-2">Top Sale Marker in {{ $district }}</h3>
                         <canvas id="ts_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Average + Prime Indicators (line) -->
-                    <div class="rounded-lg border p-4 col-span-2">
+                    <div class="rounded-lg border p-4 bg-white col-span-2">
                         <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $district }}</h3>
                         <canvas id="api_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
@@ -95,6 +95,19 @@
 
     function renderCharts() {
         const charts = chartsPayload || {};
+
+        // Plugin to force a solid white canvas background (no transparency)
+        const whiteBgPlugin = {
+            id: 'whiteBg',
+            beforeDraw(chart) {
+                const { ctx, canvas } = chart;
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
+        };
 
         const TYPE_LABELS = { D: 'Detached', S: 'Semi', T: 'Terraced', F: 'Flat', O: 'Other' };
         const fmtGBP = (v) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(v);
@@ -155,6 +168,7 @@
 
                 new Chart(apCtx, { 
                     type: 'line',
+                    plugins: [whiteBgPlugin],
                     data: { 
                         labels: years, 
                         datasets: [
@@ -174,6 +188,7 @@
                     } 
                 });
                 window.__upclCharts[apId] = Chart.getChart(apCtx);
+                apCtx.style.backgroundColor = '#ffffff';
             }
 
             // Sales Count
@@ -184,8 +199,14 @@
                 const scId = `sc_${district}`; if (window.__upclCharts[scId]) { window.__upclCharts[scId].destroy(); }
                 const scByYear = new Map(sales.map(r => [r.year, r.sales]));
                 const scData = years.map(y => scByYear.get(y) ?? 0);
-                new Chart(scCtx, { type: 'line', data: { labels: years, datasets: [{ label: 'Sales Count', data: scData, pointRadius: 3, tension: 0.2 }]}, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtNum(v) } } } } });
+                new Chart(scCtx, { 
+                    type: 'line',
+                    plugins: [whiteBgPlugin],
+                    data: { labels: years, datasets: [{ label: 'Sales Count', data: scData, pointRadius: 3, tension: 0.2 }]},
+                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtNum(v) } } } }
+                });
                 window.__upclCharts[scId] = Chart.getChart(scCtx);
+                scCtx.style.backgroundColor = '#ffffff';
             }
 
             // Property Types (stacked)
@@ -198,8 +219,14 @@
                 propertyTypes.forEach(r => { if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map()); const m = yearTypeMap.get(r.year); m.set(r.type, (m.get(r.type) || 0) + r.count); });
                 const allTypes = ['D','S','T','F','O'].filter(t => propertyTypes.some(r => r.type === t));
                 const datasets = allTypes.map((t, i) => ({ label: TYPE_LABELS[t] || t, data: years.map(y => (yearTypeMap.get(y)?.get(t)) || 0), backgroundColor: baseColors[i % baseColors.length], borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)' }));
-                new Chart(ptCtx, { type: 'bar', data: { labels: years, datasets }, options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } } });
+                new Chart(ptCtx, { 
+                    type: 'bar',
+                    plugins: [whiteBgPlugin],
+                    data: { labels: years, datasets },
+                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } }
+                });
                 window.__upclCharts[ptId] = Chart.getChart(ptCtx);
+                ptCtx.style.backgroundColor = '#ffffff';
             }
 
             // Top Sale Marker (scatter)
@@ -221,6 +248,7 @@
 
                 new Chart(tsCtx, {
                     type: 'scatter',
+                    plugins: [whiteBgPlugin],
                     data: {
                         datasets: [
                             {
@@ -259,6 +287,7 @@
                     }
                 });
                 window.__upclCharts[tsId] = Chart.getChart(tsCtx);
+                tsCtx.style.backgroundColor = '#ffffff';
             }
 
             // Average + Prime Indicators (line)
@@ -276,6 +305,7 @@
 
                 new Chart(apiCtx, { 
                     type: 'line',
+                    plugins: [whiteBgPlugin],
                     data: { 
                         labels: years, 
                         datasets: [
@@ -297,6 +327,7 @@
                     } 
                 });
                 window.__upclCharts[apiId] = Chart.getChart(apiCtx);
+                apiCtx.style.backgroundColor = '#ffffff';
             }
 
             window.__renderedDistricts.add(district);
