@@ -7,7 +7,7 @@
         <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
-                The dashboard allows various options and search patters by address variables.  Land registry data is provided monthly.  In total there are over 35m records dating back to 1995.  Given the large dataset
+                The dashboard allows various options and search patters by address variables.  Land registry data is provided monthly.  In total there are over 32m records dating back to 1995.  Given the large dataset
                 all of the static charts that are not interactive, therefore will not change during the month are cached so that visitors do not have to wait for queries to run.
             </p>
             <div class="mt-6 space-x-4">
