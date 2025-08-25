@@ -164,6 +164,55 @@ Artisan::command('upcl:status', function () {
     }
 })->purpose('Show UPCL cache status');
 
+// List Ultra Prime districts (diagnostic)
+Artisan::command('upcl:list', function () {
+    $this->info('Ultra Prime postcode districts (from prime_postcodes):');
+
+    // Raw distinct (no TRIM) to see what the warmer uses
+    $raw = DB::table('prime_postcodes')
+        ->where('category', 'Ultra Prime')
+        ->pluck('postcode')
+        ->unique()
+        ->sort()
+        ->values();
+
+    $this->line('Unique districts used by warm(): ' . $raw->count());
+    foreach ($raw as $pc) {
+        $this->line('  - ' . $pc);
+    }
+
+    // Compare with TRIMmed to detect trailing spaces
+    $trimmed = DB::table('prime_postcodes')
+        ->where('category', 'Ultra Prime')
+        ->selectRaw('TRIM(postcode) AS pc')
+        ->pluck('pc')
+        ->unique()
+        ->sort()
+        ->values();
+
+    $this->newLine();
+    $this->line('Unique districts after TRIM(): ' . $trimmed->count());
+    if ($trimmed->count() !== $raw->count()) {
+        $this->warn('Mismatch detected. Some rows likely have trailing/leading spaces or casing differences.');
+        // Show suspicious rows where TRIM changes the value
+        $suspicious = DB::table('prime_postcodes')
+            ->where('category', 'Ultra Prime')
+            ->select('postcode')
+            ->get()
+            ->filter(function ($r) { return $r->postcode !== trim($r->postcode); })
+            ->pluck('postcode')
+            ->unique();
+        if ($suspicious->isNotEmpty()) {
+            $this->line('Examples with whitespace issues:');
+            foreach ($suspicious as $pc) { $this->line('  * "' . $pc . '"'); }
+        }
+    }
+
+    $this->newLine();
+    $this->info('Tip: To normalise, you can run a one-off TRIM in a migration or seeder:');
+    $this->line("DB::table('prime_postcodes')->update(['postcode' => DB::raw('TRIM(postcode)')]);");
+})->purpose('List Ultra Prime postcode districts and detect formatting issues');
+
 // Clear Ultra Prime v3 cache keys (use with caution)
 Artisan::command('upcl:clear', function () {
     $this->warn('Clearing Ultra Prime v4 catA cache keys...');

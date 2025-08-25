@@ -17,27 +17,14 @@
                 Explore sales, repossessions and market signals across England &amp; Wales. Built for clarity, speed and repeatable analysis.
             </p>
 
-            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a href="{{ Route::has('property.search') ? route('property.search') : url('/property/search') }}"
-                   class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-white shadow hover:bg-emerald-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="mr-2 h-5 w-5"><path d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    Open Sales Explorer
-                </a>
-                <a href="{{ Route::has('repossessions.index') ? route('repossessions.index') : url('/repossessions') }}"
-                   class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-3 text-gray-800 shadow hover:bg-gray-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="mr-2 h-5 w-5"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
-                    Repossessions Dashboard
-                </a>
-            </div>
-
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
                 <span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-full bg-lime-500"></span>
-                    Latest sales: <strong class="font-semibold">June 2025</strong>
+                    Latest <datalist></datalist>: <strong class="font-semibold">June 2025</strong>
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-full bg-lime-500"></span>
-                    Latest repossessions: <strong class="font-semibold">2025 Q2</strong>
+                    Next data update: <strong class="font-semibold">29th August 2025</strong>
                 </span>
             </div>
         </div>
@@ -48,9 +35,9 @@
     </section>
 
     {{-- Quick tip --}}
-    <section class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm">
+    <section class="mt-6 rounded-2xl border border-rose-200 bg-rose-50/70 p-4 shadow-sm">
         <div class="flex items-start gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="mt-0.5 h-5 w-5 text-emerald-700"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14h-2v-6h2v6zm0 4h-2v-2h2v2z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="mt-0.5 h-5 w-5 text-amber-500"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14h-2v-6h2v6zm0 4h-2v-2h2v2z"/></svg>
             <p class="text-sm text-emerald-900">
                 Best on larger screens — some tables are wide. Everything still works on mobile.
             </p>
