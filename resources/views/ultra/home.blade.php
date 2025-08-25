@@ -27,9 +27,9 @@
         </div>
     </section>
 
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-6 flex items-center justify-center gap-3">
         <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
-        <select id="districtFilter" class="border border-gray-300 rounded px-3 py-2 text-sm">
+        <select id="districtFilter" class="border border-gray-300 bg-white rounded px-3 py-2 text-sm">
             <option value="">All postcodes</option>
             @foreach($districts as $d)
                 <option value="{{ $d }}">{{ $d }}</option>
