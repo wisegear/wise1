@@ -5,15 +5,15 @@
    <div class="mt-10">
 
             <!-- Post Header -->
-            <div class="max-w-3xl mx-auto my-10">
+            <div class="max-w-5xl mx-auto my-10">
                 <p class="text-zinc-400 text-sm border-l pl-4 mb-2">{{ $page->date->format('F j, Y') }}</p>
                 <h2 class="text-3xl md:text-5xl font-semibold tracking-tight my-6">{{ $page->title }}</h2>
                 <p class="text-zinc-500">{{ $page->summary }}</p>
              </div>
 
             <!-- Post image -->
-            <div class="max-w-3xl mx-auto">
-                <img src="{{ '/assets/images/uploads/' . 'medium_' . $page->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
+            <div class="max-w-5xl mx-auto">
+                <img src="{{ '/assets/images/uploads/' . 'large_' . $page->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
             </div>      
             
             <!-- page body -->
@@ -21,7 +21,7 @@
             <!-- Gallery Setup if exists -->
             
             <div class="">
-                <div class="max-w-3xl mx-auto mx-auto wise1text mt-10">
+                <div class="max-w-5xl mx-auto mx-auto wise1text mt-10">
 
             <!-- Table of contents -->
             <div class="w-full">
@@ -68,7 +68,7 @@
             </div>
     </div>
 
-    <div class="max-w-3xl mx-auto mt-10">
+    <div class="max-w-5xl mx-auto mt-10">
         @if ($previousPage || $nextPage)
             <div class="grid grid-cols-2 gap-6 items-center rounded-lg mb-10">
                 @if ($previousPage)
@@ -109,7 +109,7 @@
     </div>
 
     <!-- Comments Section -->
-    <div class="max-w-3xl mx-auto mb-10">
+    <div class="max-w-5xl mx-auto mb-10">
         @include('partials.comments',
         [
             'comments' => $page->comments,
