@@ -27,13 +27,14 @@ class UltraLondonController extends Controller
         $ttl = now()->addDays(45);
 
         foreach ($districts as $district) {
-            $keyBase = 'upcl:v3:' . $district . ':';
+            $keyBase = 'upcl:v4:catA:' . $district . ':';
 
             // Average price by year (YearDate)
             $avgPrice = Cache::remember($keyBase . 'avgPrice', $ttl, function () use ($district) {
                 return DB::table('land_registry')
                     ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as avg_price')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate')
                     ->get();
@@ -44,6 +45,7 @@ class UltraLondonController extends Controller
                 return DB::table('land_registry')
                     ->selectRaw('`YearDate` as year, COUNT(*) as sales')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate')
                     ->get();
@@ -54,6 +56,7 @@ class UltraLondonController extends Controller
                 return DB::table('land_registry')
                     ->selectRaw('`YearDate` as year, `PropertyType` as type, COUNT(*) as count')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate', 'type')
                     ->orderBy('YearDate')
                     ->get();
@@ -64,6 +67,7 @@ class UltraLondonController extends Controller
                 $deciles = DB::table('land_registry')
                     ->selectRaw('`YearDate`, `Price`, NTILE(10) OVER (PARTITION BY `YearDate` ORDER BY `Price`) as decile')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->whereNotNull('Price')
                     ->where('Price', '>', 0);
 
@@ -81,6 +85,7 @@ class UltraLondonController extends Controller
                 $ranked = DB::table('land_registry')
                     ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->whereNotNull('Price')
                     ->where('Price', '>', 0);
 
@@ -98,6 +103,7 @@ class UltraLondonController extends Controller
                 return DB::table('land_registry')
                     ->selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
                     ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                    ->where('PPDCategoryType', 'A')
                     ->whereNotNull('Price')
                     ->where('Price', '>', 0)
                     ->groupBy('YearDate')
@@ -109,6 +115,7 @@ class UltraLondonController extends Controller
             $ranked = DB::table('land_registry')
                 ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
                 ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                ->where('PPDCategoryType', 'A')
                 ->whereNotNull('Price')
                 ->where('Price', '>', 0);
 

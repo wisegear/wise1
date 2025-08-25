@@ -2,26 +2,31 @@
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
-    <div class="relative flex flex-col justify-center items-center h-[150px] border border-colour mb-10 bg-gray-100 shadow-lg">
-        <i class="fa-solid fa-city fa-6x text-slate-200 absolute left-5 opacity-70"></i>
-        <h2 class="font-bold text-center text-2xl z-10">Prime Central London</h2>
-        <p class="text-center text-gray-500 z-10">Analysis of London's prestigious postcodes</p>
-        <div class="mt-2 flex items-center justify-between text-xs text-neutral-600 z-10 px-3 py-1 rounded">
-            <p>30-year history • sourced from Land Registry</p>
-            <p class="ml-4">
-                Data last cached:
-                @php
-                    $ts = $lastCachedAt ?? \Illuminate\Support\Facades\Cache::get('pcl:v1:last_warm');
-                @endphp
-                @if(!empty($ts))
-                    {{ \Carbon\Carbon::parse($ts)->timezone(config('app.timezone'))->format('j M Y, H:i') }}
-                @else
-                    not yet warmed
-                @endif
+    {{-- Hero / summary card --}}
+    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Prime Central London</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-700">
+                Analysis of London's prestigious postcodes.
+                <span class="font-semibold">Category A sales only</span>
+            </p>
+            <p class="mt-1 text-sm leading-6 text-gray-700">
+                30-year history • sourced from Land Registry
+                <span class="ml-2 text-neutral-600">|
+                    Data last cached:
+                    @php
+                        $ts = $lastCachedAt ?? \Illuminate\Support\Facades\Cache::get('pcl:v2:catA:last_warm');
+                    @endphp
+                    @if(!empty($ts))
+                        {{ \Carbon\Carbon::parse($ts)->timezone(config('app.timezone'))->format('j M Y, H:i') }}
+                    @else
+                        not yet warmed
+                    @endif
+                </span>
             </p>
         </div>
-        <i class="fa-solid fa-city fa-6x text-slate-200 absolute right-5 opacity-70"></i>
-    </div>
+        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
+    </section>
 
     <div class="mb-6 flex items-center gap-3">
         <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>

@@ -21,16 +21,18 @@ class PropertyController extends Controller
         // =========================================================
 
         // Yearly transaction counts (all categories)
-        $salesByYear = Cache::remember('land_registry_sales_by_year', self::CACHE_TTL, function () {
+        $salesByYear = Cache::remember('land_registry_sales_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total')
+                ->where('PPDCategoryType', 'A')
                 ->groupBy('year')
                 ->orderBy('year')
                 ->get();
         });
 
         // Yearly average price (all categories)
-        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year', self::CACHE_TTL, function () {
+        $avgPriceByYear = Cache::remember('land_registry_avg_price_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->where('PPDCategoryType', 'A')
                 ->groupBy('year')
                 ->orderBy('year')
                 ->get();
@@ -38,8 +40,9 @@ class PropertyController extends Controller
 
         // Prime Central London: yearly average price
         //  - Uses prime_postcodes table, matching the outward code prefix
-        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year', self::CACHE_TTL, function () {
+        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->where('PPDCategoryType', 'A')
                 ->whereRaw("
                     EXISTS (
                         SELECT 1
@@ -54,8 +57,9 @@ class PropertyController extends Controller
         });
 
         // Prime Central London: yearly sales counts
-        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year', self::CACHE_TTL, function () {
+        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
+                ->where('PPDCategoryType', 'A')
                 ->whereRaw("
                     EXISTS (
                         SELECT 1
@@ -70,8 +74,9 @@ class PropertyController extends Controller
         });
 
         // Ultra Prime: yearly average price
-        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year', self::CACHE_TTL, function () {
+        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
+                ->where('PPDCategoryType', 'A')
                 ->whereRaw("
                     EXISTS (
                         SELECT 1
@@ -86,8 +91,9 @@ class PropertyController extends Controller
         });
 
         // Ultra Prime: yearly sales counts
-        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year', self::CACHE_TTL, function () {
+        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year:catA:v2', self::CACHE_TTL, function () {
             return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
+                ->where('PPDCategoryType', 'A')
                 ->whereRaw("
                     EXISTS (
                         SELECT 1
@@ -101,12 +107,138 @@ class PropertyController extends Controller
                 ->get();
         });
 
+        // ========= Helpers for scope conditions =========
+        $primeScopeSql = "
+            EXISTS (
+                SELECT 1
+                FROM prime_postcodes
+                WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                AND category = 'Prime Central'
+            )
+        ";
+
+        $ultraScopeSql = "
+            EXISTS (
+                SELECT 1
+                FROM prime_postcodes
+                WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
+                AND category = 'Ultra Prime'
+            )
+        ";
+
+        // ========= ENGLAND & WALES (Cat A): P90 and Top 5% =========
+        $ewP90 = Cache::remember('ew:p90:catA:v1', self::CACHE_TTL, function () {
+            $sub = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, CUME_DIST() OVER (PARTITION BY `YearDate` ORDER BY `Price`) as cd")
+                ->where('PPDCategoryType', 'A')
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($sub, 't')
+                ->selectRaw('year, MIN(Price) as p90_price')
+                ->where('cd', '>=', 0.9)
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        $ewTop5 = Cache::remember('ew:top5avg:catA:v1', self::CACHE_TTL, function () {
+            $ranked = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt")
+                ->where('PPDCategoryType', 'A')
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($ranked, 'r')
+                ->selectRaw('year, ROUND(AVG(Price)) as top5_avg')
+                ->whereColumn('rn', '<=', DB::raw('CEIL(0.05 * cnt)'))
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // ========= PRIME CENTRAL (Cat A): P90 and Top 5% =========
+        $primeP90 = Cache::remember('prime:p90:catA:v1', self::CACHE_TTL, function () use ($primeScopeSql) {
+            $sub = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, CUME_DIST() OVER (PARTITION BY `YearDate` ORDER BY `Price`) as cd")
+                ->where('PPDCategoryType', 'A')
+                ->whereRaw($primeScopeSql)
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($sub, 't')
+                ->selectRaw('year, MIN(Price) as p90_price')
+                ->where('cd', '>=', 0.9)
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        $primeTop5 = Cache::remember('prime:top5avg:catA:v1', self::CACHE_TTL, function () use ($primeScopeSql) {
+            $ranked = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt")
+                ->where('PPDCategoryType', 'A')
+                ->whereRaw($primeScopeSql)
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($ranked, 'r')
+                ->selectRaw('year, ROUND(AVG(Price)) as top5_avg')
+                ->whereColumn('rn', '<=', DB::raw('CEIL(0.05 * cnt)'))
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        // ========= ULTRA PRIME (Cat A): P90 and Top 5% =========
+        $ultraP90 = Cache::remember('ultra:p90:catA:v1', self::CACHE_TTL, function () use ($ultraScopeSql) {
+            $sub = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, CUME_DIST() OVER (PARTITION BY `YearDate` ORDER BY `Price`) as cd")
+                ->where('PPDCategoryType', 'A')
+                ->whereRaw($ultraScopeSql)
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($sub, 't')
+                ->selectRaw('year, MIN(Price) as p90_price')
+                ->where('cd', '>=', 0.9)
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
+        $ultraTop5 = Cache::remember('ultra:top5avg:catA:v1', self::CACHE_TTL, function () use ($ultraScopeSql) {
+            $ranked = DB::table('land_registry')
+                ->selectRaw("`YearDate` as year, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt")
+                ->where('PPDCategoryType', 'A')
+                ->whereRaw($ultraScopeSql)
+                ->whereNotNull('Price')
+                ->where('Price', '>', 0);
+
+            return DB::query()
+                ->fromSub($ranked, 'r')
+                ->selectRaw('year, ROUND(AVG(Price)) as top5_avg')
+                ->whereColumn('rn', '<=', DB::raw('CEIL(0.05 * cnt)'))
+                ->groupBy('year')
+                ->orderBy('year')
+                ->get();
+        });
+
         // =========================================================
         // 3) RENDER: pass both search results (if any) and all
         //    cached aggregates for charts to the Blade view
         // =========================================================
-        return view('property.home', compact('salesByYear', 'avgPriceByYear', 'avgPricePrimeCentralByYear', 'primeCentralSalesByYear', 'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear'));
-        
+        return view('property.home', compact(
+            'salesByYear', 'avgPriceByYear',
+            'avgPricePrimeCentralByYear', 'primeCentralSalesByYear',
+            'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear',
+            'ewP90', 'ewTop5', 'primeP90', 'primeTop5', 'ultraP90', 'ultraTop5'
+        ));
     }
 
     public function search(Request $request)
@@ -188,6 +320,7 @@ class PropertyController extends Controller
                     'PPDCategoryType',
                 ])
                 ->where('Postcode', $postcode)
+                ->where('PPDCategoryType', 'A')
                 ->orderBy($sort, $dir)
                 ->Paginate(15)
                 ->appends(['postcode' => $postcode, 'sort' => $sort, 'dir' => $dir]); // keep query on pagination links
@@ -227,7 +360,8 @@ class PropertyController extends Controller
             ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'Locality', 'TownCity', 'District', 'County', 'PPDCategoryType')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
-            ->where('Street', $street);
+            ->where('Street', $street)
+            ->where('PPDCategoryType', 'A');
 
         if (!empty($saon)) {
             $query->where('SAON', $saon);
@@ -243,7 +377,7 @@ class PropertyController extends Controller
         $propertyCacheKeyBase = sprintf('property:%s:%s:%s:%s', $postcode, $paon, $street, $saonKey);
 
         $records = Cache::remember(
-            $propertyCacheKeyBase . ':records:v1',
+            $propertyCacheKeyBase . ':records:v2:catA',
             self::CACHE_TTL,
             function () use ($query) {
                 return $query->orderBy('Date', 'desc')->limit(100)->get();
@@ -309,9 +443,10 @@ class PropertyController extends Controller
                 $q->whereNull('SAON')->orWhere('SAON', '');
             });
         }
+        $priceHistoryQuery->where('PPDCategoryType', 'A');
 
         $priceHistory = Cache::remember(
-            $propertyCacheKeyBase . ':priceHistory:v1',
+            $propertyCacheKeyBase . ':priceHistory:v2:catA',
             self::CACHE_TTL,
             function () use ($priceHistoryQuery) {
                 return $priceHistoryQuery->groupBy('YearDate')->orderBy('YearDate', 'asc')->get();
@@ -319,12 +454,13 @@ class PropertyController extends Controller
         );
 
         $postcodePriceHistory = Cache::remember(
-            'postcode:' . $postcode . ':priceHistory:v1',
+            'postcode:' . $postcode . ':priceHistory:v2:catA',
             self::CACHE_TTL,
             function () use ($postcode) {
                 return DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
                     ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
                     ->where('Postcode', $postcode)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -332,12 +468,13 @@ class PropertyController extends Controller
         );
 
         $postcodeSalesHistory = Cache::remember(
-            'postcode:' . $postcode . ':salesHistory:v1',
+            'postcode:' . $postcode . ':salesHistory:v2:catA',
             self::CACHE_TTL,
             function () use ($postcode) {
                 return DB::table(DB::raw('land_registry USE INDEX (idx_postcode_yeardate)'))
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                     ->where('Postcode', $postcode)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -345,12 +482,13 @@ class PropertyController extends Controller
         );
 
         $countyPriceHistory = Cache::remember(
-            'county:priceHistory:v1:' . $first->County,
+            'county:priceHistory:v2:catA:' . $first->County,
             self::CACHE_TTL,
             function () use ($first) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
                     ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
                     ->where('County', $first->County)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -358,12 +496,13 @@ class PropertyController extends Controller
         );
 
         $districtPriceHistory = Cache::remember(
-            'district:priceHistory:v1:' . $first->District,
+            'district:priceHistory:v2:catA:' . $first->District,
             self::CACHE_TTL,
             function () use ($first) {
                 return DB::table('land_registry')
                     ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
                     ->where('District', $first->District)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -371,12 +510,13 @@ class PropertyController extends Controller
         );
 
         $countySalesHistory = Cache::remember(
-            'county:salesHistory:v1:' . $first->County,
+            'county:salesHistory:v2:catA:' . $first->County,
             self::CACHE_TTL,
             function () use ($first) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county_yeardate)'))
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                     ->where('County', $first->County)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -384,12 +524,13 @@ class PropertyController extends Controller
         );
 
         $districtSalesHistory = Cache::remember(
-            'district:salesHistory:v1:' . $first->District,
+            'district:salesHistory:v2:catA:' . $first->District,
             self::CACHE_TTL,
             function () use ($first) {
                 return DB::table('land_registry')
                     ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                     ->where('District', $first->District)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('YearDate')
                     ->orderBy('YearDate', 'asc')
                     ->get();
@@ -405,12 +546,13 @@ class PropertyController extends Controller
         ];
 
         $countyPropertyTypes = Cache::remember(
-            'county:types:v1:' . $first->County,
+            'county:types:v2:catA:' . $first->County,
             self::CACHE_TTL,
             function () use ($first, $propertyTypeMap) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
                     ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                     ->where('County', $first->County)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('PropertyType')
                     ->orderByDesc('property_count')
                     ->get()
@@ -424,12 +566,13 @@ class PropertyController extends Controller
         );
 
         $districtPropertyTypes = Cache::remember(
-            'district:types:v1:' . $first->District,
+            'district:types:v2:catA:' . $first->District,
             self::CACHE_TTL,
             function () use ($first, $propertyTypeMap) {
                 return DB::table('land_registry')
                     ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                     ->where('District', $first->District)
+                    ->where('PPDCategoryType', 'A')
                     ->groupBy('PropertyType')
                     ->orderByDesc('property_count')
                     ->get()
@@ -445,12 +588,13 @@ class PropertyController extends Controller
         // --- Town/City datasets (mirrors district/locality structures) ---
         if ($showTownCharts) {
             $townPriceHistory = Cache::remember(
-                'town:priceHistory:v1:' . $first->TownCity,
+                'town:priceHistory:v2:catA:' . $first->TownCity,
                 self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
                         ->where('TownCity', $first->TownCity)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('YearDate')
                         ->orderBy('YearDate', 'asc')
                         ->get();
@@ -458,12 +602,13 @@ class PropertyController extends Controller
             );
 
             $townSalesHistory = Cache::remember(
-                'town:salesHistory:v1:' . $first->TownCity,
+                'town:salesHistory:v2:catA:' . $first->TownCity,
                 self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                         ->where('TownCity', $first->TownCity)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('YearDate')
                         ->orderBy('YearDate', 'asc')
                         ->get();
@@ -471,12 +616,13 @@ class PropertyController extends Controller
             );
 
             $townPropertyTypes = Cache::remember(
-                'town:types:v1:' . $first->TownCity,
+                'town:types:v2:catA:' . $first->TownCity,
                 self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
                         ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                         ->where('TownCity', $first->TownCity)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('PropertyType')
                         ->orderByDesc('property_count')
                         ->get()
@@ -497,12 +643,13 @@ class PropertyController extends Controller
         // Locality datasets (only compute when locality is meaningful & distinct)
         if ($showLocalityCharts) {
             $localityPriceHistory = Cache::remember(
-                'locality:priceHistory:v1:' . $first->Locality,
+                'locality:priceHistory:v2:catA:' . $first->Locality,
                 self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
                         ->where('Locality', $first->Locality)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('YearDate')
                         ->orderBy('YearDate', 'asc')
                         ->get();
@@ -510,12 +657,13 @@ class PropertyController extends Controller
             );
 
             $localitySalesHistory = Cache::remember(
-                'locality:salesHistory:v1:' . $first->Locality,
+                'locality:salesHistory:v2:catA:' . $first->Locality,
                 self::CACHE_TTL,
                 function () use ($first) {
                     return DB::table('land_registry')
                         ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
                         ->where('Locality', $first->Locality)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('YearDate')
                         ->orderBy('YearDate', 'asc')
                         ->get();
@@ -531,12 +679,13 @@ class PropertyController extends Controller
             ];
 
             $localityPropertyTypes = Cache::remember(
-                'locality:types:v1:' . $first->Locality,
+                'locality:types:v2:catA:' . $first->Locality,
                 self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
                         ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
                         ->where('Locality', $first->Locality)
+                        ->where('PPDCategoryType', 'A')
                         ->groupBy('PropertyType')
                         ->orderByDesc('property_count')
                         ->get()
