@@ -9,7 +9,7 @@
         $latest = $sorted->last();
         $first  = $sorted->first();
     @endphp
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Bank Rate (BoE)</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -28,8 +28,6 @@
                 </p>
             @endif
         </div>
-        {{-- subtle blue accent --}}
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
     @php
@@ -79,6 +77,37 @@
                 </div>
             @endif
         </div>
+    </section>
+
+    {{-- Collapsible: Rate spike highlights --}}
+    <section class="mb-6">
+        <details class="group rounded-lg border border-zinc-200 bg-white shadow-sm">
+            <summary class="cursor-pointer px-5 py-3 text-sm font-medium text-orange-500 flex items-center justify-between">
+                Rate spike highlights
+                <span class="text-xs text-lime-600 ml-3 group-open:hidden">Show</span>
+                <span class="text-xs text-red-500 ml-3 hidden group-open:inline">Hide</span>
+            </summary>
+            <div class="px-5 pb-5 pt-3 text-xs leading-6 text-zinc-700 space-y-2">
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>
+                        <span class="font-medium">1976</span> — Sterling crisis and an <span class="font-medium">IMF bailout</span>. Inflation running in the high teens/20s and a weak pound prompted aggressive monetary tightening to defend the currency.
+                    </li>
+                    <li>
+                        <span class="font-medium">1977</span> — Continued anti‑inflation policy and currency support kept rates elevated while fiscal consolidation from the IMF programme worked through the economy.
+                    </li>
+                    <li>
+                        <span class="font-medium">1988</span> — The <span class="font-medium">“Lawson Boom”</span>: rapid credit growth, strong demand and a house‑price surge pushed inflation risks higher, leading to successive rate hikes.
+                    </li>
+                    <li>
+                        <span class="font-medium">1994</span> — Post‑ERM recovery saw policy tighten modestly to head off inflation as growth firmed; globally, bond yields jumped during the 1994 “bond massacre,” adding to upward pressures.
+                    </li>
+                    <li>
+                        <span class="font-medium">2022</span> — Post‑pandemic inflation shock: energy prices, supply chain disruptions and the Russia‑Ukraine war drove CPI sharply higher, triggering the fastest BoE hiking cycle in decades.
+                    </li>
+                </ul>
+                <p class="mt-2 text-xs text-orange-500">Notes are brief context only; they summarise widely reported drivers behind each episode.</p>
+            </div>
+        </details>
     </section>
 
     {{-- Stats --}}
@@ -217,7 +246,7 @@
     @endphp
 
     <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <div class="text-xs uppercase tracking-wide text-gray-500">Highest recorded</div>
             <div class="mt-1 text-2xl font-semibold">
                 {{ number_format((float) $maxRate, 2) }}%
@@ -229,7 +258,7 @@
             @endif
         </div>
 
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <div class="text-xs uppercase tracking-wide text-gray-500">Lowest recorded</div>
             <div class="mt-1 text-2xl font-semibold">
                 {{ number_format((float) $minRate, 2) }}%
@@ -241,10 +270,10 @@
             @endif
         </div>
 
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <div class="text-xs uppercase tracking-wide text-gray-500">Last change</div>
             @if(!is_null($lastChangeDir) && !is_null($lastChangeDelta))
-                <div class="mt-1 text-2xl font-semibold">
+                <div class="mt-1 text-2xl font-semibold {{ $lastChangeDir === 'up' ? 'text-red-500' : ($lastChangeDir === 'down' ? 'text-lime-600' : 'text-zinc-900') }}">
                     @if($lastChangeDir === 'up')
                         +{{ number_format(abs($lastChangeDelta), 2) }}%
                     @elseif($lastChangeDir === 'down')
@@ -265,7 +294,7 @@
     </section>
 
     <section class="mb-6">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <div class="text-sm text-gray-800">
                 <p>
                     Since records began there have been <span class="font-semibold">{{ number_format($totalMoves) }}</span> rate movements —
@@ -294,9 +323,9 @@
     @endif
 
     {{-- Table --}}
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full border-separate border-spacing-0 text-sm">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-gray-600">
                     <tr>
                         <th class="border-b border-gray-200 px-4 py-2">Effective date</th>

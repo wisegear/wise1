@@ -121,7 +121,7 @@
                     <div class="hidden md:block my-6">
                         <h2 class="text-xl font-bold text-red-500 border-b border-gray-300 mb-4"><i class="fa-solid fa-user-secret text-red-500"></i> Admin Tools</h2>
                         <div class="flex justify-center">
-                            <p class="border p-1 text-black rounded text-sm bg-emerald-300 tracking-tight px-4 border-slate-300"><a href="/blog/create">Create New Post</a></p>
+                            <a href="/blog/create" class="standard-button">Create New Post</a>
                         </div>
                         <div class="flex flex-col space-y-2 text-sm mt-4">
                             @foreach ($unpublished as $post)

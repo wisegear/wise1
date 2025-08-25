@@ -8,9 +8,31 @@
 
 .border { @apply border-zinc-300}
 
+/* Buttons */
+/* Reset any default or global link styles for this component */
+.standard-button { all: unset; }
+
+/* Re-apply desired styles */
+.standard-button {
+  @apply inline-flex items-center gap-2 align-middle cursor-pointer
+         rounded-md px-4 py-2
+         bg-cyan-700 text-white text-sm
+         hover:bg-cyan-800
+         border border-zinc-300 shadow-sm;
+}
+
+.standard-button:focus {
+  @apply outline-none ring-2 ring-cyan-500 ring-offset-2;
+}
+
+/* Ensure no underline or color change on hover */
+.standard-button:hover, .standard-button:focus, .standard-button:active {
+  @apply no-underline text-white;
+}
+
 /* Standard Styles */
 
-a { @apply hover:text-lime-500; }
+/* removed global anchor hover color */
 
 .standard-button {
 

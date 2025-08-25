@@ -3,7 +3,7 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Prime Central London</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -25,15 +25,14 @@
                 </span>
             </p>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-6 flex items-center justify-center gap-3">
         <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
-        <select id="districtFilter" class="border border-gray-300 rounded px-3 py-2 text-sm">
-            <option value="">All postcodes</option>
+        <select id="districtFilter" class="border border-zinc-300 bg-white rounded px-3 py-2 text-sm">
+            <option class="bg-white text-zinc-800" value="">All postcodes</option>
             @foreach($districts as $d)
-                <option value="{{ $d }}">{{ $d }}</option>
+                <option class="bg-white text-zinc-800" value="{{ $d }}">{{ $d }}</option>
             @endforeach
         </select>
     </div>
@@ -50,31 +49,31 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Property Types (stacked bar) -->
-                    <div class="rounded-xl border p-4">
+                    <div class="rounded-lg border p-4">
                         <h3 class="font-semibold mb-2">Property Types in {{ $district }}</h3>
                         <canvas id="pt_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Average Price (line) -->
-                    <div class="rounded-xl border p-4">
+                    <div class="rounded-lg border p-4">
                         <h3 class="font-semibold mb-2">Average Price of property in {{ $district }}</h3>
                         <canvas id="ap_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Number of Sales (line) -->
-                    <div class="rounded-xl border p-4">
+                    <div class="rounded-lg border p-4">
                         <h3 class="font-semibold mb-2">Number of Sales in {{ $district }}</h3>
                         <canvas id="sc_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-xl border p-4">
+                    <div class="rounded-lg border p-4">
                         <h3 class="font-semibold mb-2">Top Sale Marker in {{ $district }}</h3>
                         <canvas id="ts_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>
 
                     <!-- Average + Prime Indicators (line) -->
-                    <div class="rounded-xl border p-4 col-span-2">
+                    <div class="rounded-lg border p-4 col-span-2">
                         <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $district }}</h3>
                         <canvas id="api_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
                     </div>

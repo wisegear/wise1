@@ -25,7 +25,6 @@
                 </span>
             </p>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
     <div class="mb-6 flex items-center gap-3">

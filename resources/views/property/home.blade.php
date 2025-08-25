@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
         <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -11,22 +11,21 @@
                 all of the static charts that are not interactive, therefore will not change during the month are cached so that visitors do not have to wait for queries to run.
             </p>
             <div class="mt-6 space-x-4">
-                <a href="/property/search" class="border text-sm p-2 rounded-sm bg-zinc-200">Property Search</a>
-                <a href="/property/prime-central-london" class="border text-sm p-2 rounded-sm bg-zinc-200">Prime Central London</a>
-                <a href="/property/ultra-prime-central-london" class="border text-sm p-2 rounded-sm bg-zinc-200">Ultra Prime Central London</a>
+                <a href="/property/search" class="border text-sm p-2 rounded-lg bg-zinc-200">Property Search</a>
+                <a href="/property/prime-central-london" class="border text-sm p-2 rounded-lg bg-zinc-200">Prime Central London</a>
+                <a href="/property/ultra-prime-central-london" class="border text-sm p-2 rounded-lg bg-zinc-200">Ultra Prime Central London</a>
             </div>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
 <!-- Charts -->
 
 <div class="flex justify-center text-zinc-500 text-sm mb-4">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</div>
 <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="border p-4 bg-white rounded shadow h-full">
+    <div class="border p-4 bg-white rounded-lg shadow h-full">
         <canvas id="salesChart" class="w-full h-96"></canvas>
     </div>
-    <div class="border p-4 bg-white rounded shadow h-full">
+    <div class="border p-4 bg-white rounded-lg shadow h-full">
         <canvas id="avgPriceChart" class="w-full h-96"></canvas>
     </div>
 </div>
@@ -41,10 +40,10 @@
 </div>
 
 <div class="max-w-7xl mx-auto my-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="border p-4 bg-white rounded shadow h-full">
+    <div class="border p-4 bg-white rounded-lg shadow h-full">
         <canvas id="ultraPrimeSalesChart" class="w-full h-96"></canvas>
     </div>
-    <div class="border p-4 bg-white rounded shadow h-full">
+    <div class="border p-4 bg-white rounded-lg shadow h-full">
         <canvas id="avgPriceUltraPrimeChart" class="w-full h-96"></canvas>
     </div>
 </div>

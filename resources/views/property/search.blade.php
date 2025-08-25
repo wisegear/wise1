@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Search</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -14,7 +14,6 @@
                 Data covers the period from January 1995 to June 2025
             </p>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
     {{-- Search form --}}

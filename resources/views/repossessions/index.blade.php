@@ -3,17 +3,15 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Repossessions</h1>
             <p class="text-zinc-500 text-sm">Data from 2003 to June 2025 provided by the court service.</p>
         </div>
-        {{-- subtle orange accent --}}
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-lime-100 to-lime-400 blur-2xl"></div>
     </section>
 
     {{-- Filters --}}
-    <form method="GET" action="{{ route('repossessions.index') }}" class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <form method="GET" action="{{ route('repossessions.index') }}" class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         {{-- Top row: period + by toggles --}}
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="flex flex-wrap items-center gap-3">
@@ -123,7 +121,7 @@
                 <select name="type" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All types</option>
                     @foreach($types as $t)
-                        <option value="{{ $t }}" {{ request('type')===$t ? 'selected' : '' }}>{{ $t }}</option>
+                        <option value="{{ $t }}" {{ request('type')===$t ? 'selected' : '' }}>{{ str_replace('_',' ', $t) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -133,7 +131,7 @@
                 <select name="action" class="w-full rounded-md border border-zinc-300 ring-0 p-2 bg-white">
                     <option value="">All actions</option>
                     @foreach($actions as $a)
-                        <option value="{{ $a }}" {{ request('action')===$a ? 'selected' : '' }}>{{ $a }}</option>
+                        <option value="{{ $a }}" {{ request('action')===$a ? 'selected' : '' }}>{{ str_replace('_',' ', $a) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -141,13 +139,13 @@
 
         {{-- Buttons --}}
         <div class="mt-5 flex items-center gap-3">
-            <button type="submit" class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-medium text-white hover:bg-lime-400">Apply</button>
+            <button type="submit" class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-medium text-white hover:bg-lime-400 cursor-pointer">Apply</button>
             <a href="{{ route('repossessions.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Reset</a>
         </div>
     </form>
 
     {{-- Glossary: what do Reason & Stage mean? --}}
-    <section class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         @php
             $norm = fn($s) => strtolower(trim(preg_replace('/\s+/', ' ', str_replace('_',' ', (string)$s))));
             $typeHelp = [
@@ -199,7 +197,7 @@
                     <ul class="space-y-2">
                         @forelse($types as $t)
                             <li class="text-sm text-gray-700">
-                                <span class="font-medium">{{ $t }}</span>
+                                <span class="font-medium">{{ str_replace('_',' ', $t) }}</span>
                                 <span class="text-gray-500">— {{ $typeHelp[$norm($t)] ?? 'Reason category for the case.' }}</span>
                             </li>
                         @empty
@@ -213,7 +211,7 @@
                     <ul class="space-y-2">
                         @forelse($actions as $a)
                             <li class="text-sm text-gray-700">
-                                <span class="font-medium">{{ $a }}</span>
+                                <span class="font-medium">{{ str_replace('_',' ', $a) }}</span>
                                 <span class="text-gray-500">— {{ $actionHelp[$norm($a)] ?? 'Process stage within the possession pathway.' }}</span>
                             </li>
                         @empty
@@ -225,7 +223,7 @@
         </details>
     </section>
 
-    <section class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <section class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-gray-800">
             <span class="font-medium">Current view:</span>
             {{ $meta['period'] === 'yearly' ? 'Yearly' : 'Quarterly' }} view · grouped by
@@ -240,7 +238,7 @@
 
     {{-- Totals / chips --}}
     <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div class="text-xs uppercase tracking-wide text-gray-500">Total cases (current filters)</div>
             <div class="mt-1 text-2xl font-semibold">
                 {{ number_format($totals['all'] ?? 0) }}
@@ -252,12 +250,12 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:col-span-2">
+        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:col-span-2">
             <div class="text-xs uppercase tracking-wide text-gray-500">Breakdown by {{ $meta['by']==='action' ? 'stage' : 'reason' }}</div>
             <div class="mt-2 flex flex-wrap gap-2">
                 @foreach($totals['byReason'] as $r)
-                    <span class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm">
-                        {{ $r->reason }}: <span class="font-medium">{{ number_format($r->total_cases) }}</span>
+                    <span class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm">
+                        {{ str_replace('_',' ', $r->reason) }}: <span class="font-medium">{{ number_format($r->total_cases) }}</span>
                     </span>
                 @endforeach
             </div>
@@ -265,7 +263,7 @@
     </div>
 
     {{-- Chart --}}
-    <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
         <div class="mb-2 text-sm font-medium text-gray-700">Cases by {{ $meta['by']==='action' ? 'Stage' : 'Reason' }} (current filters)</div>
         <div class="h-64"> {{-- fixed container height; chart fills this --}}
             <canvas id="reasonChart"></canvas>
@@ -273,9 +271,9 @@
     </div>
 
     {{-- Results table --}}
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="overflow-hidden bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full border-separate border-spacing-0">
+            <table class="min-w-full">
                 <thead class="bg-gray-50 text-left text-sm text-gray-600">
                     <tr class="">
                         @if(($meta['period'] ?? 'quarterly')==='yearly')
@@ -296,7 +294,7 @@
                                 {{ str_replace(' UA','', (string)($row->county_ua ?? '')) }}
                             </td>
                             <td class="px-4 py-2">
-                                {{ $row->reason }}
+                                {{ str_replace('_',' ', $row->reason) }}
                             </td>
                             <td class="px-4 py-2 text-right font-medium">
                                 {{ number_format($row->cases) }}
@@ -325,7 +323,7 @@
 <script>
 (function() {
     // Prepare data for the simple "by reason" chart using totals from the controller (already fully aggregated for current filters)
-    const labels = @json(($totals['byReason'] ?? collect())->pluck('reason'));
+    const labels = (@json(($totals['byReason'] ?? collect())->pluck('reason')) || []).map(s => typeof s === 'string' ? s.replaceAll('_',' ') : s);
     const data   = @json(($totals['byReason'] ?? collect())->pluck('total_cases'));
 
     const canvas = document.getElementById('reasonChart');

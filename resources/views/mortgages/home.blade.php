@@ -16,7 +16,7 @@
         };
     @endphp
 
-    <section class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Mortgage Approvals</h1>
             @if(!empty($latestPeriod))
@@ -90,7 +90,6 @@
                 <p class="mt-4 text-sm text-zinc-500">Other secured - This refers to anything not a purchase or remortgage.  These could be further advances from the same lender, 
                     a 2nd charge loan, debt consolidation, internal refinancing with the same lender or something else. </p>
         </div>
-        <div aria-hidden="true" class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-sky-100 to-sky-300 blur-2xl"></div>
     </section>
 
     {{-- Combined chart --}}
@@ -112,7 +111,7 @@
         $reData24   = collect($dataRe)->take(-24)->values();
     @endphp
     <section class="mb-6">
-        <div class="border p-4 bg-white rounded shadow">
+        <div class="border p-4 bg-white rounded-lg shadow">
             <div class="mb-2 text-sm font-medium text-gray-700">Approvals over time</div>
             @if(($labels instanceof \Illuminate\Support\Collection ? $labels->isEmpty() : empty($labels)))
                 <p class="text-sm text-gray-500">No data available yet.</p>
@@ -126,7 +125,7 @@
 
     {{-- House purchase & Remortgaging: last 24 months --}}
     <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="border p-4 bg-white rounded shadow">
+        <div class="border p-4 bg-white rounded-lg shadow">
             <div class="mb-2 text-sm font-medium text-gray-700">Mortgage Aprovals over the last 24 months</div>
             @if(($hpLabels24 instanceof \Illuminate\Support\Collection ? $hpLabels24->isEmpty() : empty($hpLabels24)))
                 <p class="text-sm text-gray-500">No recent data available.</p>
@@ -136,7 +135,7 @@
                 </div>
             @endif
         </div>
-        <div class="border p-4 bg-white rounded shadow">
+        <div class="border p-4 bg-white rounded-lg shadow">
             <div class="mb-2 text-sm font-medium text-gray-700">Remortgaging over the last 24 months</div>
             @if(($reLabels24 instanceof \Illuminate\Support\Collection ? $reLabels24->isEmpty() : empty($reLabels24)))
                 <p class="text-sm text-gray-500">No recent data available.</p>
@@ -149,9 +148,9 @@
     </section>
 
     {{-- Yearly totals (all years) --}}
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="overflow-hidden bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="min-w-full border-separate border-spacing-0 text-sm">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-gray-600">
                     <tr>
                         <th class="border-b border-gray-200 px-4 py-2">Year</th>
