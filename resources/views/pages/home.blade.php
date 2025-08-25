@@ -10,7 +10,7 @@
                 <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
                 Fresh, independent property data
             </div>
-            <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 md:text-4xl">
+            <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
                 Property Research — clear, credible & fast datasets
             </h1>
             <p class="mt-3 text-base leading-7 text-zinc-700 md:text-lg">
