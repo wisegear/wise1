@@ -28,7 +28,7 @@
                         type="text"
                         value="{{ old('postcode', $postcode ?? '') }}"
                         placeholder="e.g. WR5 3EU or SW7 5PH"
-                        class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500"
+                        class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white"
                     />
                     @error('postcode')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -37,7 +37,7 @@
 
                 <button
                     type="submit"
-                    class="bg-lime-600 hover:bg-lime-500 text-white font-medium px-4 py-2 rounded-md transition">
+                    class="bg-lime-600 hover:bg-lime-500 text-white font-medium px-4 py-2 rounded-md transition cursor-pointer">
                     Search
                 </button>
             </div>
