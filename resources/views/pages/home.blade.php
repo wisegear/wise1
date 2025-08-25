@@ -109,7 +109,7 @@
                      class="rounded-xl w-full h-40 object-cover border border-zinc-200"
                      alt="blog-post-picture">
                 <div class="p-2">
-                    <h2 class="mt-4 text-lg font-semibold text-zinc-900 group-hover:text-cyan-700">
+                    <h2 class="mt-4 font-semibold text-zinc-900 group-hover:text-cyan-700">
                         {{ $post->title }}
                     </h2>
                     <div class="mt-1 text-xs text-zinc-500">
