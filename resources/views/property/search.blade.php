@@ -47,101 +47,106 @@
     {{-- Results --}}
     @if(isset($results))
         @if($results->count() === 0)
-            <div class="border border-zinc-200 rounded-md p-4 text-zinc-600">
-                No results for <span class="font-semibold">{{ $postcode }}</span>.
+            <div class="border border-zinc-200 rounded-md p-4 text-zinc-600 bg-white">
+                No results for <span class="font-semibold text-orange-400">{{ $postcode }}</span>.
             </div>
         @else
             <div class="flex justify-center mb-4 text-sm text-zinc-500">
                 <p>Click on the magnifying glass on the right hand side to get more detail about a specific property</p>
             </div>
-            <div class="overflow-x-auto border border-zinc-200 rounded-md">
+            <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="bg-zinc-50">
-    @php
-        $currentSort = $sort ?? request('sort', 'Date');
-        $currentDir  = $dir ?? request('dir', 'desc');
-        $base = [];
-        if (!empty($postcode)) { $base['postcode'] = $postcode; }
-        $dirBadge = function($key) use ($currentSort, $currentDir) {
-            return $currentSort === $key ? ' ('.strtoupper($currentDir).')' : '';
-        };
-        $thClass = function($key) use ($currentSort) {
-            return $currentSort === $key ? 'bg-lime-100 font-bold' : '';
-        };
-    @endphp
-    <tr class="text-left">
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Date') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Date{!! $dirBadge('Date') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Date', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Date', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Price') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Price{!! $dirBadge('Price') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Price', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Price', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PropertyType') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Type{!! $dirBadge('PropertyType') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('NewBuild') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">New Build?{!! $dirBadge('NewBuild') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Duration') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Tenure{!! $dirBadge('Duration') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Duration', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Duration', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PAON') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Primary{!! $dirBadge('PAON') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('SAON') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Secondary{!! $dirBadge('SAON') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'SAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'SAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Street') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Street{!! $dirBadge('Street') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Street', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'Street', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('County') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">County{!! $dirBadge('County') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'County', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'County', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-        <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
-            <div class="flex items-center gap-1">
-                <span class="font-medium">Category{!! $dirBadge('PPDCategoryType') !!}</span>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
-                <a href="{{ route('property.search', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
-            </div>
-        </th>
-    </tr>
-</thead>
+                        @php
+                            $currentSort = $sort ?? request('sort', 'Date');
+                            $currentDir  = $dir ?? request('dir', 'desc');
+                            $base = [];
+                            if (!empty($postcode)) { $base['postcode'] = $postcode; }
+                            $dirBadge = function($key) use ($currentSort, $currentDir) {
+                                return $currentSort === $key ? ' ('.strtoupper($currentDir).')' : '';
+                            };
+                            $thClass = function($key) use ($currentSort) {
+                                return $currentSort === $key ? 'bg-lime-100 font-bold' : '';
+                            };
+                        @endphp
+                        <tr class="text-left">
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Date') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Date{!! $dirBadge('Date') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Date', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Date', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Price') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Price{!! $dirBadge('Price') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Price', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Price', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PropertyType') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Type{!! $dirBadge('PropertyType') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PropertyType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('NewBuild') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">New Build?{!! $dirBadge('NewBuild') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'NewBuild', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Duration') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Tenure{!! $dirBadge('Duration') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Duration', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Duration', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PAON') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Primary{!! $dirBadge('PAON') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('SAON') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Secondary{!! $dirBadge('SAON') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'SAON', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'SAON', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('Street') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Street{!! $dirBadge('Street') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Street', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'Street', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('County') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">County{!! $dirBadge('County') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'County', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'County', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
+                                <div class="flex items-center gap-1">
+                                    <span class="font-medium">Category{!! $dirBadge('PPDCategoryType') !!}</span>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'asc'])) }}" class="text-xs" title="Sort ascending">▲</a>
+                                    <a href="{{ route('property.search', array_merge($base, ['sort' => 'PPDCategoryType', 'dir' => 'desc'])) }}" class="text-xs" title="Sort descending">▼</a>
+                                </div>
+                            </th>
+                            <th class="px-3 py-2 whitespace-nowrap {{ $thClass('PPDCategoryType') }}">
+                                <div class="flex items-center gap-1">
+                                    View
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
                     <tbody>
                         @foreach($results as $row)
                             <tr class="border-t">

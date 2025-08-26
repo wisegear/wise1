@@ -420,10 +420,18 @@ class PropertyController extends Controller
         $norm = function ($v) {
             return strtolower(trim((string) $v));
         };
+        $isSameCountyDistrict = ($norm($districtName) === $norm($countyName));
         $showLocalityCharts = ($locality !== '')
             && ($norm($locality) !== $norm($town))
             && ($norm($locality) !== $norm($districtName))
             && ($norm($locality) !== $norm($countyName));
+
+        // Fallback: Always define district datasets if county==district, even if hidden
+        if ($isSameCountyDistrict) {
+            $districtPriceHistory = collect();
+            $districtSalesHistory = collect();
+            $districtPropertyTypes = collect();
+        }
 
         // Determine if town charts should be shown (town must be non-empty and distinct from District, County)
         $showTownCharts = ($town !== '')
@@ -495,19 +503,24 @@ class PropertyController extends Controller
             }
         );
 
-        $districtPriceHistory = Cache::remember(
-            'district:priceHistory:v2:catA:' . $first->District,
-            self::CACHE_TTL,
-            function () use ($first) {
-                return DB::table('land_registry')
-                    ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
-                    ->where('District', $first->District)
-                    ->where('PPDCategoryType', 'A')
-                    ->groupBy('YearDate')
-                    ->orderBy('YearDate', 'asc')
-                    ->get();
-            }
-        );
+        // Always assign districtPriceHistory
+        if ($isSameCountyDistrict) {
+            $districtPriceHistory = $countyPriceHistory;
+        } else {
+            $districtPriceHistory = Cache::remember(
+                'district:priceHistory:v2:catA:' . $first->District,
+                self::CACHE_TTL,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                        ->where('District', $first->District)
+                        ->where('PPDCategoryType', 'A')
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+        }
 
         $countySalesHistory = Cache::remember(
             'county:salesHistory:v2:catA:' . $first->County,
@@ -523,19 +536,24 @@ class PropertyController extends Controller
             }
         );
 
-        $districtSalesHistory = Cache::remember(
-            'district:salesHistory:v2:catA:' . $first->District,
-            self::CACHE_TTL,
-            function () use ($first) {
-                return DB::table('land_registry')
-                    ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
-                    ->where('District', $first->District)
-                    ->where('PPDCategoryType', 'A')
-                    ->groupBy('YearDate')
-                    ->orderBy('YearDate', 'asc')
-                    ->get();
-            }
-        );
+        // Always assign districtSalesHistory
+        if ($isSameCountyDistrict) {
+            $districtSalesHistory = $countySalesHistory;
+        } else {
+            $districtSalesHistory = Cache::remember(
+                'district:salesHistory:v2:catA:' . $first->District,
+                self::CACHE_TTL,
+                function () use ($first) {
+                    return DB::table('land_registry')
+                        ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                        ->where('District', $first->District)
+                        ->where('PPDCategoryType', 'A')
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate', 'asc')
+                        ->get();
+                }
+            );
+        }
 
         $propertyTypeMap = [
             'D' => 'Detached',
@@ -550,7 +568,7 @@ class PropertyController extends Controller
             self::CACHE_TTL,
             function () use ($first, $propertyTypeMap) {
                 return DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
-                    ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
+                    ->select('PropertyType', DB::raw("COUNT(*) as property_count"))
                     ->where('County', $first->County)
                     ->where('PPDCategoryType', 'A')
                     ->groupBy('PropertyType')
@@ -565,25 +583,30 @@ class PropertyController extends Controller
             }
         );
 
-        $districtPropertyTypes = Cache::remember(
-            'district:types:v2:catA:' . $first->District,
-            self::CACHE_TTL,
-            function () use ($first, $propertyTypeMap) {
-                return DB::table('land_registry')
-                    ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
-                    ->where('District', $first->District)
-                    ->where('PPDCategoryType', 'A')
-                    ->groupBy('PropertyType')
-                    ->orderByDesc('property_count')
-                    ->get()
-                    ->map(function ($row) use ($propertyTypeMap) {
-                        return [
-                            'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
-                            'value' => $row->property_count,
-                        ];
-                    });
-            }
-        );
+        // Always assign districtPropertyTypes
+        if ($isSameCountyDistrict) {
+            $districtPropertyTypes = $countyPropertyTypes;
+        } else {
+            $districtPropertyTypes = Cache::remember(
+                'district:types:v2:catA:' . $first->District,
+                self::CACHE_TTL,
+                function () use ($first, $propertyTypeMap) {
+                    return DB::table('land_registry')
+                        ->select('PropertyType', DB::raw("COUNT(*) as property_count"))
+                        ->where('District', $first->District)
+                        ->where('PPDCategoryType', 'A')
+                        ->groupBy('PropertyType')
+                        ->orderByDesc('property_count')
+                        ->get()
+                        ->map(function ($row) use ($propertyTypeMap) {
+                            return [
+                                'label' => $propertyTypeMap[$row->PropertyType] ?? $row->PropertyType,
+                                'value' => $row->property_count,
+                            ];
+                        });
+                }
+            );
+        }
 
         // --- Town/City datasets (mirrors district/locality structures) ---
         if ($showTownCharts) {
@@ -620,7 +643,7 @@ class PropertyController extends Controller
                 self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
-                        ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
+                        ->select('PropertyType', DB::raw("COUNT(*) as property_count"))
                         ->where('TownCity', $first->TownCity)
                         ->where('PPDCategoryType', 'A')
                         ->groupBy('PropertyType')
@@ -635,6 +658,7 @@ class PropertyController extends Controller
                 }
             );
         } else {
+            // Always define town datasets, even if not shown
             $townPriceHistory = collect();
             $townSalesHistory = collect();
             $townPropertyTypes = collect();
@@ -683,7 +707,7 @@ class PropertyController extends Controller
                 self::CACHE_TTL,
                 function () use ($first, $propertyTypeMap) {
                     return DB::table('land_registry')
-                        ->select('PropertyType', DB::raw("COUNT(DISTINCT CONCAT_WS('-', SAON, PAON, Street, Postcode)) as property_count"))
+                        ->select('PropertyType', DB::raw("COUNT(*) as property_count"))
                         ->where('Locality', $first->Locality)
                         ->where('PPDCategoryType', 'A')
                         ->groupBy('PropertyType')
@@ -698,7 +722,7 @@ class PropertyController extends Controller
                 }
             );
         } else {
-            // Keep view happy but avoid work
+            // Always define locality datasets, even if not shown
             $localityPriceHistory = collect();
             $localitySalesHistory = collect();
             $localityPropertyTypes = collect();

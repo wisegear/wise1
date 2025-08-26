@@ -39,6 +39,9 @@
         $showTownCharts = ($town !== '')
             && ($norm($town) !== $norm($district))
             && ($norm($town) !== $norm($county));
+        // Determine if district charts should be shown (district must be non-empty and distinct from County)
+        $showDistrictCharts = ($district !== '')
+            && ($norm($district) !== $norm($county));
     @endphp
     <p class="text-zinc-500 font-semibold mb-1">{{ $displayAddress }}</p>
     
@@ -219,6 +222,7 @@
     </div>
     @endif
     <!-- District Charts -->
+    @if($showDistrictCharts)
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
         <canvas id="districtPropertyTypesChart"></canvas>
@@ -231,6 +235,7 @@
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
         <canvas id="districtSalesChart"></canvas>
     </div>
+    @endif
     @if(!empty($county))
     <!-- County Charts -->
     <div class="border border-zinc-200 rounded-md p-2">
@@ -309,11 +314,11 @@ new Chart(ctx, {
 });
 
 const ctxPostcode = document.getElementById('postcodePriceChart').getContext('2d');
-const postcodePriceData = @json($postcodePriceHistory->pluck('avg_price'));
+const postcodePriceData = @json(($postcodePriceHistory ?? collect())->pluck('avg_price'));
 new Chart(ctxPostcode, {
     type: 'line',
     data: {
-        labels: @json($postcodePriceHistory->pluck('year')),
+        labels: @json(($postcodePriceHistory ?? collect())->pluck('year')),
         datasets: [{
             label: 'Average Price (£)',
             data: postcodePriceData,
@@ -366,9 +371,13 @@ new Chart(ctxPostcode, {
     }
 });
 
-const ctxDistrict = document.getElementById('districtPriceChart').getContext('2d');
-const districtPriceData = @json(($districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('avg_price'));
-new Chart(ctxDistrict, {
+// District Price Chart with canvas guard
+(function(){
+  const el = document.getElementById('districtPriceChart');
+  if (!el) return;
+  const ctxDistrict = el.getContext('2d');
+  const districtPriceData = @json(($districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('avg_price'));
+  new Chart(ctxDistrict, {
     type: 'line',
     data: {
         labels: @json(($districtPriceHistory ?? $countyPriceHistory ?? collect())->pluck('year')),
@@ -414,6 +423,7 @@ new Chart(ctxDistrict, {
         }
     }
 });
+})();
 @if(!empty($county))
 // County Price Chart
 const ctxCountyPrice = document.getElementById('countyPriceChart').getContext('2d');
@@ -560,9 +570,7 @@ new Chart(ctxLocality, {
 @endif
 </script>
 <script>
-const ctxDistrictTypes = document.getElementById('districtPropertyTypesChart').getContext('2d');
-const districtTypeLabels = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
-const districtTypeCounts = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+// Shared bar colors for all bar charts
 const barColors = [
     'rgba(54, 162, 235, 0.7)',
     'rgba(255, 99, 132, 0.7)',
@@ -573,32 +581,40 @@ const barColors = [
     'rgba(99, 255, 132, 0.7)',
     'rgba(160, 160, 160, 0.7)'
 ];
-new Chart(ctxDistrictTypes, {
-    type: 'bar',
-    data: {
-        labels: districtTypeLabels,
-        datasets: [{
-            label: 'Count',
-            data: districtTypeCounts,
-            backgroundColor: barColors.slice(0, districtTypeLabels.length),
-            borderColor: barColors.slice(0, districtTypeLabels.length).map(c => c.replace('0.7', '1')),
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Count' },
-                ticks: { precision: 0 }
-            }
-        }
-    }
-});
+// District Property Types Chart with canvas guard
+(function(){
+  const el = document.getElementById('districtPropertyTypesChart');
+  if (!el) return;
+  const ctxDistrictTypes = el.getContext('2d');
+  const districtTypeLabels = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
+  const districtTypeCounts = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+  new Chart(ctxDistrictTypes, {
+      type: 'bar',
+      data: {
+          labels: districtTypeLabels,
+          datasets: [{
+              label: 'Count',
+              data: districtTypeCounts,
+              backgroundColor: barColors.slice(0, districtTypeLabels.length),
+              borderColor: barColors.slice(0, districtTypeLabels.length).map(c => c.replace('0.7', '1')),
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: { display: false },
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Count' },
+                  ticks: { precision: 0 }
+              }
+          }
+      }
+  });
+})();
 @if($showLocalityCharts)
 // Locality Property Types Chart
 const ctxLocalityTypes = document.getElementById('localityPropertyTypesChart').getContext('2d');
@@ -692,11 +708,11 @@ new Chart(ctxCountyTypes, {
 });
 @endif
 const ctxPostcodeSales = document.getElementById('postcodeSalesChart').getContext('2d');
-const postcodeSalesData = @json($postcodeSalesHistory->pluck('total_sales'));
+const postcodeSalesData = @json(($postcodeSalesHistory ?? collect())->pluck('total_sales'));
 new Chart(ctxPostcodeSales, {
     type: 'line',
     data: {
-        labels: @json($postcodeSalesHistory->pluck('year')),
+        labels: @json(($postcodeSalesHistory ?? collect())->pluck('year')),
         datasets: [{
             label: 'Sales Count',
             data: postcodeSalesData,
@@ -747,9 +763,13 @@ new Chart(ctxPostcodeSales, {
         }
     }
 });
-const ctxDistrictSales = document.getElementById('districtSalesChart').getContext('2d');
-const districtSalesData = @json(($districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('total_sales'));
-new Chart(ctxDistrictSales, {
+// District Sales Chart with canvas guard
+(function(){
+  const el = document.getElementById('districtSalesChart');
+  if (!el) return;
+  const ctxDistrictSales = el.getContext('2d');
+  const districtSalesData = @json(($districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('total_sales'));
+  new Chart(ctxDistrictSales, {
     type: 'line',
     data: {
         labels: @json(($districtSalesHistory ?? $countySalesHistory ?? collect())->pluck('year')),
@@ -796,7 +816,8 @@ new Chart(ctxDistrictSales, {
             }
         }
     }
-});
+  });
+})();
 @if(!empty($county))
 // County Sales Chart
 const ctxCountySales = document.getElementById('countySalesChart').getContext('2d');
