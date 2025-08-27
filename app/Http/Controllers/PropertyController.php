@@ -38,93 +38,6 @@ class PropertyController extends Controller
                 ->get();
         });
 
-        // Prime Central London: yearly average price
-        //  - Uses prime_postcodes table, matching the outward code prefix
-        $avgPricePrimeCentralByYear = Cache::remember('land_registry_avg_price_prime_central_by_year:catA:v2', self::CACHE_TTL, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Prime Central'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        // Prime Central London: yearly sales counts
-        $primeCentralSalesByYear = Cache::remember('prime_central_sales_by_year:catA:v2', self::CACHE_TTL, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Prime Central'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year', 'asc')
-                ->get();
-        });
-
-        // Ultra Prime: yearly average price
-        $avgPriceUltraPrimeByYear = Cache::remember('land_registry_avg_price_ultra_prime_by_year:catA:v2', self::CACHE_TTL, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, ROUND(AVG(`Price`)) as avg_price')
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Ultra Prime'
-                    )
-                ")
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        // Ultra Prime: yearly sales counts
-        $ultraPrimeSalesByYear = Cache::remember('ultra_prime_sales_by_year:catA:v2', self::CACHE_TTL, function () {
-            return LandRegistry::selectRaw('YEAR(`Date`) as year, COUNT(*) as total_sales')
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw("
-                    EXISTS (
-                        SELECT 1
-                        FROM prime_postcodes
-                        WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                        AND category = 'Ultra Prime'
-                    )
-                ") 
-                ->groupBy('year')
-                ->orderBy('year', 'asc')
-                ->get();
-        });
-
-        // ========= Helpers for scope conditions =========
-        $primeScopeSql = "
-            EXISTS (
-                SELECT 1
-                FROM prime_postcodes
-                WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                AND category = 'Prime Central'
-            )
-        ";
-
-        $ultraScopeSql = "
-            EXISTS (
-                SELECT 1
-                FROM prime_postcodes
-                WHERE UPPER(land_registry.Postcode) LIKE CONCAT(UPPER(prime_postcodes.postcode), '%')
-                AND category = 'Ultra Prime'
-            )
-        ";
 
         // ========= ENGLAND & WALES (Cat A): P90 and Top 5% =========
         $ewP90 = Cache::remember('ew:p90:catA:v1', self::CACHE_TTL, function () {
@@ -159,85 +72,40 @@ class PropertyController extends Controller
                 ->get();
         });
 
-        // ========= PRIME CENTRAL (Cat A): P90 and Top 5% =========
-        $primeP90 = Cache::remember('prime:p90:catA:v1', self::CACHE_TTL, function () use ($primeScopeSql) {
-            $sub = DB::table('land_registry')
-                ->selectRaw("`YearDate` as year, `Price`, CUME_DIST() OVER (PARTITION BY `YearDate` ORDER BY `Price`) as cd")
+        // England & Wales (Cat A): Top sale per year (for scatter marker)
+        $ewTopSalePerYear = Cache::remember('ew:topSalePerYear:catA:v1', self::CACHE_TTL, function () {
+            return LandRegistry::selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
                 ->where('PPDCategoryType', 'A')
-                ->whereRaw($primeScopeSql)
                 ->whereNotNull('Price')
-                ->where('Price', '>', 0);
-
-            return DB::query()
-                ->fromSub($sub, 't')
-                ->selectRaw('year, MIN(Price) as p90_price')
-                ->where('cd', '>=', 0.9)
-                ->groupBy('year')
+                ->where('Price', '>', 0)
+                ->groupBy('YearDate')
                 ->orderBy('year')
                 ->get();
         });
 
-        $primeTop5 = Cache::remember('prime:top5avg:catA:v1', self::CACHE_TTL, function () use ($primeScopeSql) {
-            $ranked = DB::table('land_registry')
-                ->selectRaw("`YearDate` as year, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt")
+        // England & Wales (Cat A): Top 3 sales per year (for tooltip detail)
+        $ewTop3PerYear = Cache::remember('ew:top3PerYear:catA:v1', self::CACHE_TTL, function () {
+            $rankedTop3 = DB::table('land_registry')
+                ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
                 ->where('PPDCategoryType', 'A')
-                ->whereRaw($primeScopeSql)
                 ->whereNotNull('Price')
                 ->where('Price', '>', 0);
-
             return DB::query()
-                ->fromSub($ranked, 'r')
-                ->selectRaw('year, ROUND(AVG(Price)) as top5_avg')
-                ->whereColumn('rn', '<=', DB::raw('CEIL(0.05 * cnt)'))
-                ->groupBy('year')
+                ->fromSub($rankedTop3, 'r')
+                ->select('year', 'Date', 'Postcode', 'Price', 'rn')
+                ->where('rn', '<=', 3)
                 ->orderBy('year')
+                ->orderBy('rn')
                 ->get();
         });
 
-        // ========= ULTRA PRIME (Cat A): P90 and Top 5% =========
-        $ultraP90 = Cache::remember('ultra:p90:catA:v1', self::CACHE_TTL, function () use ($ultraScopeSql) {
-            $sub = DB::table('land_registry')
-                ->selectRaw("`YearDate` as year, `Price`, CUME_DIST() OVER (PARTITION BY `YearDate` ORDER BY `Price`) as cd")
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw($ultraScopeSql)
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0);
-
-            return DB::query()
-                ->fromSub($sub, 't')
-                ->selectRaw('year, MIN(Price) as p90_price')
-                ->where('cd', '>=', 0.9)
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
-
-        $ultraTop5 = Cache::remember('ultra:top5avg:catA:v1', self::CACHE_TTL, function () use ($ultraScopeSql) {
-            $ranked = DB::table('land_registry')
-                ->selectRaw("`YearDate` as year, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt")
-                ->where('PPDCategoryType', 'A')
-                ->whereRaw($ultraScopeSql)
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0);
-
-            return DB::query()
-                ->fromSub($ranked, 'r')
-                ->selectRaw('year, ROUND(AVG(Price)) as top5_avg')
-                ->whereColumn('rn', '<=', DB::raw('CEIL(0.05 * cnt)'))
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-        });
 
         // =========================================================
         // 3) RENDER: pass both search results (if any) and all
         //    cached aggregates for charts to the Blade view
         // =========================================================
         return view('property.home', compact(
-            'salesByYear', 'avgPriceByYear',
-            'avgPricePrimeCentralByYear', 'primeCentralSalesByYear',
-            'avgPriceUltraPrimeByYear', 'ultraPrimeSalesByYear',
-            'ewP90', 'ewTop5', 'primeP90', 'primeTop5', 'ultraP90', 'ultraTop5'
+            'salesByYear', 'avgPriceByYear', 'ewP90', 'ewTop5', 'ewTopSalePerYear', 'ewTop3PerYear'
         ));
     }
 
