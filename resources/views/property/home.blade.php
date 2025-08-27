@@ -11,8 +11,9 @@
                 all of the static charts that are not interactive, therefore will not change during the month are cached so that visitors do not have to wait for queries to run.
             </p>
             <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
-                <a href="/property/search" class="standard-button">Property Search</a>
+                <a href="/property/search" class="standard-button">Individual Property Search</a>
                 <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
+                <a href="/property/outer-prime-london" class="standard-button">Outer Prime London</a>
                 <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
             </div>
         </div>
