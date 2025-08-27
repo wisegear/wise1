@@ -233,7 +233,16 @@
                             return rows.map((r, i) => {
                                 const price = '£' + nf.format(r.price || 0);
                                 const pc = r.postcode ? ` – ${r.postcode}` : '';
-                                const dt = r.date ? ` (${r.date})` : '';
+                                const dt = r.date ? (() => {
+                                    const raw = String(r.date).split(' ')[0];
+                                    const parts = raw.includes('-') ? raw.split('-') : raw.split('/');
+                                    if (parts.length === 3) {
+                                        // assume incoming is YYYY-MM-DD or YYYY/MM/DD
+                                        const [yyyy, mm, dd] = parts;
+                                        return ` (${dd}/${mm}/${yyyy})`;
+                                    }
+                                    return ` (${raw})`;
+                                })() : '';
                                 return `Top ${i+1}: ${price}${pc}${dt}`;
                             });
                         }
