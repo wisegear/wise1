@@ -12,8 +12,8 @@
             </p>
             <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
                 <a href="/property/search" class="standard-button">Individual Property Search</a>
-                <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
                 <a href="/property/outer-prime-london" class="standard-button">Outer Prime London</a>
+                <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
                 <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
             </div>
         </div>

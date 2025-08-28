@@ -43,7 +43,7 @@ class UpclWarm extends Command
         $ttl = 60 * 60 * 24 * 45;
 
         $this->withProgressBar($districts, function (string $district) use ($ttl) {
-            $keyBase = 'upcl:v4:catA:' . $district . ':';
+            $keyBase = 'upcl:v5:catA:' . $district . ':';
 
             // Average price by year
             $avgPrice = DB::table('land_registry')
@@ -141,8 +141,84 @@ class UpclWarm extends Command
 
         $this->newLine(2);
 
-        // Record global last warm timestamp
-        Cache::put('upcl:v4:catA:last_warm', now()->toIso8601String(), $ttl);
+        // ===== Warm ALL Ultra Prime (aggregate across all UPCL outward codes) =====
+        $this->info('Warming ALL Ultra Prime (aggregate)');
+        $keyBaseAll = 'upcl:v5:catA:ALL:';
+
+        $baseAll = DB::table('land_registry as lr')
+            ->join(DB::raw("(SELECT DISTINCT postcode FROM prime_postcodes WHERE category = 'Ultra Prime') as pp"),
+                DB::raw("SUBSTRING_INDEX(lr.Postcode, ' ', 1)"), 'LIKE', DB::raw("CONCAT(pp.postcode, '%')"))
+            ->where('lr.PPDCategoryType', 'A');
+
+        // Avg price
+        $avgPriceAll = (clone $baseAll)
+            ->selectRaw('lr.YearDate as year, ROUND(AVG(lr.Price)) as avg_price')
+            ->groupBy('lr.YearDate')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'avgPrice', $avgPriceAll, $ttl);
+
+        // Sales
+        $salesAll = (clone $baseAll)
+            ->selectRaw('lr.YearDate as year, COUNT(*) as sales')
+            ->groupBy('lr.YearDate')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'sales', $salesAll, $ttl);
+
+        // Property types
+        $propertyTypesAll = (clone $baseAll)
+            ->selectRaw('lr.YearDate as year, lr.PropertyType as type, COUNT(*) as count')
+            ->groupBy('lr.YearDate','type')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'propertyTypes', $propertyTypesAll, $ttl);
+
+        // P90
+        $decilesAll = (clone $baseAll)
+            ->selectRaw('lr.YearDate, lr.Price, NTILE(10) OVER (PARTITION BY lr.YearDate ORDER BY lr.Price) as decile');
+        $p90All = DB::query()->fromSub($decilesAll,'t')
+            ->selectRaw('YearDate as year, MIN(Price) as p90')
+            ->where('decile',10)
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBaseAll.'p90',$p90All,$ttl);
+
+        // Top 5% avg
+        $rankedTop5All = (clone $baseAll)
+            ->selectRaw('lr.YearDate, lr.Price, ROW_NUMBER() OVER (PARTITION BY lr.YearDate ORDER BY lr.Price DESC) as rn, COUNT(*) OVER (PARTITION BY lr.YearDate) as cnt');
+        $top5All = DB::query()->fromSub($rankedTop5All,'ranked')
+            ->selectRaw('YearDate as year, ROUND(AVG(Price)) as top5_avg')
+            ->whereRaw('rn <= CEIL(cnt * 0.05)')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBaseAll.'top5',$top5All,$ttl);
+
+        // Top sale per year
+        $topSalePerYearAll = (clone $baseAll)
+            ->selectRaw('lr.YearDate as year, MAX(lr.Price) as top_sale')
+            ->groupBy('lr.YearDate')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'topSalePerYear',$topSalePerYearAll,$ttl);
+
+        // Top 3 per year
+        $rankedTop3All = (clone $baseAll)
+            ->selectRaw('lr.YearDate as year, lr.Date, lr.Postcode, lr.Price, ROW_NUMBER() OVER (PARTITION BY lr.YearDate ORDER BY lr.Price DESC) as rn');
+        $top3PerYearAll = DB::query()->fromSub($rankedTop3All,'r')
+            ->select('year','Date','Postcode','Price','rn')
+            ->where('rn','<=',3)
+            ->orderBy('year')
+            ->orderBy('rn')
+            ->get();
+        Cache::put($keyBaseAll.'top3PerYear',$top3PerYearAll,$ttl);
+
+        Cache::put('upcl:v5:catA:last_warm', now()->toIso8601String(), $ttl);
+
+        // Record per-district last warm timestamp
+        Cache::put('upcl:v5:catA:last_warm', now()->toIso8601String(), $ttl);
 
         $this->info('Ultra Prime cache warm complete.');
 

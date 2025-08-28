@@ -15,7 +15,7 @@
                 <span class="ml-2 text-neutral-600">|
                     Data last cached:
                     @php
-                        $ts = $lastCachedAt ?? \Illuminate\Support\Facades\Cache::get('upcl:v4:catA:last_warm');
+                        $ts = $lastCachedAt ?? \Illuminate\Support\Facades\Cache::get('upcl:v5:catA:last_warm');
                     @endphp
                     @if(!empty($ts))
                         {{ \Carbon\Carbon::parse($ts)->timezone(config('app.timezone'))->format('j M Y, H:i') }}
@@ -30,9 +30,14 @@
     <div class="mb-6 flex items-center justify-center gap-3">
         <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
         <select id="districtFilter" class="border border-gray-300 bg-white rounded px-3 py-2 text-sm">
-            <option value="">All postcodes</option>
+            <option class="bg-white text-zinc-800" value="">All sections</option>
+            @if(($districts ?? collect())->contains('ALL'))
+                <option class="bg-white text-zinc-800" value="ALL">All Ultra Prime (aggregate)</option>
+            @endif
             @foreach($districts as $d)
-                <option value="{{ $d }}">{{ $d }}</option>
+                @if($d !== 'ALL')
+                    <option class="bg-white text-zinc-800" value="{{ $d }}">{{ $d }}</option>
+                @endif
             @endforeach
         </select>
     </div>
@@ -41,42 +46,62 @@
         <div class="rounded border p-6 bg-neutral-50">No Ultra Prime districts found.</div>
     @else
         @foreach($districts as $district)
+            @php $__label = ($district === 'ALL') ? 'All Ultra Prime' : $district; @endphp
             <section class="mb-10 district-section" data-district="{{ $district }}">
-                <h2 class="text-xl font-semibold mb-4">{{ $district }} – Overview</h2>
-                @if(!empty($notes[$district] ?? null))
+                <h2 class="text-xl font-semibold mb-4">{{ $__label }} – Overview</h2>
+                @if($district === 'ALL')
+                    <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">This section aggregates <strong>all Ultra Prime London postcodes</strong> into a single area for year-by-year analysis.</p>
+                @elseif(!empty($notes[$district] ?? null))
                     <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">{{ $notes[$district] }}</p>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <!-- Property Types (stacked bar) -->
-                    <div class="rounded-xl border p-4 bg-white">
-                        <h3 class="font-semibold mb-2">Property Types in {{ $district }}</h3>
-                        <canvas id="pt_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
+                        <canvas id="pt_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Average Price (line) -->
-                    <div class="rounded-xl border p-4 bg-white">
-                        <h3 class="font-semibold mb-2">Average Price of property in {{ $district }}</h3>
-                        <canvas id="ap_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Average Price of property in {{ $__label }}</h3>
+                        <canvas id="ap_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
-
                     <!-- Number of Sales (line) -->
-                    <div class="rounded-xl border p-4 bg-white">
-                        <h3 class="font-semibold mb-2">Number of Sales in {{ $district }}</h3>
-                        <canvas id="sc_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
+                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-xl border p-4 bg-white">
-                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $district }}</h3>
-                        <canvas id="ts_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $__label }}</h3>
+                        <canvas id="ts_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Average + Prime Indicators (line) -->
-                    <div class="rounded-xl border p-4 bg-white col-span-2">
-                        <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $district }}</h3>
-                        <canvas id="api_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                    <div class="rounded-xl border p-4 bg-white col-span-2 overflow-hidden h-64 sm:h-72 md:h-80">
+                        <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $__label }}</h3>
+                        <canvas id="api_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- YoY % Change Charts -->
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="text-sm font-medium text-zinc-700 mb-2">YoY % Change – Sales in {{ $__label }}</h3>
+                        <canvas id="yoy_sales_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="text-sm font-medium text-zinc-700 mb-2">YoY % Change – 90th Percentile in {{ $__label }}</h3>
+                        <canvas id="yoy_p90_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="text-sm font-medium text-zinc-700 mb-2">YoY % Change – Average Price in {{ $__label }}</h3>
+                        <canvas id="yoy_avg_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="text-sm font-medium text-zinc-700 mb-2">YoY % Change – Top 5% Avg in {{ $__label }}</h3>
+                        <canvas id="yoy_top5_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
                 </div>
             </section>
@@ -96,6 +121,12 @@
 
     function renderCharts() {
         const charts = chartsPayload || {};
+
+        // Default filter to ALL if available
+        const filterEl = document.getElementById('districtFilter');
+        if (filterEl && [...filterEl.options].some(o => o.value === 'ALL')) {
+            filterEl.value = 'ALL';
+        }
 
         // Plugin to ensure the whole canvas is white (no transparency)
         const whiteBgPlugin = {
@@ -154,11 +185,33 @@
                 return;
             }
 
+            // === YoY helpers ===
+            function seriesFromMap(valuesByYear) { return years.map(y => valuesByYear.get(y) ?? null); }
+            function computeYoY(values) {
+                const out = [];
+                for (let i = 0; i < values.length; i++) {
+                    if (i === 0 || values[i-1] == null || values[i] == null || values[i-1] === 0) { out.push(null); continue; }
+                    out.push(((values[i] - values[i-1]) / values[i-1]) * 100);
+                }
+                return out;
+            }
+            function barColorsFrom(arr) { return arr.map(v => (v == null) ? 'rgba(150,150,150,0.6)' : (v >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)')); }
+            function borderColorsFrom(arr) { return arr.map(v => (v == null) ? 'rgba(150,150,150,1)' : (v >= 0 ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,1)')); }
+            const tickEveryOther = (value, index) => ((index % 2) === 0 ? String(years[index] ?? value) : '');
+
+            const apMap = new Map(avgPrice.map(r => [r.year, r.avg_price]));
+            const scMap = new Map(sales.map(r => [r.year, r.sales]));
+            const p90Map = new Map(p90.map(r => [r.year, r.p90]));
+            const top5Map = new Map(top5.map(r => [r.year, r.top5_avg]));
+
+            const yoyAvg  = computeYoY(seriesFromMap(apMap)).map(v => v == null ? null : Math.round(v * 100) / 100);
+            const yoySales = computeYoY(seriesFromMap(scMap)).map(v => v == null ? null : Math.round(v * 100) / 100);
+            const yoyP90  = computeYoY(seriesFromMap(p90Map)).map(v => v == null ? null : Math.round(v * 100) / 100);
+            const yoyTop5 = computeYoY(seriesFromMap(top5Map)).map(v => v == null ? null : Math.round(v * 100) / 100);
+
             // Average Price
             const apCtx = document.getElementById(`ap_${district}`);
             if (apCtx) {
-                apCtx.style.display = 'block';
-                apCtx.width = apCtx.clientWidth; apCtx.height = apCtx.clientHeight;
                 const apId = `ap_${district}`; if (window.__upclCharts[apId]) { window.__upclCharts[apId].destroy(); }
                 const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
                 const apData = years.map(y => apByYear.get(y) ?? null);
@@ -171,9 +224,9 @@
                     },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 16, left: 12 } },
                         plugins: {
                             legend: { display: true },
                             tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } }
@@ -188,8 +241,6 @@
             // Average + Prime Indicators (new chart)
             const apiCtx = document.getElementById(`api_${district}`);
             if (apiCtx) {
-                apiCtx.style.display = 'block';
-                apiCtx.width = apiCtx.clientWidth; apiCtx.height = apiCtx.clientHeight;
                 const apiId = `api_${district}`; if (window.__upclCharts[apiId]) { window.__upclCharts[apiId].destroy(); }
 
                 const yearsPrime = [...new Set([
@@ -220,9 +271,9 @@
                     },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 16, left: 12 } },
                         plugins: {
                             legend: { display: true },
                             tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } }
@@ -237,8 +288,6 @@
             // Sales Count
             const scCtx = document.getElementById(`sc_${district}`);
             if (scCtx) {
-                scCtx.style.display = 'block';
-                scCtx.width = scCtx.clientWidth; scCtx.height = scCtx.clientHeight;
                 const scId = `sc_${district}`; if (window.__upclCharts[scId]) { window.__upclCharts[scId].destroy(); }
                 const scByYear = new Map(sales.map(r => [r.year, r.sales]));
                 const scData = years.map(y => scByYear.get(y) ?? 0);
@@ -251,9 +300,9 @@
                     },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 16, left: 12 } },
                         plugins: {
                             legend: { display: true },
                             tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } }
@@ -268,8 +317,6 @@
             // Top Sale Marker (scatter)
             const tsCtx = document.getElementById(`ts_${district}`);
             if (tsCtx) {
-                tsCtx.style.display = 'block';
-                tsCtx.width = tsCtx.clientWidth; tsCtx.height = tsCtx.clientHeight;
                 const tsId = `ts_${district}`; if (window.__upclCharts[tsId]) { window.__upclCharts[tsId].destroy(); }
 
                 // Build top3Index: Map from year -> array of top 3 sales (sorted by rn)
@@ -297,9 +344,9 @@
                     },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 16, left: 12 } },
                         parsing: false,
                         plugins: {
                             legend: { display: true },
@@ -327,8 +374,6 @@
             // Property Types (stacked)
             const ptCtx = document.getElementById(`pt_${district}`);
             if (ptCtx) {
-                ptCtx.style.display = 'block';
-                ptCtx.width = ptCtx.clientWidth; ptCtx.height = ptCtx.clientHeight;
                 const ptId = `pt_${district}`; if (window.__upclCharts[ptId]) { window.__upclCharts[ptId].destroy(); }
                 const yearTypeMap = new Map();
                 propertyTypes.forEach(r => { if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map()); const m = yearTypeMap.get(r.year); m.set(r.type, (m.get(r.type) || 0) + r.count); });
@@ -340,9 +385,9 @@
                     data: { labels: years, datasets },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 16, left: 12 } },
                         plugins: {
                             legend: { display: true },
                             tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } }
@@ -354,11 +399,36 @@
                 ptCtx.style.backgroundColor = '#ffffff';
             }
 
+            function makeYoyBar(canvasId, series) {
+                const el = document.getElementById(canvasId);
+                if (!el) return;
+                const id = canvasId; if (window.__upclCharts[id]) { window.__upclCharts[id].destroy(); }
+                new Chart(el, {
+                    type: 'bar',
+                    plugins: [whiteBgPlugin],
+                    data: { labels: years, datasets: [{ data: series, backgroundColor: barColorsFrom(series), borderColor: borderColorsFrom(series), borderWidth: 1 }] },
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: { padding: { top: 12, right: 12, bottom: 20, left: 12 } },
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => (c.parsed.y == null ? 'No prior year' : `${c.parsed.y.toFixed(2)}%`) } } },
+                        scales: { x: { ticks: { callback: tickEveryOther, autoSkip: false, maxRotation: 0, minRotation: 0, padding: 8 } }, y: { ticks: { callback: (v) => v + '%' } } }
+                    }
+                });
+                window.__upclCharts[id] = Chart.getChart(el);
+                el.style.backgroundColor = '#ffffff';
+            }
+
+            makeYoyBar(`yoy_sales_${district}`, yoySales);
+            makeYoyBar(`yoy_p90_${district}`, yoyP90);
+            makeYoyBar(`yoy_avg_${district}`, yoyAvg);
+            makeYoyBar(`yoy_top5_${district}`, yoyTop5);
+
             window.__renderedDistricts.add(district);
         }
 
         // Initial render based on current select value
-        const filterEl = document.getElementById('districtFilter');
         function applyFilter() {
             const val = filterEl.value;
             const sections = document.querySelectorAll('.district-section');
