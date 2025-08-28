@@ -180,75 +180,75 @@
 <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
-        <canvas id="priceHistoryChart"></canvas>
+        <canvas id="priceHistoryChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $postcode }}</h2>
-        <canvas id="postcodePriceChart"></canvas>
+        <canvas id="postcodePriceChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
-        <canvas id="postcodeSalesChart"></canvas>
+        <canvas id="postcodeSalesChart" class="block w-full"></canvas>
     </div>
     <!-- Locality Charts (moved up) -->
     @if($showLocalityCharts)
     <!-- Locality Charts (shown only when locality is present and distinct) -->
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localityPropertyTypesChart"></canvas>
+        <canvas id="localityPropertyTypesChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localityPriceChart"></canvas>
+        <canvas id="localityPriceChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localitySalesChart"></canvas>
+        <canvas id="localitySalesChart" class="block w-full"></canvas>
     </div>
     @endif
     @if($showTownCharts)
     <!-- Town/City Charts -->
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townPropertyTypesChart"></canvas>
+        <canvas id="townPropertyTypesChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townPriceChart"></canvas>
+        <canvas id="townPriceChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townSalesChart"></canvas>
+        <canvas id="townSalesChart" class="block w-full"></canvas>
     </div>
     @endif
     <!-- District Charts -->
     @if($showDistrictCharts)
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtPropertyTypesChart"></canvas>
+        <canvas id="districtPropertyTypesChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtPriceChart"></canvas>
+        <canvas id="districtPriceChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtSalesChart"></canvas>
+        <canvas id="districtSalesChart" class="block w-full"></canvas>
     </div>
     @endif
     @if(!empty($county))
     <!-- County Charts -->
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPropertyTypesChart"></canvas>
+        <canvas id="countyPropertyTypesChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPriceChart"></canvas>
+        <canvas id="countyPriceChart" class="block w-full"></canvas>
     </div>
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countySalesChart"></canvas>
+        <canvas id="countySalesChart" class="block w-full"></canvas>
     </div>
     @endif
 </div>
@@ -570,138 +570,147 @@ new Chart(ctxLocality, {
 @endif
 </script>
 <script>
-// Shared bar colors for all bar charts
-const barColors = [
-    'rgba(54, 162, 235, 0.7)',
-    'rgba(255, 99, 132, 0.7)',
-    'rgba(255, 206, 86, 0.7)',
-    'rgba(75, 192, 192, 0.7)',
-    'rgba(153, 102, 255, 0.7)',
-    'rgba(255, 159, 64, 0.7)',
-    'rgba(99, 255, 132, 0.7)',
-    'rgba(160, 160, 160, 0.7)'
-];
+// === Property Types chart helpers (uniform look & order) ===
+function normalizePropertyTypes(rawLabels, rawCounts) {
+    // Map any incoming label to a canonical bucket
+    function canonical(lab) {
+        const s = String(lab || '').trim().toLowerCase();
+        if (!s) return 'Other';
+        if (s.startsWith('flat')) return 'Flat';
+        if (s.startsWith('det')) return 'Detached';
+        if (s.startsWith('semi')) return 'Semi'; // handles "Semi-Detached", "Semi Detached", "Semi"
+        if (s.startsWith('terr')) return 'Terraced';
+        if (s === 'other') return 'Other';
+        return 'Other';
+    }
+
+    // Tally counts into canonical buckets (always include all five buckets)
+    const counts = { Flat: 0, Detached: 0, Semi: 0, Terraced: 0, Other: 0 };
+    (rawLabels || []).forEach((lab, i) => {
+        const key = canonical(lab);
+        const val = (rawCounts || [])[i] ?? 0;
+        counts[key] = (counts[key] || 0) + (Number(val) || 0);
+    });
+
+    // Sort buckets by value (desc) and build arrays
+    const sorted = Object.entries(counts).sort((a, b) => (b[1] || 0) - (a[1] || 0));
+    const labels = sorted.map(([k]) => k);
+    const data = sorted.map(([, v]) => v || 0);
+    return { labels, data };
+}
+
+const typeColor = {
+    'Flat': 'rgba(54, 162, 235, 0.7)',
+    'Detached': 'rgba(153, 102, 255, 0.7)',
+    'Semi': 'rgba(255, 99, 132, 0.7)',
+    'Terraced': 'rgba(255, 159, 64, 0.7)',
+    'Other': 'rgba(75, 192, 192, 0.7)'
+};
+function colorsFor(labels) { return labels.map(l => typeColor[l] || 'rgba(160,160,160,0.7)'); }
+function solidize(cols) { return cols.map(c => c.replace('0.7', '1')); }
+const commonBarOptions = {
+    responsive: true,
+    layout: { padding: { bottom: 0 } },
+    plugins: { legend: { display: false } },
+    scales: {
+        x: { ticks: { maxRotation: 0, minRotation: 0, padding: 4 } },
+        y: { beginAtZero: true, title: { display: true, text: 'Count' }, ticks: { precision: 0 } }
+    }
+};
+// Property Types charts (uniform styling)
 // District Property Types Chart with canvas guard
 (function(){
   const el = document.getElementById('districtPropertyTypesChart');
   if (!el) return;
   const ctxDistrictTypes = el.getContext('2d');
-  const districtTypeLabels = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
-  const districtTypeCounts = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+  const districtRawLabels = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
+  const districtRawCounts = @json(($districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+  const districtNorm = normalizePropertyTypes(districtRawLabels, districtRawCounts);
+  const districtCols = colorsFor(districtNorm.labels);
   new Chart(ctxDistrictTypes, {
       type: 'bar',
       data: {
-          labels: districtTypeLabels,
+          labels: districtNorm.labels,
           datasets: [{
               label: 'Count',
-              data: districtTypeCounts,
-              backgroundColor: barColors.slice(0, districtTypeLabels.length),
-              borderColor: barColors.slice(0, districtTypeLabels.length).map(c => c.replace('0.7', '1')),
+              data: districtNorm.data,
+              backgroundColor: districtCols,
+              borderColor: solidize(districtCols),
               borderWidth: 1
           }]
       },
-      options: {
-          responsive: true,
-          plugins: {
-              legend: { display: false },
-          },
-          scales: {
-              y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Count' },
-                  ticks: { precision: 0 }
-              }
-          }
-      }
+      options: commonBarOptions
   });
 })();
 @if($showLocalityCharts)
 // Locality Property Types Chart
 const ctxLocalityTypes = document.getElementById('localityPropertyTypesChart').getContext('2d');
-const localityTypeLabels = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
-const localityTypeCounts = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+const localityRawLabels = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('label'));
+const localityRawCounts = @json(($localityPropertyTypes ?? $districtPropertyTypes ?? $countyPropertyTypes ?? collect())->pluck('value'));
+const localityNorm = normalizePropertyTypes(localityRawLabels, localityRawCounts);
+const localityCols = colorsFor(localityNorm.labels);
 new Chart(ctxLocalityTypes, {
     type: 'bar',
     data: {
-        labels: localityTypeLabels,
+        labels: localityNorm.labels,
         datasets: [{
             label: 'Count',
-            data: localityTypeCounts,
-            backgroundColor: barColors.slice(0, localityTypeLabels.length),
-            borderColor: barColors.slice(0, localityTypeLabels.length).map(c => c.replace('0.7', '1')),
+            data: localityNorm.data,
+            backgroundColor: localityCols,
+            borderColor: solidize(localityCols),
             borderWidth: 1
         }]
     },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Count' },
-                ticks: { precision: 0 }
-            }
-        }
-    }
+    options: commonBarOptions
 });
 @endif
 @if($showTownCharts)
 // Town/City Property Types Chart
 const ctxTownTypes = document.getElementById('townPropertyTypesChart').getContext('2d');
-const townTypeLabels = @json(($townPropertyTypes ?? collect())->pluck('label'));
-const townTypeCounts = @json(($townPropertyTypes ?? collect())->pluck('value'));
+const townRawLabels = @json(($townPropertyTypes ?? collect())->pluck('label'));
+const townRawCounts = @json(($townPropertyTypes ?? collect())->pluck('value'));
+const townNorm = normalizePropertyTypes(townRawLabels, townRawCounts);
+const townCols = colorsFor(townNorm.labels);
 new Chart(ctxTownTypes, {
     type: 'bar',
     data: {
-        labels: townTypeLabels,
+        labels: townNorm.labels,
         datasets: [{
             label: 'Count',
-            data: townTypeCounts,
-            backgroundColor: barColors.slice(0, townTypeLabels.length),
-            borderColor: barColors.slice(0, townTypeLabels.length).map(c => c.replace('0.7', '1')),
+            data: townNorm.data,
+            backgroundColor: townCols,
+            borderColor: solidize(townCols),
             borderWidth: 1
         }]
     },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Count' },
-                ticks: { precision: 0 }
-            }
-        }
-    }
+    options: commonBarOptions
 });
 @endif
 @if(!empty($county))
 // County Property Types Chart
 const ctxCountyTypes = document.getElementById('countyPropertyTypesChart').getContext('2d');
-const countyTypeLabels = @json(($countyPropertyTypes ?? collect())->pluck('label'));
-const countyTypeCounts = @json(($countyPropertyTypes ?? collect())->pluck('value'));
+const countyRawLabels = @json(($countyPropertyTypes ?? collect())->pluck('label'));
+const countyRawCounts = @json(($countyPropertyTypes ?? collect())->pluck('value'));
+const countyNorm = normalizePropertyTypes(countyRawLabels, countyRawCounts);
+const countyCols = colorsFor(countyNorm.labels);
 new Chart(ctxCountyTypes, {
     type: 'bar',
     data: {
-        labels: countyTypeLabels,
+        labels: countyNorm.labels,
         datasets: [{
             label: 'Count',
-            data: countyTypeCounts,
-            backgroundColor: barColors.slice(0, countyTypeLabels.length),
-            borderColor: barColors.slice(0, countyTypeLabels.length).map(c => c.replace('0.7', '1')),
+            data: countyNorm.data,
+            backgroundColor: countyCols,
+            borderColor: solidize(countyCols),
             borderWidth: 1
         }]
     },
     options: {
         responsive: true,
-        plugins: {
-            legend: { display: false },
-        },
+        layout: { padding: { bottom: 0 } },
+        plugins: { legend: { display: false } },
         scales: {
+            x: { ticks: { maxRotation: 0, minRotation: 0, padding: 4 } },
             y: { beginAtZero: true, title: { display: true, text: 'Count' }, ticks: { precision: 0 } }
         }
     }
@@ -732,6 +741,7 @@ new Chart(ctxPostcodeSales, {
     },
     options: {
         responsive: true,
+        layout: { padding: { bottom: 0 } },
         plugins: {
             legend: {
                 display: true
@@ -754,7 +764,7 @@ new Chart(ctxPostcodeSales, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90 }
+                ticks: { minRotation: 90, maxRotation: 90, padding: 4 }
             },
             y: {
                 beginAtZero: true,
@@ -792,6 +802,7 @@ new Chart(ctxPostcodeSales, {
     },
     options: {
         responsive: true,
+        layout: { padding: { bottom: 0 } },
         plugins: {
             legend: { display: true },
             tooltip: {
@@ -808,7 +819,7 @@ new Chart(ctxPostcodeSales, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90 }
+                ticks: { minRotation: 90, maxRotation: 90, padding: 4 }
             },
             y: {
                 beginAtZero: true,
@@ -845,6 +856,7 @@ new Chart(ctxCountySales, {
     },
     options: {
         responsive: true,
+        layout: { padding: { bottom: 0 } },
         plugins: {
             legend: { display: true },
             tooltip: {
@@ -860,7 +872,7 @@ new Chart(ctxCountySales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
@@ -893,6 +905,7 @@ new Chart(ctxTownSales, {
     },
     options: {
         responsive: true,
+        layout: { padding: { bottom: 0 } },
         plugins: {
             legend: { display: true },
             tooltip: {
@@ -908,7 +921,7 @@ new Chart(ctxTownSales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
@@ -941,6 +954,7 @@ new Chart(ctxLocalitySales, {
     },
     options: {
         responsive: true,
+        layout: { padding: { bottom: 0 } },
         plugins: {
             legend: { display: true },
             tooltip: {
@@ -956,7 +970,7 @@ new Chart(ctxLocalitySales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
