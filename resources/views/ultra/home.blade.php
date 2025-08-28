@@ -48,11 +48,16 @@
         @foreach($districts as $district)
             @php $__label = ($district === 'ALL') ? 'All Ultra Prime' : $district; @endphp
             <section class="mb-10 district-section" data-district="{{ $district }}">
-                <h2 class="text-xl font-semibold mb-4">{{ $__label }} – Overview</h2>
                 @if($district === 'ALL')
-                    <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">This section aggregates <strong>all Ultra Prime London postcodes</strong> into a single area for year-by-year analysis.</p>
+                    <div class="mb-4 rounded-md border border-zinc-200 bg-white p-4 text-sm text-neutral-700">
+                        <h2 class="text-lg font-semibold mb-2">All Ultra Prime – Overview</h2>
+                        <p>This section aggregates <strong>all Ultra Prime London postcodes</strong> into a single area for year-by-year analysis.</p>
+                    </div>
                 @elseif(!empty($notes[$district] ?? null))
-                    <p class="mb-4 text-sm text-neutral-600 whitespace-pre-line">{{ $notes[$district] }}</p>
+                    <div class="mb-4 rounded-md border border-zinc-200 bg-white p-4 text-sm text-neutral-700">
+                        <h2 class="text-lg font-semibold mb-2">{{ $district }} – Overview</h2>
+                        <p>{{ $notes[$district] }}</p>
+                    </div>
                 @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

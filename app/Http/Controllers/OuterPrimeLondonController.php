@@ -246,8 +246,11 @@ class OuterPrimeLondonController extends Controller
             ];
         }
 
-        // Optional notes per district (placeholder for parity with Prime controller)
-        $notes = [];
+        // Notes per district from the prime_postcodes table
+        $notes = DB::table('prime_postcodes')
+            ->where('category', 'Outer Prime London')
+            ->pluck('notes', 'postcode')
+            ->toArray();
 
         // Reuse the same view as Prime controller for consistency
         return view('outerprime.home', [
