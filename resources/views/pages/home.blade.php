@@ -96,7 +96,8 @@
     <section class="mt-10 rounded-lg border border-zinc-200 bg-white p-6">
         <h3 class="text-sm font-semibold text-zinc-900">Data provenance</h3>
         <p class="mt-2 text-sm leading-6 text-zinc-700">
-            Sales from HM Land Registry; repossessions from official MoJ statistics; interest rates &amp; approvals from the Bank of England. Names are standardised and official area codes are used for reliable joins.
+            Sales from HM Land Registry; repossessions from official MoJ statistics; interest rates &amp; approvals from the Bank of England. Names are standardised and official area 
+            codes are used for reliable joins.  All data is licensed under the Open Government Licence v3.0
         </p>
     </section>
 
