@@ -31,7 +31,7 @@ class PrimeLondonController extends Controller
 
         foreach ($allDistricts as $district) {
             // Build a cache key base (ALL uses a dedicated namespace)
-            $keyBase = $district === 'ALL' ? 'pcl:v3:catA:ALL:' : 'pcl:v2:catA:' . $district . ':';
+            $keyBase = $district === 'ALL' ? 'pcl:v3:catA:ALL:' : 'pcl:v3:catA:' . $district . ':';
 
             if ($district === 'ALL') {
                 // Treat ALL PCL as one area by joining to prime_postcodes (avoids IN/prefix mismatches)

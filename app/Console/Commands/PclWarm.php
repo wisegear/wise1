@@ -188,7 +188,7 @@ class PclWarm extends Command
 
     private function warmDistrict(string $district, int $ttl): void
     {
-        $keyBase = 'pcl:v2:catA:' . $district . ':';
+        $keyBase = 'pcl:v3:catA:' . $district . ':';
 
         // Average price by year
         $avgPrice = DB::table('land_registry')
