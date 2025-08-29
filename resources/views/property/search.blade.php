@@ -11,7 +11,7 @@
                 <span class="font-semibold">Only England &amp; Wales are currently available</span>
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from January 1995 to June 2025
+                Data covers the period from January 1995 to July 2025
             </p>
         </div>
     </section>

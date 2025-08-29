@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\Process\Process;
 
 class UpclWarm extends Command
 {
@@ -13,7 +14,7 @@ class UpclWarm extends Command
      *
      * Keep the same signature so your existing schedule line still works.
      */
-    protected $signature = 'upcl:warm';
+    protected $signature = 'upcl:warm {--district=} {--parallel=1}';
 
     /**
      * The console command description.
@@ -24,17 +25,8 @@ class UpclWarm extends Command
     {
         $this->info('Starting Ultra Prime cache warm...');
 
-        // Ultra Prime postcode districts
-        $districts = DB::table('prime_postcodes')
-            ->where('category', 'Ultra Prime')
-            ->pluck('postcode')
-            ->unique()
-            ->values();
-
-        if ($districts->isEmpty()) {
-            $this->warn('No Ultra Prime districts found.');
-            return self::SUCCESS;
-        }
+        $districtOption = (string) ($this->option('district') ?? '');
+        $parallel = max(1, (int) ($this->option('parallel') ?? 1));
 
         // Reduce memory usage during large aggregations
         DB::connection()->disableQueryLog();
@@ -42,106 +34,80 @@ class UpclWarm extends Command
         // TTL in seconds (45 days)
         $ttl = 60 * 60 * 24 * 45;
 
-        $this->withProgressBar($districts, function (string $district) use ($ttl) {
-            $keyBase = 'upcl:v5:catA:' . $district . ':';
+        if ($districtOption !== '') {
+            // Child mode: warm a single district only
+            $this->warmDistrict($districtOption, $ttl);
+            return self::SUCCESS;
+        }
 
-            // Average price by year
-            $avgPrice = DB::table('land_registry')
-                ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as avg_price')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->groupBy('YearDate')
-                ->orderBy('YearDate')
-                ->get();
-            Cache::put($keyBase . 'avgPrice', $avgPrice, $ttl);
+        // Orchestrator: fetch all Ultra Prime districts
+        $districts = DB::table('prime_postcodes')
+            ->where('category', 'Ultra Prime')
+            ->pluck('postcode')
+            ->unique()
+            ->values()
+            ->all();
 
-            // Sales count by year
-            $sales = DB::table('land_registry')
-                ->selectRaw('`YearDate` as year, COUNT(*) as sales')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->groupBy('YearDate')
-                ->orderBy('YearDate')
-                ->get();
-            Cache::put($keyBase . 'sales', $sales, $ttl);
+        if (empty($districts)) {
+            $this->warn('No Ultra Prime districts found.');
+            return self::SUCCESS;
+        }
 
-            // Property types by year
-            $propertyTypes = DB::table('land_registry')
-                ->selectRaw('`YearDate` as year, `PropertyType` as type, COUNT(*) as count')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->groupBy('YearDate', 'type')
-                ->orderBy('YearDate')
-                ->get();
-            Cache::put($keyBase . 'propertyTypes', $propertyTypes, $ttl);
+        if ($parallel <= 1) {
+            // Sequential (original behaviour)
+            $this->withProgressBar($districts, function (string $district) use ($ttl) {
+                $this->warmDistrict($district, $ttl);
+            });
+        } else {
+            // Parallel: spawn up to N child processes running this same command with --district
+            $this->info("Running in parallel with up to {$parallel} workers...");
 
-            // 90th percentile (threshold) per year via window function
-            $deciles = DB::table('land_registry')
-                ->selectRaw('`YearDate`, `Price`, NTILE(10) OVER (PARTITION BY `YearDate` ORDER BY `Price`) as decile')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0);
+            $total = count($districts);
+            $bar = $this->output->createProgressBar($total);
+            $bar->start();
 
-            $p90 = DB::query()
-                ->fromSub($deciles, 't')
-                ->selectRaw('`YearDate` as year, MIN(`Price`) as p90')
-                ->where('decile', 10)
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-            Cache::put($keyBase . 'p90', $p90, $ttl);
+            $maxWorkers = (int) min($parallel, 8); // safety cap
+            $queue = $districts; // array of strings
+            $running = [];
 
-            // Top 5% average per year via window ranking
-            $rankedTop5 = DB::table('land_registry')
-                ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0);
+            $startWorker = function (string $district) use (&$running) {
+                $php = PHP_BINARY;
+                $artisan = base_path('artisan');
+                $proc = new Process([$php, $artisan, 'upcl:warm', '--district='.$district]);
+                $proc->setTimeout(null);
+                $proc->disableOutput();
+                $proc->start();
+                $running[$district] = $proc;
+            };
 
-            $top5 = DB::query()
-                ->fromSub($rankedTop5, 'ranked')
-                ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as top5_avg')
-                ->whereRaw('rn <= CEIL(cnt * 0.05)')
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get();
-            Cache::put($keyBase . 'top5', $top5, $ttl);
+            // Prime pool
+            while (!empty($queue) && count($running) < $maxWorkers) {
+                $startWorker(array_shift($queue));
+            }
 
-            // Top sale per year (for spike marker)
-            $topSalePerYear = DB::table('land_registry')
-                ->selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0)
-                ->groupBy('YearDate')
-                ->orderBy('YearDate')
-                ->get();
-            Cache::put($keyBase . 'topSalePerYear', $topSalePerYear, $ttl);
+            // Event loop
+            while (!empty($running)) {
+                foreach ($running as $district => $proc) {
+                    if (!$proc->isRunning()) {
+                        if ($proc->getExitCode() !== 0) {
+                            $this->warn("Worker failed for {$district} (exit code: {$proc->getExitCode()})");
+                        }
+                        unset($running[$district]);
+                        $bar->advance();
+                        if (!empty($queue)) {
+                            $startWorker(array_shift($queue));
+                        }
+                    }
+                }
+                usleep(100000); // 100ms
+            }
 
-            // Top 3 sales per year (for context/tooltips)
-            $rankedTop3 = DB::table('land_registry')
-                ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
-                ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
-                ->where('PPDCategoryType', 'A')
-                ->whereNotNull('Price')
-                ->where('Price', '>', 0);
-
-            $top3PerYear = DB::query()
-                ->fromSub($rankedTop3, 'r')
-                ->select('year', 'Date', 'Postcode', 'Price', 'rn')
-                ->where('rn', '<=', 3)
-                ->orderBy('year')
-                ->orderBy('rn')
-                ->get();
-            Cache::put($keyBase . 'top3PerYear', $top3PerYear, $ttl);
-        });
-
-        $this->newLine(2);
+            $bar->finish();
+            $this->newLine();
+        }
 
         // ===== Warm ALL Ultra Prime (aggregate across all UPCL outward codes) =====
+        $this->newLine();
         $this->info('Warming ALL Ultra Prime (aggregate)');
         $keyBaseAll = 'upcl:v5:catA:ALL:';
 
@@ -217,11 +183,106 @@ class UpclWarm extends Command
 
         Cache::put('upcl:v5:catA:last_warm', now()->toIso8601String(), $ttl);
 
-        // Record per-district last warm timestamp
-        Cache::put('upcl:v5:catA:last_warm', now()->toIso8601String(), $ttl);
-
         $this->info('Ultra Prime cache warm complete.');
 
         return self::SUCCESS;
+    }
+
+    private function warmDistrict(string $district, int $ttl): void
+    {
+        $keyBase = 'upcl:v5:catA:' . $district . ':';
+
+        // Average price by year
+        $avgPrice = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as avg_price')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'avgPrice', $avgPrice, $ttl);
+
+        // Sales count by year
+        $sales = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, COUNT(*) as sales')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'sales', $sales, $ttl);
+
+        // Property types by year
+        $propertyTypes = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `PropertyType` as type, COUNT(*) as count')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->groupBy('YearDate', 'type')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'propertyTypes', $propertyTypes, $ttl);
+
+        // 90th percentile threshold per year via NTILE window
+        $deciles = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, NTILE(10) OVER (PARTITION BY `YearDate` ORDER BY `Price`) as decile')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $p90 = DB::query()
+            ->fromSub($deciles, 't')
+            ->selectRaw('`YearDate` as year, MIN(`Price`) as p90')
+            ->where('decile', 10)
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'p90', $p90, $ttl);
+
+        // Top 5% average per year via row_number/count windows
+        $rankedTop5 = DB::table('land_registry')
+            ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top5 = DB::query()
+            ->fromSub($rankedTop5, 'ranked')
+            ->selectRaw('`YearDate` as year, ROUND(AVG(`Price`)) as top5_avg')
+            ->whereRaw('rn <= CEIL(cnt * 0.05)')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+        Cache::put($keyBase . 'top5', $top5, $ttl);
+
+        // Top sale per year (for spike marker)
+        $topSalePerYear = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, MAX(`Price`) as top_sale')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0)
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'topSalePerYear', $topSalePerYear, $ttl);
+
+        // Top 3 sales per year (for context/tooltips)
+        $rankedTop3 = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `Date`, `Postcode`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn')
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0);
+
+        $top3PerYear = DB::query()
+            ->fromSub($rankedTop3, 'r')
+            ->select('year', 'Date', 'Postcode', 'Price', 'rn')
+            ->where('rn', '<=', 3)
+            ->orderBy('year')
+            ->orderBy('rn')
+            ->get();
+        Cache::put($keyBase . 'top3PerYear', $top3PerYear, $ttl);
     }
 }

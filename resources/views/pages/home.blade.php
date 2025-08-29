@@ -20,11 +20,11 @@
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
-                    Latest data<datalist></datalist>: <strong class="font-semibold">June 2025</strong>
+                    Latest data<datalist></datalist>: <strong class="font-semibold">July 2025</strong>
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
-                    Next data update: <strong class="font-semibold">29th August 2025 subject to public agency release</strong>
+                    Next data update: <strong class="font-semibold">30th September 2025 subject to public agency release</strong>
                 </span>
             </div>
         </div>
