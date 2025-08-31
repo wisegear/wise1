@@ -25,16 +25,19 @@ class EpcController extends Controller
         $ttl           = 60 * 60 * 24 * 45;          // cache for 45 days (monthly feed)
 
         // 1) Totals & recency
-        $stats = Cache::remember('epc.stats', $ttl, function () use ($today, $last30, $last365) {
+        $stats = Cache::remember('epc.stats', $ttl, function () use ($today, $last365) {
+            $maxDate = DB::table('epc_certificates')->max('lodgement_date');
+            $last30FromLatest = $maxDate
+                ? Carbon::parse($maxDate)->copy()->subDays(30)
+                : $today->copy()->subDays(30);
+
             return [
-                'total'           => (int) DB::table('epc_certificates')->count(),
-                'latest_lodgement'=> DB::table('epc_certificates')->max('lodgement_date'),
-                'last30_count'    => (int) DB::table('epc_certificates')
-                                            ->whereBetween('lodgement_date', [$last30, $today])
-                                            ->count(),
-                'last365_count'   => (int) DB::table('epc_certificates')
-                                            ->whereBetween('lodgement_date', [$last365, $today])
-                                            ->count(),
+                'total'            => (int) DB::table('epc_certificates')->count(),
+                'latest_lodgement' => $maxDate,
+                'last30_count'     => $maxDate
+                    ? (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last30FromLatest, $maxDate])->count()
+                    : 0,
+                'last365_count'    => (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last365, $today])->count(),
             ];
         });
 

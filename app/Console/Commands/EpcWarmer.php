@@ -26,6 +26,7 @@ class EpcWarmer extends Command
     {
         $this->info('Warming EPC dashboard cache...');
         $started = microtime(true);
+        DB::connection()->disableQueryLog();
 
         // Time windows
         $today     = Carbon::today();
@@ -44,10 +45,18 @@ class EpcWarmer extends Command
         $ttl = now()->addDays(45); // monthly feed cadence – cache for 45 days
 
         // 1) Totals & recency
+        $maxDate = DB::table('epc_certificates')->max('lodgement_date');
+        $last30FromLatest = $maxDate
+            ? Carbon::parse($maxDate)->copy()->subDays(30)
+            : $today->copy()->subDays(30);
+
         $stats = [
             'total'            => (int) DB::table('epc_certificates')->count(),
-            'latest_lodgement' => DB::table('epc_certificates')->max('lodgement_date'),
-            'last30_count'     => (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last30, $today])->count(),
+            'latest_lodgement' => $maxDate,
+            'last30_count'     => $maxDate
+                ? (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last30FromLatest, $maxDate])->count()
+                : 0,
+            // keep last 12 months as rolling from today for now
             'last365_count'    => (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last365, $today])->count(),
         ];
         Cache::put($kStats, $stats, $ttl);
@@ -64,19 +73,27 @@ class EpcWarmer extends Command
         Cache::put($kByYear, $byYear, $ttl);
         $this->line('✔ byYear cached');
 
-        // 3) Distribution of current energy ratings
-        $ratingDist = DB::table('epc_certificates')
+        // 3) Distribution of current energy ratings (single pass, no GROUP BY)
+        $ratingCounts = DB::table('epc_certificates')
             ->selectRaw("
-                CASE
-                    WHEN current_energy_rating IN ('A','B','C','D','E','F','G') THEN current_energy_rating
-                    WHEN current_energy_rating IS NULL THEN 'Unknown'
-                    ELSE 'Other'
-                END as rating,
-                COUNT(*) as cnt
+                SUM(current_energy_rating = 'A') as A,
+                SUM(current_energy_rating = 'B') as B,
+                SUM(current_energy_rating = 'C') as C,
+                SUM(current_energy_rating = 'D') as D,
+                SUM(current_energy_rating = 'E') as E,
+                SUM(current_energy_rating = 'F') as F,
+                SUM(current_energy_rating = 'G') as G,
+                SUM(current_energy_rating IS NULL) as Unknown,
+                SUM(current_energy_rating IS NOT NULL AND current_energy_rating NOT IN ('A','B','C','D','E','F','G')) as Other
             ")
-            ->groupBy('rating')
-            ->orderByRaw("FIELD(rating, 'A','B','C','D','E','F','G','Other','Unknown')")
-            ->get();
+            ->first();
+
+        $ratingDist = collect(['A','B','C','D','E','F','G','Other','Unknown'])->map(function ($key) use ($ratingCounts) {
+            return (object) [
+                'rating' => $key,
+                'cnt'    => (int) ($ratingCounts->{$key} ?? 0),
+            ];
+        });
         Cache::put($kRatingDist, $ratingDist, $ttl);
         $this->line('✔ ratingDist cached');
 
