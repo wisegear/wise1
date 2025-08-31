@@ -184,7 +184,7 @@
     <details class="mt-10 group">
         <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
             <div>
-                <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & fuzzy address)</h2>
+                <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & address)</h2>
                 <p class="text-xs text-zinc-600 mt-1">
                     {{ $epcCount }} match{{ $epcCount === 1 ? '' : 'es' }} found. Click to {{ 'view' }}.
                 </p>
