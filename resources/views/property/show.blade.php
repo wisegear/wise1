@@ -177,6 +177,78 @@
         </table>
     @endif
 
+    <!-- EPC Matches (collapsible) -->
+    @php
+        $epcCount = is_countable($epcMatches ?? []) ? count($epcMatches ?? []) : 0;
+    @endphp
+    <details class="mt-10 group">
+        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
+            <div>
+                <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & fuzzy address)</h2>
+                <p class="text-xs text-zinc-600 mt-1">
+                    {{ $epcCount }} match{{ $epcCount === 1 ? '' : 'es' }} found. Click to {{ 'view' }}.
+                </p>
+            </div>
+            <span class="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+
+        <div class="mt-4">
+            <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry & EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach with scoring. The higher the Match score the more likely it relates to this property.</p>
+
+            @if(empty($epcMatches))
+                <div class="border rounded bg-white p-4 text-sm text-zinc-600">No EPC certificates found for this property.</div>
+            @else
+                <div class="overflow-x-auto rounded border border-zinc-200 bg-white">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-zinc-100">
+                            <tr class="text-left">
+                                <th class="px-3 py-2 border-b">Lodgement Date</th>
+                                <th class="px-3 py-2 border-b">Rating</th>
+                                <th class="px-3 py-2 border-b">Potential</th>
+                                <th class="px-3 py-2 border-b">Address</th>
+                                <th class="px-3 py-2 border-b text-right">floor space (m²)</th>
+                                <th class="px-3 py-2 border-b">Match Score</th>
+                                <th class="px-3 py-2 border-b">View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($epcMatches as $m)
+                                @php($row = $m['row'])
+                                <tr class="odd:bg-white even:bg-zinc-50">
+                                    <td class="px-3 py-2 border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
+                                    <td class="px-3 py-2 border-b">{{ $row->current_energy_rating }}</td>
+                                    <td class="px-3 py-2 border-b">{{ $row->potential_energy_rating }}</td>
+                                    <td class="px-3 py-2 border-b">{{ $row->address }}</td>
+                                    <td class="px-3 py-2 border-b text-right">{{ $row->total_floor_area }}</td>
+                                    <td class="px-3 py-2 border-b">
+                                        @php($s = (int) round($m['score'] ?? 0))
+                                        @php(
+                                            $badge = $s >= 80 ? ['High','bg-green-100 text-green-800 border-green-200'] : (
+                                                     ($s >= 65 ? ['Medium','bg-amber-100 text-amber-800 border-amber-200'] : ['Low','bg-zinc-100 text-zinc-800 border-zinc-200']) )
+                                        )
+                                        <span class="inline-flex items-center gap-2">
+                                            <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium {{ $badge[1] }}">
+                                                {{ $badge[0] }}
+                                            </span>
+                                            <span class="text-xs text-zinc-500">({{ $s }})</span>
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-2 border-b">
+                                        @if(function_exists('route') && Route::has('epc.show'))
+                                            <a href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}" class="text-lime-700 hover:text-lime-900 underline">View</a>
+                                        @else
+                                            <a class="">N/A</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </details>
+
 <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="border border-zinc-200 rounded-md p-2">
         <h2 class="text-lg font-bold mb-4">Price History of this property</h2>

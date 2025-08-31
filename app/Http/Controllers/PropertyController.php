@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\LandRegistry;
 use Illuminate\Support\Facades\Cache;
+use App\Services\EpcMatcher;
 
 class PropertyController extends Controller
 {
@@ -284,6 +285,17 @@ class PropertyController extends Controller
             $addressParts[] = trim($first->County);
         }
         $address = implode(', ', $addressParts);
+
+        // EPC matching (postcode + fuzzy)
+        $matcher = new EpcMatcher();
+        $epcMatches = $matcher->findForProperty(
+            $postcode,
+            $paon,
+            $saon,
+            $street,
+            now(), // reference date (could be first/last sale date if preferred)
+            5
+        );
 
         // --- Locality visibility gate to avoid unnecessary locality queries ---
         $locality     = trim((string) $first->Locality);
@@ -619,6 +631,7 @@ class PropertyController extends Controller
             'localityPriceHistory' => $localityPriceHistory,
             'localitySalesHistory' => $localitySalesHistory,
             'localityPropertyTypes' => $localityPropertyTypes,
+            'epcMatches' => $epcMatches,
         ]);
 
 

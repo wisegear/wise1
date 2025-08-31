@@ -8,6 +8,7 @@ use App\Http\Controllers\UltraLondonController;
 use App\Http\Controllers\RepossessionsController;
 use App\Http\Controllers\InterestRateController;
 use App\Http\Controllers\MortgageApprovalController;
+use App\Http\Controllers\EpcController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
@@ -40,6 +41,8 @@ Route::get('/property/show', [PropertyController::class, 'show'])->name('propert
 Route::get('/property/prime-central-london', [PrimeLondonController::class, 'home'])->name('property.pcl');
 Route::get('/property/outer-prime-london', [OuterPrimeLondonController::class, 'home'])->name('property.outer');
 Route::get('/property/ultra-prime-central-london', [UltraLondonController::class, 'home'])->name('property.upcl');
+Route::get('/epc', [EpcController::class, 'home'])->name('epc.home');
+Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
 
 
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
