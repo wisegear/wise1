@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-5xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -16,6 +16,9 @@
                 <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
                 <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
             </div>
+        </div>
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/property.svg') }}" alt="Property dashboard" class="w-64 h-auto">
         </div>
     </section>
 

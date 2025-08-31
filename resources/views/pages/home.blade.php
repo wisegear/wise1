@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
 
     {{-- Hero --}}
-    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
+    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-5xl relative z-10">
             <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                 <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
@@ -28,7 +28,9 @@
                 </span>
             </div>
         </div>
-
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/home.svg') }}" alt="Property Research" class="w-64 h-auto">
+        </div>
     </section>
 
     {{-- Quick tip --}}

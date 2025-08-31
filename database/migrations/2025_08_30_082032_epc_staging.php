@@ -32,8 +32,8 @@ return new class extends Migration {
             $t->string('COUNTY', 255)->nullable();
             $t->string('LODGEMENT_DATE', 32)->nullable();
             $t->string('TRANSACTION_TYPE', 255)->nullable();
-            $t->string('ENVIRONMENTAL_IMPACT_CURRENT', 255)->nullable();
-            $t->string('ENVIRONMENTAL_IMPACT_POTENTIAL', 255)->nullable();
+            $t->string('ENVIRONMENT_IMPACT_CURRENT', 255)->nullable();
+            $t->string('ENVIRONMENT_IMPACT_POTENTIAL', 255)->nullable();
             $t->string('ENERGY_CONSUMPTION_CURRENT', 255)->nullable();
             $t->string('ENERGY_CONSUMPTION_POTENTIAL', 255)->nullable();
             $t->string('CO2_EMISSIONS_CURRENT', 255)->nullable();

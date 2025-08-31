@@ -16,7 +16,7 @@
         };
     @endphp
 
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Mortgage Approvals</h1>
             @if(!empty($latestPeriod))
@@ -89,6 +89,9 @@
             </div>
                 <p class="mt-4 text-sm text-zinc-500">Other secured - This refers to anything not a purchase or remortgage.  These could be further advances from the same lender, 
                     a 2nd charge loan, debt consolidation, internal refinancing with the same lender or something else. </p>
+        </div>
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/approvals.svg') }}" alt="Mortgage approvals" class="w-64 h-auto">
         </div>
     </section>
 

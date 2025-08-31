@@ -3,7 +3,7 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Outer Prime London</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -26,6 +26,9 @@
                     @endif
                 </span>
             </p>
+        </div>
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/outer_prime.svg') }}" alt="Outer Prime London" class="w-64 h-auto">
         </div>
     </section>
 
