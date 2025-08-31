@@ -193,7 +193,7 @@
         </summary>
 
         <div class="mt-4">
-            <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry & EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach with scoring. The higher the Match score the more likely it relates to this property.</p>
+            <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry & EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach Based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
 
             @if(empty($epcMatches))
                 <div class="border rounded bg-white p-4 text-sm text-zinc-600">No EPC certificates found for this property.</div>
