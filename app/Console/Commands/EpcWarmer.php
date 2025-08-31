@@ -27,6 +27,7 @@ class EpcWarmer extends Command
         $this->info('Warming EPC dashboard cache...');
         $started = microtime(true);
         DB::connection()->disableQueryLog();
+        if (function_exists('set_time_limit')) { set_time_limit(0); }
 
         // Time windows
         $today     = Carbon::today();
@@ -108,11 +109,15 @@ class EpcWarmer extends Command
         Cache::put($kAvgFloorArea, $avgFloorArea, $ttl);
         $this->line('✔ avgFloorArea cached');
 
-        // 5) Busiest postcodes in the last 12 months (top 10)
+        // 5) Busiest postcodes in the last 12 months (top 10) — anchored to latest lodgement
+        $this->line('→ computing topPostcodes (last 12 months from latest lodgement) ...');
+        $rangeEnd = $maxDate ?: $today;
+        $rangeStart = $maxDate ? Carbon::parse($maxDate)->copy()->subDays(365) : $last365;
+
         $topPostcodes = DB::table('epc_certificates')
             ->selectRaw('postcode, COUNT(*) as cnt')
             ->whereNotNull('postcode')
-            ->whereBetween('lodgement_date', [$last365, $today])
+            ->whereBetween('lodgement_date', [$rangeStart, $rangeEnd])
             ->groupBy('postcode')
             ->orderByDesc('cnt')
             ->limit(10)
