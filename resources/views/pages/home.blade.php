@@ -3,6 +3,14 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
 
+    @if(auth()->check() && auth()->user()->email === 'lee@wisener.net')
+        <div class="mx-auto mb-2 w-5/12 rounded-lg border border-emerald-200 bg-rose-50 p-4 shadow-sm text-center">
+            <p class="text-xs text-zinc-800 font-medium">
+                Lee (Admin) is logged in, caution is therefore required, he breaks things.
+            </p>
+        </div>
+    @endif
+
     {{-- Hero --}}
     <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-5xl relative z-10">
