@@ -70,4 +70,59 @@ class HpiMonthly extends Model
         }
         return $out;
     }
+    /** Latest date (global across all areas) */
+    public static function latestDate(): ?string
+    {
+        return static::query()->max('Date');
+    }
+
+    /** Latest date for a specific area code */
+    public static function latestDateFor(string $areaCode): ?string
+    {
+        return static::query()->where('AreaCode', $areaCode)->max('Date');
+    }
+
+    /** Nation codes used across the dashboard (alias of ukAndNationAreas) */
+    public static function nationCodes(): array
+    {
+        return self::ukAndNationAreas();
+    }
+
+    /** Nations snapshot at their own latest dates (avoids misaligned months) */
+    public static function latestNations(): \Illuminate\Support\Collection
+    {
+        return collect(self::nationCodes())
+            ->map(function ($code, $name) {
+                $d = self::latestDateFor($code);
+                if (!$d) return null;
+                return static::query()
+                    ->select([
+                        'RegionName','AreaCode','Date',
+                        'AveragePrice',
+                        DB::raw('`1m%Change` as one_m_change'),
+                        DB::raw('`12m%Change` as twelve_m_change'),
+                        'SalesVolume',
+                    ])
+                    ->where('AreaCode', $code)
+                    ->where('Date', $d)
+                    ->first();
+            })
+            ->filter()
+            ->values();
+    }
+
+    /** UK time series (for charts) */
+    public static function ukSeries(): \Illuminate\Support\Collection
+    {
+        return static::query()
+            ->select([
+                'Date','AveragePrice','Index',
+                DB::raw('`1m%Change` as one_m_change'),
+                DB::raw('`12m%Change` as twelve_m_change'),
+                'SalesVolume',
+            ])
+            ->where('AreaCode', 'K02000001')
+            ->orderBy('Date')
+            ->get();
+    }
 }
