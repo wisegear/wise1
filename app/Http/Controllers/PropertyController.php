@@ -229,8 +229,16 @@ class PropertyController extends Controller
             ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'Locality', 'TownCity', 'District', 'County', 'PPDCategoryType')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
-            ->where('Street', $street)
             ->where('PPDCategoryType', 'A');
+
+        // Treat empty Street as NULL-or-empty to maximise matches
+        if (!empty($street)) {
+            $query->where('Street', $street);
+        } else {
+            $query->where(function ($q) {
+                $q->whereNull('Street')->orWhere('Street', '');
+            });
+        }
 
         if (!empty($saon)) {
             $query->where('SAON', $saon);

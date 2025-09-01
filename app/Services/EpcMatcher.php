@@ -7,13 +7,13 @@ use Carbon\Carbon;
 
 class EpcMatcher
 {
-    public function findForProperty(string $postcode, string $paon, ?string $saon, string $street, ?Carbon $refDate = null, int $limit = 5): array
+    public function findForProperty(string $postcode, string $paon, ?string $saon, string $street, ?Carbon $refDate = null, int $limit = 5, ?string $locality = null): array
     {
         $postcode = $this->normalisePostcode($postcode);
         $paon     = strtoupper(trim($paon));
         $saon     = $saon !== null ? strtoupper(trim($saon)) : null;
         $street   = strtoupper(trim($street));
-        $refDate  = $refDate ?: Carbon::now();
+        $locality = $locality !== null ? strtoupper(trim($locality)) : null;
 
         $candidates = DB::table('epc_certificates')
             ->select('lmk_key','address','postcode','lodgement_date','current_energy_rating','potential_energy_rating','property_type','total_floor_area','local_authority_label')
@@ -26,7 +26,7 @@ class EpcMatcher
         foreach ($candidates as $row) {
             $scored[] = [
                 'row'   => $row,
-                'score' => $this->scoreCandidate($paon, $saon, $street, (string)($row->address ?? ''), $refDate, $row->lodgement_date),
+                'score' => $this->scoreCandidate($paon, $saon, $street, $locality, (string)($row->address ?? ''), $refDate, $row->lodgement_date),
             ];
         }
 
@@ -50,10 +50,9 @@ class EpcMatcher
 
     /**
      * Score a single EPC candidate against LR address parts.
-     * Heuristics: PAON token match, SAON presence, and street similarity.
-     * (No date-based scoring.)
+     * Heuristics: PAON token match, SAON presence, street similarity, and locality token.
      */
-    protected function scoreCandidate(string $paon, ?string $saon, string $street, string $epcAddress, Carbon $refDate, ?string $lodgementDate): float
+    protected function scoreCandidate(string $paon, ?string $saon, string $street, ?string $locality, string $epcAddress, ?Carbon $refDate, ?string $lodgementDate): float
     {
         $score = 0.0;
 
@@ -61,11 +60,13 @@ class EpcMatcher
         $normPAON   = $this->normToken($paon);
         $normSAON   = $saon ? $this->normToken($saon) : null;
         $normStreet = $this->normStreet($street);
+        $normLocality = $locality ? $this->normToken($locality) : null;
 
         // Flags for combo bonuses
         $paonHit = false;
         $saonHit = false;
         $streetHit = false;
+        $localityHit = false;
 
         // 1) PAON (house number/name)
         if ($normPAON !== '') {
@@ -85,7 +86,19 @@ class EpcMatcher
             }
         }
 
-        // 3) Street match — compare LR street against a street-only version of EPC address
+        // 3) Locality match (e.g., village/hamlet) — helpful where there is no street
+        if ($normLocality) {
+            if (preg_match('/(^|\s)'.preg_quote($normLocality,'/').'($|\s)/', $normEpc)) {
+                $score += 18; // exact token present
+                $localityHit = true;
+            } else {
+                $simLoc = $this->similarity($normLocality, $normEpc);
+                if ($simLoc >= 0.85)      $score += 12;
+                elseif ($simLoc >= 0.75) $score += 6;
+            }
+        }
+
+        // 4) Street match — compare LR street against a street-only version of EPC address
         $normEpcStreet = preg_replace('/\b(FLAT|APARTMENT|APT|UNIT|STUDIO|ROOM|MAISONETTE)\b/', '', $normEpc);
         $normEpcStreet = preg_replace('/\b\d+[A-Z]?\b/', '', $normEpcStreet); // drop numbers like 194 or 16A
         $normEpcStreet = preg_replace('/\s+/', ' ', trim($normEpcStreet));
@@ -100,9 +113,27 @@ class EpcMatcher
             elseif ($sim >= 0.70) $score += 8;
         }
 
-        // 4) Combo bonus: if PAON matches AND (SAON or street) matches, it's almost certainly correct
+        // 5) Combo bonus: if PAON matches AND (SAON or street) matches, it's almost certainly correct
         if ($paonHit && ($saonHit || $streetHit)) {
             $score += 10;
+        }
+
+        // Additional combo: PAON + Locality is very strong where street is absent
+        if ($paonHit && $localityHit && !$streetHit) {
+            $score += 8;
+        }
+
+        // Date proximity: optional, very light bonus only (never penalise)
+        if ($refDate && !empty($lodgementDate)) {
+            try {
+                $lodged = Carbon::parse($lodgementDate);
+                $months = abs($lodged->diffInMonths($refDate));
+                if ($months <= 36)      { $score += 6; }
+                elseif ($months <= 60)  { $score += 3; }
+                // >60 months: no bonus
+            } catch (\Throwable $e) {
+                // ignore parse errors
+            }
         }
 
         return $score;
