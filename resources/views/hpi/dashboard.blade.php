@@ -39,12 +39,13 @@
   </div>
 
   <div class="flex gap-4 mb-6">
-    <button type="button" data-section="change" class="filter-btn px-3 py-1 rounded bg-blue-600 text-white text-sm cursor-pointer">12m Change</button>
+    <button type="button" data-section="change" class="filter-btn px-3 py-1 rounded bg-lime-600 text-white text-sm cursor-pointer">12m Change</button>
     <button type="button" data-section="types" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Property Types</button>
     <button type="button" data-section="movers" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Movers / Losers</button>
   </div>
   <div id="section-change">
-  <h2 class="text-xl font-semibold mt-8 mb-6">12‑Month Change by Nation &amp; UK</h2>
+  <h2 class="text-xl font-semibold mt-8">12‑Month Change by Nation &amp; UK</h2>
+  <p class="mb-4 text-sm text-zinc-700">The change in average house prices per year for UK and each nation.</p>
 
   {{-- UK wide chart (index 0) --}}
   @if(isset($seriesByArea[0]))
@@ -142,18 +143,20 @@
 
   <div id="section-types" class="hidden">
   @isset($typePriceSeries)
-  <h2 class="text-xl font-semibold mt-8 mb-4">Property Type – Average Price (UK &amp; Nations)</h2>
+  <h2 class="text-xl font-semibold mt-8">Property Type – Average Price (UK &amp; Nations)</h2>
+  <p class="text-sm text-zinc-700">You can use the property type buttons on each chart to view individual property type instead of all.</p>
+  <p class="text-sm text-zinc-700 mb-4">Note that not all nations started recording property type at the same time, which is why they are different.  The UK chart starts at 2005 as that's the first year all nations data exists.</p>
 
   {{-- UK wide property-type chart (index 0) --}}
   @if(isset($typePriceSeries[0]))
     <div class="rounded-lg border bg-white p-4 mb-6">
       <div class="mb-2 text-sm text-neutral-600">{{ $typePriceSeries[0]['name'] }}</div>
       <div class="mb-2 flex flex-wrap gap-2 text-xs">
-        <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
-        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
-        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
-        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
-        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
+        <button type="button" data-action="showAll" class="px-2 py-1 rounded border bg-lime-600 text-white">All</button>
+        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Detached</button>
+        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Semi-detached</button>
+        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Terraced</button>
+        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Flat</button>
       </div>
       <div class="h-64">
         <canvas id="typePriceChart0" aria-label="{{ $typePriceSeries[0]['name'] }} property type prices" class="w-full h-full"></canvas>
@@ -168,11 +171,11 @@
       <div class="rounded-lg border bg-white p-4">
         <div class="mb-2 text-sm text-neutral-600">{{ $s['name'] }}</div>
         <div class="mb-2 flex flex-wrap gap-2 text-xs">
-          <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
-          <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
-          <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
-          <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
-          <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
+          <button type="button" data-action="showAll" class="px-2 py-1 rounded border bg-lime-600 text-white">All</button>
+          <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Detached</button>
+          <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Semi-detached</button>
+          <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Terraced</button>
+          <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Flat</button>
         </div>
         <div class="h-56">
           <canvas id="typePriceChart{{ $i }}" aria-label="{{ $s['name'] }} property type prices" class="w-full h-full"></canvas>
@@ -187,10 +190,10 @@
         const series = @json($typePriceSeries);
         if (!Array.isArray(series) || series.length === 0) return;
         const COLORS = {
-          Detached: '#1f77b4',
-          SemiDetached: '#ff7f0e',
-          Terraced: '#2ca02c',
-          Flat: '#d62728'
+          Detached: '#3b82f6',      // brighter blue
+          SemiDetached: '#f97316',  // brighter orange
+          Terraced: '#22c55e',      // brighter green
+          Flat: '#ef4444'           // brighter red
         };
 
         series.forEach((s, i) => {
@@ -221,10 +224,10 @@
             data: {
               labels,
               datasets: [
-                { label: 'Detached',      data: filtered.Detached,     borderColor: COLORS.Detached,     backgroundColor: 'rgba(31,119,180,0.10)', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
-                { label: 'Semi-detached', data: filtered.SemiDetached, borderColor: COLORS.SemiDetached, backgroundColor: 'rgba(255,127,14,0.10)', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
-                { label: 'Terraced',      data: filtered.Terraced,     borderColor: COLORS.Terraced,     backgroundColor: 'rgba(44,160,44,0.10)',  spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
-                { label: 'Flat',          data: filtered.Flat,         borderColor: COLORS.Flat,         backgroundColor: 'rgba(214,39,40,0.10)',  spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true }
+                { label: 'Detached',      data: filtered.Detached,     borderColor: COLORS.Detached,     backgroundColor: 'transparent', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: false },
+                { label: 'Semi-detached', data: filtered.SemiDetached, borderColor: COLORS.SemiDetached, backgroundColor: 'transparent', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: false },
+                { label: 'Terraced',      data: filtered.Terraced,     borderColor: COLORS.Terraced,     backgroundColor: 'transparent', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: false },
+                { label: 'Flat',          data: filtered.Flat,         borderColor: COLORS.Flat,         backgroundColor: 'transparent', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: false }
               ]
             },
             options: {
@@ -259,6 +262,17 @@
             }
           });
           el._chartInstance = chart;
+          function setFocusFill(chart, focusLabel) {
+            chart.data.datasets.forEach(ds => {
+              const isFocus = ds.label === focusLabel;
+              // Set fill only for the focused dataset; others transparent
+              ds.fill = !!focusLabel && isFocus;
+              if (ds.label === 'Detached')      ds.backgroundColor = isFocus ? 'rgba(59,130,246,0.07)' : 'transparent';
+              if (ds.label === 'Semi-detached') ds.backgroundColor = isFocus ? 'rgba(249,115,22,0.07)' : 'transparent';
+              if (ds.label === 'Terraced')      ds.backgroundColor = isFocus ? 'rgba(34,197,94,0.07)'  : 'transparent';
+              if (ds.label === 'Flat')          ds.backgroundColor = isFocus ? 'rgba(239,68,68,0.07)'  : 'transparent';
+            });
+          }
 
           // Wire mini-controls to focus series
           const container = el.closest('.border');
@@ -269,13 +283,15 @@
                 const chart = el._chartInstance;
                 const action = btn.getAttribute('data-action');
                 if (action === 'showAll') {
-                  chart.data.datasets.forEach(ds => ds.hidden = false);
+                  chart.data.datasets.forEach(ds => { ds.hidden = false; ds.fill = false; ds.backgroundColor = 'transparent'; });
                   chart.update();
                   return;
                 }
                 if (action === 'focus') {
                   const t = btn.getAttribute('data-type');
-                  chart.data.datasets.forEach(ds => ds.hidden = (ds.label !== (t === 'SemiDetached' ? 'Semi-detached' : t)));
+                  const label = (t === 'SemiDetached' ? 'Semi-detached' : t);
+                  chart.data.datasets.forEach(ds => { ds.hidden = (ds.label !== label); });
+                  setFocusFill(chart, label);
                   chart.update();
                 }
               });
@@ -289,7 +305,8 @@
   </div>
 
   <div id="section-movers" class="hidden">
-    <h2 class="text-xl font-semibold mt-4 mb-6">Top Movers &amp; Losers (latest month)</h2>
+    <h2 class="text-xl font-semibold mt-4">Top Movers &amp; Losers (latest month)</h2>
+    <p class="mb-4 text-sm text-zinc-700">Top 30 regions that have gained and lost the most over the past 12 months.</p>
     <div class="grid md:grid-cols-2 gap-6">
       <div>
         <h3 class="text-lg font-semibold mb-2">Top Movers</h3>
@@ -363,11 +380,11 @@
         if (show) show.classList.remove('hidden');
         // update buttons
         document.querySelectorAll('.filter-btn').forEach(b => {
-          b.classList.remove('bg-blue-600','text-white');
+          b.classList.remove('bg-lime-600','text-white');
           b.classList.add('bg-neutral-200');
         });
         btn.classList.remove('bg-neutral-200');
-        btn.classList.add('bg-blue-600','text-white');
+        btn.classList.add('bg-lime-600','text-white');
       });
     });
   </script>
