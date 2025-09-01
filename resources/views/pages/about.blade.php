@@ -77,7 +77,8 @@
     </section>
 
     <p class="flex justify-center text-xs leading-6 text-gray-500">
-        Built with Laravel 11, mySQL and Tailwind CSS. Hosted on <a href="https://www.hetzner.com/cloud" target="_blank" rel="noopener">Hetzner Cloud</a>. No dark patterns, minimal cookies, and absolutely no “accept all” confetti.
+        Built with Laravel 11, mySQL and Tailwind CSS. No dark patterns, minimal cookies, and absolutely no “accept all” confetti.
     </p>
+    <p class="flex justify-center text-xs leading-6 text-gray-500">Hosted on&nbsp;<a href="https://hetzner.cloud/?ref=rfLEdCP3iIfx" class="text-rose-500">Hetzner Cloud</a></p>
 </div>
 @endsection
