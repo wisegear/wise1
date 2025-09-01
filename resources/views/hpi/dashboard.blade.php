@@ -38,12 +38,25 @@
     @endforeach
   </div>
 
-  <h2 class="text-xl font-semibold mt-8">12‑Month Change by Nation &amp; UK</h2>
+  <div class="flex gap-4 mb-6">
+    <button type="button" data-section="change" class="filter-btn px-3 py-1 rounded bg-blue-600 text-white text-sm cursor-pointer">12m Change</button>
+    <button type="button" data-section="types" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Property Types</button>
+    <button type="button" data-section="movers" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Movers / Losers</button>
+  </div>
+  <div id="section-change">
+  <h2 class="text-xl font-semibold mt-8 mb-6">12‑Month Change by Nation &amp; UK</h2>
 
   {{-- UK wide chart (index 0) --}}
   @if(isset($seriesByArea[0]))
     <div class="rounded-lg border bg-white p-4 mb-6">
       <div class="mb-2 text-sm text-neutral-600">{{ $seriesByArea[0]['name'] }}</div>
+      <div class="mb-2 flex flex-wrap gap-2 text-xs">
+        <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
+        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
+        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
+        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
+        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
+      </div>
       <div class="h-64">
         <canvas id="hpiChangeChart0" aria-label="{{ $seriesByArea[0]['name'] }} 12 month change" class="w-full h-full"></canvas>
       </div>
@@ -132,63 +145,238 @@
       }
     })();
   </script>
+  </div>
 
-  <h2 class="text-xl font-semibold mt-4">Top Movers (latest month)</h2>
-  <table class="w-full text-sm border">
-    <thead class="bg-neutral-100">
-      <tr>
-        <th class="p-2 text-left w-1/2">Region</th>
-        <th class="p-2 w-1/4">Price</th>
-        <th class="p-2 w-1/4">12m % Change</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($movers as $m)
-        <tr>
-          <td class="p-2">{{ $m->RegionName }}</td>
-          <td class="p-2">£{{ number_format($m->AveragePrice,0) }}</td>
-          <td class="p-2">
-            @if($m->{'12m%Change'} > 0)
-              <span class="text-green-600">+{{ number_format($m->{'12m%Change'},2) }}%</span>
-            @elseif($m->{'12m%Change'} < 0)
-              <span class="text-red-600">{{ number_format($m->{'12m%Change'},2) }}%</span>
-            @else
-              {{ number_format($m->{'12m%Change'},2) }}%
-            @endif
-          </td>
-        </tr>
-      @endforeach
-    </tbody>
-  </table>
+  <div id="section-types" class="hidden">
+  @isset($typePriceSeries)
+  <h2 class="text-xl font-semibold mt-8 mb-4">Property Type – Average Price (UK &amp; Nations)</h2>
 
-  <h2 class="text-xl font-semibold mt-8">Top Losers (latest month)</h2>
-  <table class="w-full text-sm border">
-    <thead class="bg-neutral-100">
-      <tr>
-        <th class="p-2 text-left w-1/2">Region</th>
-        <th class="p-2 w-1/4">Price</th>
-        <th class="p-2 w-1/4">12m % Change</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($losers as $m)
-        <tr>
-          <td class="p-2">{{ $m->RegionName }}</td>
-          <td class="p-2">£{{ number_format($m->AveragePrice,0) }}</td>
-          <td class="p-2">
-            @if($m->{'12m%Change'} > 0)
-              <span class="text-green-600">+{{ number_format($m->{'12m%Change'},2) }}%</span>
-            @elseif($m->{'12m%Change'} < 0)
-              <span class="text-red-600">{{ number_format($m->{'12m%Change'},2) }}%</span>
-            @else
-              {{ number_format($m->{'12m%Change'},2) }}%
-            @endif
-          </td>
-        </tr>
-      @endforeach
-    </tbody>
-  </table>
+  {{-- UK wide property-type chart (index 0) --}}
+  @if(isset($typePriceSeries[0]))
+    <div class="rounded-lg border bg-white p-4 mb-6">
+      <div class="mb-2 text-sm text-neutral-600">{{ $typePriceSeries[0]['name'] }}</div>
+      <div class="mb-2 flex flex-wrap gap-2 text-xs">
+        <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
+        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
+        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
+        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
+        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
+      </div>
+      <div class="h-64">
+        <canvas id="typePriceChart0" aria-label="{{ $typePriceSeries[0]['name'] }} property type prices" class="w-full h-full"></canvas>
+      </div>
+    </div>
+  @endif
 
+  {{-- Four nation property-type charts (indexes 1..4) in 2 columns --}}
+  <div class="grid gap-6 md:grid-cols-2">
+    @foreach($typePriceSeries as $i => $s)
+      @continue($i === 0)
+      <div class="rounded-lg border bg-white p-4">
+        <div class="mb-2 text-sm text-neutral-600">{{ $s['name'] }}</div>
+        <div class="mb-2 flex flex-wrap gap-2 text-xs">
+          <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
+          <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
+          <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
+          <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
+          <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
+        </div>
+        <div class="h-56">
+          <canvas id="typePriceChart{{ $i }}" aria-label="{{ $s['name'] }} property type prices" class="w-full h-full"></canvas>
+        </div>
+      </div>
+    @endforeach
+  </div>
+
+  <script>
+    (function(){
+      try {
+        const series = @json($typePriceSeries);
+        if (!Array.isArray(series) || series.length === 0) return;
+        const COLORS = {
+          Detached: '#1f77b4',
+          SemiDetached: '#ff7f0e',
+          Terraced: '#2ca02c',
+          Flat: '#d62728'
+        };
+
+        series.forEach((s, i) => {
+          const el = document.getElementById('typePriceChart' + i);
+          if (!el) return;
+          const ctx = el.getContext('2d');
+          // Filter out dates before 1995 for England/Wales/UK, and before 2004 for Scotland/NI
+          const labels = [];
+          const filtered = { Detached: [], SemiDetached: [], Terraced: [], Flat: [] };
+          let startYear = 1995; // default
+          if (s.code === 'K02000001') startYear = 2005; // United Kingdom
+          if (s.code === 'S92000003') startYear = 2004; // Scotland
+          if (s.code === 'N92000002') startYear = 2005; // Northern Ireland
+
+          s.dates.forEach((d, idx) => {
+            const year = parseInt(d.substring(0,4), 10);
+            if (year >= startYear) {
+              labels.push(d);
+              filtered.Detached.push(s.types.Detached[idx]);
+              filtered.SemiDetached.push(s.types.SemiDetached[idx]);
+              filtered.Terraced.push(s.types.Terraced[idx]);
+              filtered.Flat.push(s.types.Flat[idx]);
+            }
+          });
+
+          const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [
+                { label: 'Detached',      data: filtered.Detached,     borderColor: COLORS.Detached,     backgroundColor: 'rgba(31,119,180,0.10)', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
+                { label: 'Semi-detached', data: filtered.SemiDetached, borderColor: COLORS.SemiDetached, backgroundColor: 'rgba(255,127,14,0.10)', spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
+                { label: 'Terraced',      data: filtered.Terraced,     borderColor: COLORS.Terraced,     backgroundColor: 'rgba(44,160,44,0.10)',  spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true },
+                { label: 'Flat',          data: filtered.Flat,         borderColor: COLORS.Flat,         backgroundColor: 'rgba(214,39,40,0.10)',  spanGaps: true, pointRadius: 0, borderWidth: 2.5, tension: 0.35, cubicInterpolationMode: 'monotone', fill: true }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: { title: { display: true, text: '£' }, ticks: { callback: (v) => '£' + new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(v) } },
+                x: {
+                  ticks: {
+                    callback: function(value){
+                      const label = this.getLabelForValue(value);
+                      return label && label.length >= 4 ? label.substring(0,4) : label;
+                    },
+                    maxTicksLimit: 20
+                  }
+                }
+              },
+              plugins: {
+                legend: { display: true, position: 'bottom' },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => {
+                      const v = ctx.parsed.y;
+                      if (v == null) return `${ctx.dataset.label}: n/a`;
+                      const pounds = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(v);
+                      return `${ctx.dataset.label}: ${pounds}`;
+                    }
+                  }
+                }
+              },
+              elements: { point: { hitRadius: 6 } }
+            }
+          });
+          el._chartInstance = chart;
+
+          // Wire mini-controls to focus series
+          const container = el.closest('.border');
+          if (container) {
+            container.querySelectorAll('button[data-action]')?.forEach(btn => {
+              btn.addEventListener('click', () => {
+                if (!el._chartInstance) return; // safety
+                const chart = el._chartInstance;
+                const action = btn.getAttribute('data-action');
+                if (action === 'showAll') {
+                  chart.data.datasets.forEach(ds => ds.hidden = false);
+                  chart.update();
+                  return;
+                }
+                if (action === 'focus') {
+                  const t = btn.getAttribute('data-type');
+                  chart.data.datasets.forEach(ds => ds.hidden = (ds.label !== (t === 'SemiDetached' ? 'Semi-detached' : t)));
+                  chart.update();
+                }
+              });
+            });
+          }
+        });
+      } catch (e) { console.error('Type chart init error', e); }
+    })();
+  </script>
+  @endisset
+  </div>
+
+  <div id="section-movers" class="hidden">
+    <h2 class="text-xl font-semibold mt-4 mb-6">Top Movers &amp; Losers (latest month)</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Top Movers</h3>
+        <table class="w-full text-sm border">
+          <thead class="bg-neutral-100">
+            <tr>
+              <th class="p-2 text-left w-1/2">Region</th>
+              <th class="p-2 w-1/4">Price</th>
+              <th class="p-2 w-1/4">12m % Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($movers as $m)
+              <tr>
+                <td class="p-2">{{ $m->RegionName }}</td>
+                <td class="p-2">£{{ number_format($m->AveragePrice,0) }}</td>
+                <td class="p-2">
+                  @if($m->{'12m%Change'} > 0)
+                    <span class="text-green-600">+{{ number_format($m->{'12m%Change'},2) }}%</span>
+                  @elseif($m->{'12m%Change'} < 0)
+                    <span class="text-red-600">{{ number_format($m->{'12m%Change'},2) }}%</span>
+                  @else
+                    {{ number_format($m->{'12m%Change'},2) }}%
+                  @endif
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Top Losers</h3>
+        <table class="w-full text-sm border">
+          <thead class="bg-neutral-100">
+            <tr>
+              <th class="p-2 text-left w-1/2">Region</th>
+              <th class="p-2 w-1/4">Price</th>
+              <th class="p-2 w-1/4">12m % Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($losers as $m)
+              <tr>
+                <td class="p-2">{{ $m->RegionName }}</td>
+                <td class="p-2">£{{ number_format($m->AveragePrice,0) }}</td>
+                <td class="p-2">
+                  @if($m->{'12m%Change'} > 0)
+                    <span class="text-green-600">+{{ number_format($m->{'12m%Change'},2) }}%</span>
+                  @elseif($m->{'12m%Change'} < 0)
+                    <span class="text-red-600">{{ number_format($m->{'12m%Change'},2) }}%</span>
+                  @else
+                    {{ number_format($m->{'12m%Change'},2) }}%
+                  @endif
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
+  <script>
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-section');
+        // hide all
+        document.querySelectorAll('#section-change, #section-types, #section-movers').forEach(el => el.classList.add('hidden'));
+        // show selected
+        const show = document.getElementById('section-' + target);
+        if (show) show.classList.remove('hidden');
+        // update buttons
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('bg-blue-600','text-white');
+          b.classList.add('bg-neutral-200');
+        });
+        btn.classList.remove('bg-neutral-200');
+        btn.classList.add('bg-blue-600','text-white');
+      });
+    });
+  </script>
 
 @endsection

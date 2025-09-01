@@ -28,6 +28,11 @@ class HpiDashboardController extends Controller
             return HpiMonthly::latestNations();
         });
 
+        // Property type split (average prices) for UK + nations (for 5 charts)
+        $typePriceSeries = Cache::remember('hpi:type_price_series', $ttl, function () {
+            return HpiMonthly::typePriceSeriesByArea();
+        });
+
         // Build time series for UK + each nation (12m%Change over time)
         $areas = [
             'United Kingdom'   => 'K02000001',
@@ -90,6 +95,7 @@ class HpiDashboardController extends Controller
             'movers'       => $movers,
             'seriesByArea' => $seriesByArea,
             'losers'       => $losers,
+            'typePriceSeries' => $typePriceSeries,
         ]);
     }
 }

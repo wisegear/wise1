@@ -27,23 +27,8 @@ class HpiMonthly extends Model
         'AveragePriceSA' => 'float',
         'SalesVolume'    => 'integer',
     ];
-
-    /* ---------------------- Scopes / helpers ---------------------- */
-
-    /** Filter by area code */
-    public function scopeArea(Builder $q, string $code): Builder
-    {
-        return $q->where('AreaCode', $code);
-    }
-
-    /** UK rollup (K02000001) */
-    public function scopeUk(Builder $q): Builder
-    {
-        return $q->where('AreaCode', 'K02000001');
-    }
-
-    /** Nations rollups */
-    public static function nationCodes(): array
+    /** Mapping for UK + Nations (ordered for charts) */
+    public static function ukAndNationAreas(): array
     {
         return [
             'United Kingdom'   => 'K02000001',
@@ -54,67 +39,35 @@ class HpiMonthly extends Model
         ];
     }
 
-    /** Latest date (global) */
-    public static function latestDate(): ?string
+    /** Time series of average prices by property type for a given area */
+    public static function typePriceSeries(string $areaCode): \Illuminate\Support\Collection
     {
-        return static::query()->max('Date');
-    }
-
-    /** Latest date for a specific area */
-    public static function latestDateFor(string $areaCode): ?string
-    {
-        return static::query()->where('AreaCode', $areaCode)->max('Date');
-    }
-
-    /** Latest snapshot for a specific area (returns a single row or null) */
-    public static function latestSnapshotFor(string $areaCode): ?self
-    {
-        $d = self::latestDateFor($areaCode);
-        if (!$d) return null;
-
         return static::query()
+            ->select(['Date','DetachedPrice','SemiDetachedPrice','TerracedPrice','FlatPrice'])
             ->where('AreaCode', $areaCode)
-            ->where('Date', $d)
-            ->first();
-    }
-
-    /** Nations snapshot at their own latest dates (avoids misaligned months) */
-    public static function latestNations(): \Illuminate\Support\Collection
-    {
-        $rows = collect(self::nationCodes())
-            ->map(function ($code, $name) {
-                $d = self::latestDateFor($code);
-                if (!$d) return null;
-
-                return static::query()
-                    ->select([
-                        'RegionName','AreaCode','Date',
-                        'AveragePrice',
-                        DB::raw('`1m%Change` as one_m_change'),
-                        DB::raw('`12m%Change` as twelve_m_change'),
-                        'SalesVolume',
-                    ])
-                    ->where('AreaCode', $code)
-                    ->where('Date', $d)
-                    ->first();
-            })
-            ->filter();
-
-        return $rows->values();
-    }
-
-    /** UK time series (for charts) */
-    public static function ukSeries(): \Illuminate\Support\Collection
-    {
-        return static::query()
-            ->select([
-                'Date','AveragePrice','Index',
-                DB::raw('`1m%Change` as one_m_change'),
-                DB::raw('`12m%Change` as twelve_m_change'),
-                'SalesVolume',
-            ])
-            ->where('AreaCode', 'K02000001')
             ->orderBy('Date')
             ->get();
+    }
+
+    /** Chart-ready series (avg prices) for UK + Nations: dates (YYYY-MM) + per-type arrays */
+    public static function typePriceSeriesByArea(): array
+    {
+        $areas = self::ukAndNationAreas();
+        $out = [];
+        foreach ($areas as $name => $code) {
+            $rows = self::typePriceSeries($code);
+            $out[] = [
+                'name'  => $name,
+                'code'  => $code,
+                'dates' => $rows->pluck('Date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m'))->all(),
+                'types' => [
+                    'Detached'     => $rows->pluck('DetachedPrice')->map(fn($v) => is_null($v) ? null : (float)$v)->all(),
+                    'SemiDetached' => $rows->pluck('SemiDetachedPrice')->map(fn($v) => is_null($v) ? null : (float)$v)->all(),
+                    'Terraced'     => $rows->pluck('TerracedPrice')->map(fn($v) => is_null($v) ? null : (float)$v)->all(),
+                    'Flat'         => $rows->pluck('FlatPrice')->map(fn($v) => is_null($v) ? null : (float)$v)->all(),
+                ],
+            ];
+        }
+        return $out;
     }
 }
