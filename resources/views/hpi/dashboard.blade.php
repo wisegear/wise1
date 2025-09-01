@@ -3,8 +3,21 @@
 @section('content')
 <div class="max-w-7xl mx-auto p-6 space-y-6">
 
-  <h1 class="text-2xl font-bold">UK House Price Index Dashboard</h1>
-  <p class="text-sm text-neutral-600">Global latest date: {{ \Carbon\Carbon::parse($latestGlobal)->format('F Y') }}</p>
+    {{-- Hero / summary card --}}
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">HPI Dashboard</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-700">
+                <span class="font-semibold">House Price Index for UK and England, Wales, Scotland & Northern Ireland.</span>
+            </p>
+            <p class="mt-1 text-sm leading-6 text-gray-700">
+                Data covers the period from 1968 to 2025 (June)
+            </p>
+        </div>
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/hpi.svg') }}" alt="EPC Dashboard" class="w-64 h-auto">
+        </div>
+    </section>
 
   <h2 class="text-xl font-semibold mt-4">Nations Snapshot</h2>
   <div class="grid md:grid-cols-5 gap-4">
@@ -126,9 +139,9 @@
   <table class="w-full text-sm border">
     <thead class="bg-neutral-100">
       <tr>
-        <th class="p-2 text-left">Region</th>
-        <th class="p-2">Price</th>
-        <th class="p-2">12m % Change</th>
+        <th class="p-2 text-left w-1/2">Region</th>
+        <th class="p-2 w-1/4">Price</th>
+        <th class="p-2 w-1/4">12m % Change</th>
       </tr>
     </thead>
     <tbody>
@@ -154,9 +167,9 @@
   <table class="w-full text-sm border">
     <thead class="bg-neutral-100">
       <tr>
-        <th class="p-2 text-left">Region</th>
-        <th class="p-2">Price</th>
-        <th class="p-2">12m % Change</th>
+        <th class="p-2 text-left w-1/2">Region</th>
+        <th class="p-2 w-1/4">Price</th>
+        <th class="p-2 w-1/4">12m % Change</th>
       </tr>
     </thead>
     <tbody>
