@@ -72,7 +72,7 @@ class HpiDashboardController extends Controller
                 ->where('Date', $latest)
                 ->whereNotIn('AreaCode', array_values(HpiMonthly::nationCodes()))
                 ->orderByDesc(DB::raw('`12m%Change`'))
-                ->limit(20)
+                ->limit(30)
                 ->get();
         });
 
@@ -84,7 +84,7 @@ class HpiDashboardController extends Controller
                 ->where('Date', $latest)
                 ->whereNotIn('AreaCode', array_values(HpiMonthly::nationCodes()))
                 ->orderBy(DB::raw('`12m%Change`'))
-                ->limit(20)
+                ->limit(30)
                 ->get();
         });
 
