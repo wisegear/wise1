@@ -50,13 +50,6 @@
   @if(isset($seriesByArea[0]))
     <div class="rounded-lg border bg-white p-4 mb-6">
       <div class="mb-2 text-sm text-neutral-600">{{ $seriesByArea[0]['name'] }}</div>
-      <div class="mb-2 flex flex-wrap gap-2 text-xs">
-        <button type="button" data-action="showAll" class="px-2 py-1 rounded border hover:bg-neutral-50">All</button>
-        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border hover:bg-neutral-50">Detached</button>
-        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border hover:bg-neutral-50">Semi-detached</button>
-        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border hover:bg-neutral-50">Terraced</button>
-        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border hover:bg-neutral-50">Flat</button>
-      </div>
       <div class="h-64">
         <canvas id="hpiChangeChart0" aria-label="{{ $seriesByArea[0]['name'] }} 12 month change" class="w-full h-full"></canvas>
       </div>
