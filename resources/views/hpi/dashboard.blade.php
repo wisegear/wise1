@@ -19,7 +19,6 @@
         </div>
     </section>
 
-  <h2 class="text-xl font-semibold mt-4">Nations Snapshot</h2>
   <div class="grid md:grid-cols-5 gap-4">
     @foreach($nations as $n)
       <div class="border rounded-lg p-4 bg-white shadow-sm">
@@ -43,7 +42,7 @@
 
   {{-- UK wide chart (index 0) --}}
   @if(isset($seriesByArea[0]))
-    <div class="rounded-2xl border bg-white p-4 mb-6">
+    <div class="rounded-lg border bg-white p-4 mb-6">
       <div class="mb-2 text-sm text-neutral-600">{{ $seriesByArea[0]['name'] }}</div>
       <div class="h-64">
         <canvas id="hpiChangeChart0" aria-label="{{ $seriesByArea[0]['name'] }} 12 month change" class="w-full h-full"></canvas>
@@ -55,7 +54,7 @@
   <div class="grid gap-6 md:grid-cols-2">
     @foreach($seriesByArea as $i => $s)
       @continue($i === 0)
-      <div class="rounded-2xl border bg-white p-4">
+      <div class="rounded-lg border bg-white p-4">
         <div class="mb-2 text-sm text-neutral-600">{{ $s['name'] }}</div>
         <div class="h-56">
           <canvas id="hpiChangeChart{{ $i }}" aria-label="{{ $s['name'] }} 12 month change" class="w-full h-full"></canvas>
