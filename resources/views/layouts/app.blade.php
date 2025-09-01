@@ -36,6 +36,7 @@
                 <div id="primaryNav" class="hidden md:flex flex-1 gap-2 text-sm md:ml-8 flex-col md:flex-row mt-3 md:mt-0">
                     <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
                     <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
+                    <a href="{{ url('/hpi') }}" class="px-3 py-2 rounded {{ request()->is('hpi') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">HPI</a>
 
                     <div class="relative">
                         <button id="propertyMenuButton" aria-haspopup="true" aria-controls="propertyDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -127,6 +128,7 @@
         <div id="mobileNav" class="hidden flex-col mt-3 space-y-1">
             <a href="{{ url('/') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Home</a>
             <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Blog</a>
+            <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
 
             {{-- Property dropdown for mobile --}}
             <div class="">
