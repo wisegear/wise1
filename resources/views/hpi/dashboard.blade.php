@@ -15,7 +15,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/hpi.svg') }}" alt="EPC Dashboard" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/hpi.svg') }}" alt="HPI Dashboard" class="w-64 h-auto">
         </div>
     </section>
 
@@ -69,6 +69,7 @@
     (function(){
       try {
         const series = @json($seriesByArea);
+        const POS = '#16a34a'; const NEG = '#dc2626';
         if (!Array.isArray(series) || series.length === 0) {
           console.warn('seriesByArea is empty or missing');
           return;
@@ -78,10 +79,7 @@
           if (!el) return;
           const ctx = el.getContext('2d');
           const dataValues = s.twelve_m_change;
-          const colors = dataValues.map(v => {
-            if (v === null || v === undefined) return 'rgba(0,0,0,0)';
-            return v >= 0 ? '#16a34a' : '#dc2626';
-          });
+          const colors = dataValues.map(v => (v === null || v === undefined) ? 'rgba(0,0,0,0)' : (v >= 0 ? POS : NEG));
           new Chart(ctx, {
             type: 'bar',
             data: {
@@ -90,8 +88,9 @@
                 label: '12m % change',
                 data: dataValues,
                 backgroundColor: colors,
-                borderColor: colors,
-                borderWidth: 1,
+                hoverBackgroundColor: colors,
+                borderWidth: 0,
+                borderSkipped: false,
                 spanGaps: true
               }]
             },
