@@ -14,7 +14,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/epc_search.svg') }}" alt="EPC Search" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/epc.svg') }}" alt="EPC Search" class="w-64 h-auto">
         </div>
     </section>
 

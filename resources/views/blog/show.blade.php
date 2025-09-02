@@ -66,20 +66,23 @@
                 </button>
                 </a>
             </div>
+
             @if($page->Users)
-            <!-- Author Box -->
-            <div class="max-w-4xl mx-auto mt-10">
-                <div class="flex items-center gap-4 p-4 md:p-6 border border-zinc-200 rounded-lg bg-white">
-                    <img 
-                        src="{{ '/assets/images/avatars/' . $page->Users->avatar }}" 
-                        alt="{{ $page->Users->name }} avatar" 
-                        class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-lg border border-zinc-300 object-cover">
-                    <div class="flex-1">
-                        <h3 class="font-semibold text-zinc-800 !text-lg">{{ $page->Users->name }}</h3>
-                        <p class="text-zinc-600 text-sm !mt-0">{{ $page->Users->bio }}</p>
+
+                <!-- Author Box -->
+                <div class="max-w-4xl mx-auto mt-10">
+                    <div class="flex items-center gap-4 p-4 md:p-6 border border-zinc-200 rounded-lg bg-white">
+                        <img 
+                            src="{{ '/assets/images/avatars/' . $page->Users->avatar }}" 
+                            alt="{{ $page->Users->name }} avatar" 
+                            class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-lg border border-zinc-300 object-cover">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-zinc-800 !text-lg">{{ $page->Users->name }}</h3>
+                            <p class="text-zinc-600 text-sm !mt-0">{{ $page->Users->bio }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+
             @endif
 
     </div>

@@ -41,7 +41,7 @@ class EpcController extends Controller
             ];
         });
 
-        // 2) EPCs by year (last ~10 years for speed)
+        // 2) EPCs by year (All years)
         $byYear = Cache::remember('epc.byYear', $ttl, function () use ($since2008) {
             return DB::table('epc_certificates')
                 ->selectRaw('YEAR(lodgement_date) as yr, COUNT(*) as cnt')
@@ -52,7 +52,33 @@ class EpcController extends Controller
                 ->get();
         });
 
-        // 3) Distribution of current energy ratings (A–G, plus NULL/other)
+        // 3) Energy ratings by year (A–G only)
+        $ratingByYear = Cache::remember('epc.ratingByYear', $ttl, function () use ($since2008) {
+            return DB::table('epc_certificates')
+                ->selectRaw('YEAR(lodgement_date) as yr, current_energy_rating as rating, COUNT(*) as cnt')
+                ->whereNotNull('lodgement_date')
+                ->where('lodgement_date', '>=', $since2008)
+                ->whereIn('current_energy_rating', ['A','B','C','D','E','F','G'])
+                ->groupBy('yr', 'rating')
+                ->orderBy('yr', 'asc')
+                ->orderByRaw("FIELD(current_energy_rating, 'A','B','C','D','E','F','G')")
+                ->get();
+        });
+
+        // 3b) Potential energy ratings by year (A–G only)
+        $potentialByYear = Cache::remember('epc.potentialByYear', $ttl, function () use ($since2008) {
+            return DB::table('epc_certificates')
+                ->selectRaw('YEAR(lodgement_date) as yr, potential_energy_rating as rating, COUNT(*) as cnt')
+                ->whereNotNull('lodgement_date')
+                ->where('lodgement_date', '>=', $since2008)
+                ->whereIn('potential_energy_rating', ['A','B','C','D','E','F','G'])
+                ->groupBy('yr', 'rating')
+                ->orderBy('yr', 'asc')
+                ->orderByRaw("FIELD(potential_energy_rating, 'A','B','C','D','E','F','G')")
+                ->get();
+        });
+
+        // 4) Distribution of current energy ratings (A–G, plus NULL/other)
         $ratingDist = Cache::remember('epc.ratingDist', $ttl, function () {
             return DB::table('epc_certificates')
                 ->selectRaw("
@@ -68,36 +94,12 @@ class EpcController extends Controller
                 ->get();
         });
 
-        // 4) Average floor area by property type (top 10 by count)
-        $avgFloorArea = Cache::remember('epc.avgFloorArea', $ttl, function () {
-            return DB::table('epc_certificates')
-                ->selectRaw('property_type, COUNT(*) as cnt, ROUND(AVG(total_floor_area),1) as avg_m2')
-                ->whereNotNull('property_type')
-                ->groupBy('property_type')
-                ->orderByDesc('cnt')
-                ->limit(10)
-                ->get();
-        });
-
-        // 5) Busiest postcodes in the last 12 months (top 10)
-        $topPostcodes = Cache::remember('epc.topPostcodes', $ttl, function () use ($last365, $today) {
-            return DB::table('epc_certificates')
-                ->selectRaw('postcode, COUNT(*) as cnt')
-                ->whereNotNull('postcode')
-                ->whereBetween('lodgement_date', [$last365, $today])
-                ->groupBy('postcode')
-                ->orderByDesc('cnt')
-                ->limit(10)
-                ->get();
-        });
-
-
         return view('epc.home', [
             'stats'        => $stats,
             'byYear'       => $byYear,
+            'ratingByYear' => $ratingByYear,
+            'potentialByYear' => $potentialByYear,
             'ratingDist'   => $ratingDist,
-            'avgFloorArea' => $avgFloorArea,
-            'topPostcodes' => $topPostcodes,
         ]);
     }
 
