@@ -36,11 +36,11 @@ class EpcWarmer extends Command
         $since2008 = Carbon::create(2008, 1, 1);
 
         // Cache keys (must match controller keys)
-        $kStats        = 'epc.stats';
-        $kByYear       = 'epc.byYear';
-        $kRatingDist   = 'epc.ratingDist';
-        $kAvgFloorArea = 'epc.avgFloorArea';
-        $kTopPostcodes = 'epc.topPostcodes';
+        $kStats          = 'epc.stats';
+        $kByYear         = 'epc.byYear';
+        $kRatingDist     = 'epc.ratingDist';
+        $kRatingByYear   = 'epc.ratingByYear';
+        $kPotentialByYear= 'epc.potentialByYear';
 
         // TTL (match controller TTL)
         $ttl = now()->addDays(45); // monthly feed cadence – cache for 45 days
@@ -74,7 +74,33 @@ class EpcWarmer extends Command
         Cache::put($kByYear, $byYear, $ttl);
         $this->line('✔ byYear cached');
 
-        // 3) Distribution of current energy ratings (single pass, no GROUP BY)
+        // 3) Current energy ratings by year (A–G only)
+        $ratingByYear = DB::table('epc_certificates')
+            ->selectRaw('YEAR(lodgement_date) as yr, current_energy_rating as rating, COUNT(*) as cnt')
+            ->whereNotNull('lodgement_date')
+            ->where('lodgement_date', '>=', $since2008)
+            ->whereIn('current_energy_rating', ['A','B','C','D','E','F','G'])
+            ->groupBy('yr', 'rating')
+            ->orderBy('yr', 'asc')
+            ->orderByRaw("FIELD(current_energy_rating, 'A','B','C','D','E','F','G')")
+            ->get();
+        Cache::put($kRatingByYear, $ratingByYear, $ttl);
+        $this->line('✔ ratingByYear cached');
+
+        // 3b) Potential energy ratings by year (A–G only)
+        $potentialByYear = DB::table('epc_certificates')
+            ->selectRaw('YEAR(lodgement_date) as yr, potential_energy_rating as rating, COUNT(*) as cnt')
+            ->whereNotNull('lodgement_date')
+            ->where('lodgement_date', '>=', $since2008)
+            ->whereIn('potential_energy_rating', ['A','B','C','D','E','F','G'])
+            ->groupBy('yr', 'rating')
+            ->orderBy('yr', 'asc')
+            ->orderByRaw("FIELD(potential_energy_rating, 'A','B','C','D','E','F','G')")
+            ->get();
+        Cache::put($kPotentialByYear, $potentialByYear, $ttl);
+        $this->line('✔ potentialByYear cached');
+
+        // 4) Distribution of current energy ratings (single pass, no GROUP BY)
         $ratingCounts = DB::table('epc_certificates')
             ->selectRaw("
                 SUM(current_energy_rating = 'A') as A,
@@ -97,33 +123,6 @@ class EpcWarmer extends Command
         });
         Cache::put($kRatingDist, $ratingDist, $ttl);
         $this->line('✔ ratingDist cached');
-
-        // 4) Average floor area by property type (top 10)
-        $avgFloorArea = DB::table('epc_certificates')
-            ->selectRaw('property_type, COUNT(*) as cnt, ROUND(AVG(total_floor_area),1) as avg_m2')
-            ->whereNotNull('property_type')
-            ->groupBy('property_type')
-            ->orderByDesc('cnt')
-            ->limit(10)
-            ->get();
-        Cache::put($kAvgFloorArea, $avgFloorArea, $ttl);
-        $this->line('✔ avgFloorArea cached');
-
-        // 5) Busiest postcodes in the last 12 months (top 10) — anchored to latest lodgement
-        $this->line('→ computing topPostcodes (last 12 months from latest lodgement) ...');
-        $rangeEnd = $maxDate ?: $today;
-        $rangeStart = $maxDate ? Carbon::parse($maxDate)->copy()->subDays(365) : $last365;
-
-        $topPostcodes = DB::table('epc_certificates')
-            ->selectRaw('postcode, COUNT(*) as cnt')
-            ->whereNotNull('postcode')
-            ->whereBetween('lodgement_date', [$rangeStart, $rangeEnd])
-            ->groupBy('postcode')
-            ->orderByDesc('cnt')
-            ->limit(10)
-            ->get();
-        Cache::put($kTopPostcodes, $topPostcodes, $ttl);
-        $this->line('✔ topPostcodes cached');
 
         $elapsed = round((microtime(true) - $started), 2);
         $this->info("Done in {$elapsed}s");
