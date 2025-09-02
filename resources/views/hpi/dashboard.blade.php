@@ -84,17 +84,37 @@
           const el = document.getElementById('hpiChangeChart' + i);
           if (!el) return;
           const ctx = el.getContext('2d');
-          const dataValues = s.twelve_m_change;
-          const colors = dataValues.map(v => (v === null || v === undefined) ? 'rgba(0,0,0,0)' : (v >= 0 ? POS : NEG));
+          // Enforce start at 1969 and build arrays
+          const labels = [];
+          const plottedValues = [];
+          const plottedColors = [];
+
+          (s.dates || []).forEach((d, idx) => {
+            const year = parseInt(String(d).substring(0,4), 10);
+            if (!Number.isFinite(year) || year < 1969) return; // skip before 1969
+            labels.push(d);
+            const val = s.twelve_m_change[idx];
+            plottedValues.push(val);
+            const col = (val === null || val === undefined) ? 'rgba(0,0,0,0)' : (val >= 0 ? POS : NEG);
+            plottedColors.push(col);
+          });
+
+          // Add a trailing empty tick to stop right-edge bleed (keep left edge real so 1969 shows)
+          labels.push('');
+          plottedValues.push(null);
+          plottedColors.push('rgba(0,0,0,0)');
+          // Keep axis bounds pinned to first and last REAL labels (so 1969..latest shows)
+          const xMin = labels[0];
+          const xMax = labels.length > 1 ? labels[labels.length - 2] : labels[0];
           new Chart(ctx, {
             type: 'bar',
             data: {
-              labels: s.dates,
+              labels,
               datasets: [{
                 label: '12m % change',
-                data: dataValues,
-                backgroundColor: colors,
-                hoverBackgroundColor: colors,
+                data: plottedValues,
+                backgroundColor: plottedColors,
+                hoverBackgroundColor: plottedColors,
                 borderWidth: 0,
                 borderSkipped: false,
                 spanGaps: true
@@ -103,18 +123,32 @@
             options: {
               responsive: true,
               maintainAspectRatio: false,
+              layout: {
+                padding: { left: 8, right: 28 }
+              },
+              datasets: {
+                bar: { categoryPercentage: 0.82, barPercentage: 0.9 }
+              },
               scales: {
-                y: { 
+                y: {
                   title: { display: true, text: '%' },
                   beginAtZero: true
                 },
                 x: {
+                  offset: true,
+                  grid: { offset: true },
+                  bounds: 'data',
                   ticks: {
-                    callback: function(value, index, ticks) {
+                    includeBounds: true,
+                    autoSkip: true,
+                    callback: function(value) {
                       const label = this.getLabelForValue(value);
-                      return label && label.length >= 4 ? label.substring(0,4) : label;
+                      if (!label) return '';
+                      return label.substring(0,4);
                     },
-                    maxTicksLimit: 20
+                    maxTicksLimit: 20,
+                    maxRotation: 0,
+                    autoSkipPadding: 8
                   }
                 }
               },
