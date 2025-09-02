@@ -162,7 +162,7 @@ public function store(Request $request, ImageService $imageService)
     public function show(string $slug)
     {
         // Retrieve the post along with its related categories, user, and tags
-        $page = BlogPosts::with('BlogCategories', 'users', 'blogTags')
+        $page = BlogPosts::with('BlogCategories', 'Users', 'blogTags')
                          ->where('slug', $slug)
                          ->firstOrFail();
     

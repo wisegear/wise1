@@ -5,14 +5,14 @@
    <div class="mt-10">
 
             <!-- Post Header -->
-            <div class="max-w-5xl mx-auto my-10">
+            <div class="max-w-4xl mx-auto my-10">
                 <p class="text-zinc-400 text-sm border-l pl-4 mb-2">{{ $page->date->format('F j, Y') }}</p>
                 <h2 class="text-3xl md:text-5xl font-semibold tracking-tight my-6">{{ $page->title }}</h2>
                 <p class="text-zinc-500">{{ $page->summary }}</p>
              </div>
 
             <!-- Post image -->
-            <div class="max-w-5xl mx-auto">
+            <div class="max-w-4xl mx-auto">
                 <img src="{{ '/assets/images/uploads/' . 'large_' . $page->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
             </div>      
             
@@ -21,7 +21,7 @@
             <!-- Gallery Setup if exists -->
             
             <div class="">
-                <div class="max-w-5xl mx-auto mx-auto wise1text mt-10">
+                <div class="max-w-4xl mx-auto wise1text mt-10">
 
             <!-- Table of contents -->
             <div class="w-full">
@@ -66,9 +66,25 @@
                 </button>
                 </a>
             </div>
+            @if($page->Users)
+            <!-- Author Box -->
+            <div class="max-w-4xl mx-auto mt-10">
+                <div class="flex items-center gap-4 p-4 md:p-6 border border-zinc-200 rounded-lg bg-white">
+                    <img 
+                        src="{{ '/assets/images/avatars/' . $page->Users->avatar }}" 
+                        alt="{{ $page->Users->name }} avatar" 
+                        class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-lg border border-zinc-300 object-cover">
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-zinc-800 !text-lg">{{ $page->Users->name }}</h3>
+                        <p class="text-zinc-600 text-sm !mt-0">{{ $page->Users->bio }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
     </div>
 
-    <div class="max-w-5xl mx-auto mt-10">
+    <div class="max-w-4xl mx-auto mt-10">
         @if ($previousPage || $nextPage)
             <div class="grid grid-cols-2 gap-6 items-center rounded-lg mb-10">
                 @if ($previousPage)
@@ -109,7 +125,7 @@
     </div>
 
     <!-- Comments Section -->
-    <div class="max-w-5xl mx-auto mb-10">
+    <div class="max-w-4xl mx-auto mb-10">
         @include('partials.comments',
         [
             'comments' => $page->comments,
