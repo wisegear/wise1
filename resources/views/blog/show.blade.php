@@ -92,7 +92,7 @@
                     class="flex items-center space-x-4 group hover:bg-gray-100 p-4 rounded-lg transition">
                         <img src="{{ '/assets/images/uploads/small_' . $previousPage->original_image }}" 
                             alt="{{ $previousPage->title }}" 
-                            class="w-20 h-20 object-cover rounded-full shadow-sm hidden md:block border border-slate-300">
+                            class="w-20 h-20 object-cover rounded-lg shadow-sm hidden md:block border border-slate-300">
                         <div>
                             <span class="text-sm text-gray-500 font-bold">Previous Post</span>
                             <h3 class="text-gray-800 group-hover:text-teal-500 transition text-xs md:text-sm mt-2">
@@ -115,7 +115,7 @@
                         </div>
                         <img src="{{ '/assets/images/uploads/small_' . $nextPage->original_image }}" 
                             alt="{{ $nextPage->title }}" 
-                            class="w-20 h-20 object-cover rounded-full shadow-sm hidden md:block border border-slate-300">
+                            class="w-20 h-20 object-cover rounded-lg shadow-sm hidden md:block border border-slate-300">
                     </a>
                 @else
                     <div class="opacity-50 text-center text-gray-400 ">No Newer Posts</div>
