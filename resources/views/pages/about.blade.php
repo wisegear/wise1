@@ -31,6 +31,7 @@
             <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
             <li><span class="font-medium">Official court stats</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
             <li><span class="font-medium">Bank of England</span> — Bank Rate history and mortgage approvals (lending secured on dwellings).</li>
+            <li><span class="font-medium">Gov.uk</span> — For various datasets.</li>
         </ul>
         <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I'll find data on Scotland soon.</p>
     </section>
