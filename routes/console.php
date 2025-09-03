@@ -28,3 +28,6 @@ Schedule::command('warm:all-district')->monthlyOn(2, '03:00');
 
 // Schedule: run monthly (2nd of the month at 03:15)
 Schedule::command('warm:all-town')->monthlyOn(2, '03:15');
+
+// Sitemap
+Schedule::command('sitemap:generate')->dailyAt('01:10');

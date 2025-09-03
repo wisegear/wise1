@@ -206,7 +206,7 @@
                                 <th class="px-3 py-2 border-b">Rating</th>
                                 <th class="px-3 py-2 border-b">Potential</th>
                                 <th class="px-3 py-2 border-b">Address</th>
-                                <th class="px-3 py-2 border-b text-right">floor space (m²)</th>
+                                <th class="px-3 py-2 border-b text-right">floor space (sq ft)</th>
                                 <th class="px-3 py-2 border-b">Match Score</th>
                                 <th class="px-3 py-2 border-b">View</th>
                             </tr>
@@ -219,7 +219,9 @@
                                     <td class="px-3 py-2 border-b">{{ $row->current_energy_rating }}</td>
                                     <td class="px-3 py-2 border-b">{{ $row->potential_energy_rating }}</td>
                                     <td class="px-3 py-2 border-b">{{ $row->address }}</td>
-                                    <td class="px-3 py-2 border-b text-right">{{ $row->total_floor_area }}</td>
+                                    <td class="px-3 py-2 border-b text-right">
+                                        {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
+                                    </td>
                                     <td class="px-3 py-2 border-b">
                                         @php($s = (int) round($m['score'] ?? 0))
                                         @php(

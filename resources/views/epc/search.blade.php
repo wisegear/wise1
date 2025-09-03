@@ -141,10 +141,10 @@
             </a>
         </th>
 
-        {{-- m² (sortable) --}}
+        {{-- sq ft (sortable) --}}
         <th class="@class(['px-3 py-2 text-left border-b', 'bg-lime-100 font-bold' => request('sort')==='total_floor_area'])">
             <a href="{{ request()->fullUrlWithQuery(['sort' => 'total_floor_area', 'dir' => (request('sort')==='total_floor_area' && request('dir','desc')==='asc') ? 'desc' : 'asc']) }}" class="inline-flex items-center gap-1">
-                m²
+                sq ft
                 <span>
                     @if(request('sort')==='total_floor_area')
                         {{ request('dir','desc')==='asc' ? '▲' : '▼' }}
@@ -170,7 +170,9 @@
                                 <td class="px-3 py-2 align-top border-b">{{ $row->current_energy_rating }}</td>
                                 <td class="px-3 py-2 align-top border-b">{{ $row->potential_energy_rating }}</td>
                                 <td class="px-3 py-2 align-top border-b">{{ $row->property_type }}</td>
-                                <td class="px-3 py-2 align-top border-b text-right">{{ $row->total_floor_area }}</td>
+                                <td class="px-3 py-2 align-top border-b text-right">
+                                    {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
+                                </td>
                                 <td class="px-3 py-2 align-top border-b">{{ $row->local_authority_label }}</td>
                                 <td class="px-3 py-2 align-top border-b">
                                     @if(function_exists('route') && Route::has('epc.show'))
