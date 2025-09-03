@@ -11,7 +11,7 @@
                 <span class="font-semibold">House Price Index for UK and England, Wales, Scotland & Northern Ireland.</span>
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from 1968 to 2025 (June)
+                Data covers the period from 1969 to 2025 (June)
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
@@ -58,7 +58,7 @@
   @endif
 
   {{-- Four nation charts (indexes 1..4) in 2 columns --}}
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="grid gap-6 md:grid-cols-1">
     @foreach($seriesByArea as $i => $s)
       @continue($i === 0)
       <div class="rounded-lg border bg-white p-4">
@@ -70,109 +70,124 @@
     @endforeach
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    (function(){
-      try {
-        const series = @json($seriesByArea);
-        const POS = '#16a34a'; const NEG = '#dc2626';
-        if (!Array.isArray(series) || series.length === 0) {
-          console.warn('seriesByArea is empty or missing');
-          return;
-        }
-        series.forEach((s, i) => {
-          const el = document.getElementById('hpiChangeChart' + i);
-          if (!el) return;
-          const ctx = el.getContext('2d');
-          // Enforce start at 1969 and build arrays
-          const labels = [];
-          const plottedValues = [];
-          const plottedColors = [];
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function () {
+  try {
+    const series = @json($seriesByArea);
+    const POS = '#16a34a';  // green
+    const NEG = '#dc2626';  // red
+    const FIRST_YEAR = 1969;
 
-          (s.dates || []).forEach((d, idx) => {
-            const year = parseInt(String(d).substring(0,4), 10);
-            if (!Number.isFinite(year) || year < 1969) return; // skip before 1969
-            labels.push(d);
-            const val = s.twelve_m_change[idx];
-            plottedValues.push(val);
-            const col = (val === null || val === undefined) ? 'rgba(0,0,0,0)' : (val >= 0 ? POS : NEG);
-            plottedColors.push(col);
-          });
+    if (!Array.isArray(series) || series.length === 0) {
+      console.warn('seriesByArea is empty or missing');
+      return;
+    }
 
-          // Add a trailing empty tick to stop right-edge bleed (keep left edge real so 1969 shows)
-          labels.push('');
-          plottedValues.push(null);
-          plottedColors.push('rgba(0,0,0,0)');
-          // Keep axis bounds pinned to first and last REAL labels (so 1969..latest shows)
-          const xMin = labels[0];
-          const xMax = labels.length > 1 ? labels[labels.length - 2] : labels[0];
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels,
-              datasets: [{
-                label: '12m % change',
-                data: plottedValues,
-                backgroundColor: plottedColors,
-                hoverBackgroundColor: plottedColors,
-                borderWidth: 0,
-                borderSkipped: false,
-                spanGaps: true
-              }]
+    // Build a consistent [FIRST_YEAR..lastYear] axis, using the *latest* month in each year
+    function buildYearly(s) {
+      const yearMap = new Map(); // year -> { month, value }
+      (s.dates || []).forEach((d, idx) => {
+        const y = parseInt(String(d).slice(0, 4), 10);
+        if (!Number.isFinite(y) || y < FIRST_YEAR) return;
+        const m = parseInt(String(d).slice(5, 7) || '12', 10); // default to Dec if missing
+        const v = s.twelve_m_change ? s.twelve_m_change[idx] : null;
+        const prev = yearMap.get(y);
+        if (!prev || m >= prev.month) yearMap.set(y, { month: m, value: v });
+      });
+
+      const yearsInData = Array.from(yearMap.keys());
+      if (yearsInData.length === 0) return { labels: [], values: [], colors: [] };
+
+      const minYear = Math.max(FIRST_YEAR, Math.min(...yearsInData));
+      const maxYear = Math.max(...yearsInData);
+
+      const labels = [];
+      const values = [];
+      const colors = [];
+
+      for (let y = minYear; y <= maxYear; y++) {
+        labels.push(String(y));
+        const entry = yearMap.get(y);
+        const val = entry ? entry.value : null;
+        values.push(val);
+        colors.push(val == null ? 'rgba(0,0,0,0)' : (val >= 0 ? POS : NEG));
+      }
+      return { labels, values, colors };
+    }
+
+    series.forEach((s, i) => {
+      const el = document.getElementById('hpiChangeChart' + i);
+      if (!el) return;
+      const ctx = el.getContext('2d');
+
+      const { labels, values, colors } = buildYearly(s);
+      if (!labels.length) return;
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: '12m % change',
+            data: values,
+            backgroundColor: colors,
+            hoverBackgroundColor: colors,
+            borderWidth: 0,
+            borderSkipped: false,
+            spanGaps: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 10 } },
+          datasets: {
+            bar: { categoryPercentage: 0.9, barPercentage: 0.9 } // use full width so long timelines still fit
+          },
+          scales: {
+            y: {
+              title: { display: true, text: '%' },
+              beginAtZero: true
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              layout: {
-                padding: { left: 8, right: 28 }
-              },
-              datasets: {
-                bar: { categoryPercentage: 0.82, barPercentage: 0.9 }
-              },
-              scales: {
-                y: {
-                  title: { display: true, text: '%' },
-                  beginAtZero: true
+            x: {
+              ticks: {
+                autoSkip: false,
+                maxRotation: 0,
+                minRotation: 0,
+                // show label only for even-index ticks (every 2nd year)
+                callback: function (value, index) {
+                  return index % 2 === 0 ? this.getLabelForValue(value) : '';
                 },
-                x: {
-                  offset: true,
-                  grid: { offset: true },
-                  bounds: 'data',
-                  ticks: {
-                    includeBounds: true,
-                    autoSkip: true,
-                    callback: function(value) {
-                      const label = this.getLabelForValue(value);
-                      if (!label) return '';
-                      return label.substring(0,4);
-                    },
-                    maxTicksLimit: 20,
-                    maxRotation: 0,
-                    autoSkipPadding: 8
-                  }
-                }
+                // small responsive sizing so labels don't collide
+                font: ctx => ({ size: Math.max(10, Math.min(12, Math.floor(el.clientWidth / labels.length))) })
               },
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => {
-                      const v = ctx.parsed.y;
-                      if (v === null || v === undefined) return 'No data';
-                      const sign = v > 0 ? '+' : '';
-                      return `${sign}${v.toFixed(2)}%`;
-                    }
-                  }
+              grid: { offset: false },
+              offset: false
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: items => `Year ${items[0].label}`,
+                label: (ctx) => {
+                  const v = ctx.parsed.y;
+                  if (v == null) return 'No data';
+                  const sign = v > 0 ? '+' : '';
+                  return `${sign}${v.toFixed(2)}%`;
                 }
               }
             }
-          });
-        });
-      } catch (e) {
-        console.error('Chart init error', e);
-      }
-    })();
-  </script>
+          }
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Chart init error', e);
+  }
+})();
+</script>
   </div>
 
   <div id="section-types" class="hidden">
