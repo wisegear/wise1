@@ -4,11 +4,12 @@
 <div class="mx-auto max-w-4xl px-4 py-10 md:py-12">
     <header class="mb-8">
         <h1 class="text-3xl font-semibold tracking-tight text-gray-900">About this site</h1>
-        <p class="mt-3 text-base leading-7 text-gray-700">
-            I’m Lee Wisener, Glasgow-based mortgage veteran, data enthusiast, and repeat offender in the art of overthinking.
-            This site is my tidy corner for <span class="font-medium">clean, independent, data‑led</span> insight on UK property:
-            sales from HM Land Registry, repossession activity from official court statistics, and Bank of England interest rates &amp; approvals, presented without spin.
-        </p>
+            <p class="mt-3 text-base leading-7 text-gray-700">
+                I’m Lee Wisener, Glasgow-based mortgage veteran, data enthusiast, and repeat offender in the art of overthinking.
+                I work for a bank, but this site is entirely a personal project and not connected with my employer.
+                It’s my tidy corner for <span class="font-medium">clean, independent, data-led</span> insight on UK property:
+                sales from HM Land Registry, repossession activity from official court statistics, and Bank of England interest rates &amp; approvals, presented without spin.
+            </p>
     </header>
 
     {{-- What this is --}}
