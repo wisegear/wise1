@@ -193,9 +193,5 @@
         @endif
     @endisset
 
-    {{-- Helper notes --}}
-    <div class="mt-8 text-xs text-zinc-500">
-        <p>Tip: enter a full postcode to keep results tight. You can refine in your app by date and fuzzy address match if needed.</p>
-    </div>
 </div>
 @endsection
