@@ -189,7 +189,7 @@ class PropertyController extends Controller
                     'PPDCategoryType',
                 ])
                 ->where('Postcode', $postcode)
-                ->where('PPDCategoryType', 'A')
+                ->whereIn('PPDCategoryType', ['A', 'B'])
                 ->orderBy($sort, $dir)
                 ->Paginate(15)
                 ->appends(['postcode' => $postcode, 'sort' => $sort, 'dir' => $dir]); // keep query on pagination links
@@ -229,7 +229,7 @@ class PropertyController extends Controller
             ->select('Date', 'Price', 'PropertyType', 'NewBuild', 'Duration', 'PAON', 'SAON', 'Street', 'Postcode', 'Locality', 'TownCity', 'District', 'County', 'PPDCategoryType')
             ->where('Postcode', $postcode)
             ->where('PAON', $paon)
-            ->where('PPDCategoryType', 'A');
+            ->whereIn('PPDCategoryType', ['A', 'B']);
 
         // Treat empty Street as NULL-or-empty to maximise matches
         if (!empty($street)) {
@@ -254,7 +254,7 @@ class PropertyController extends Controller
         $propertyCacheKeyBase = sprintf('property:%s:%s:%s:%s', $postcode, $paon, $street, $saonKey);
 
         $records = Cache::remember(
-            $propertyCacheKeyBase . ':records:v2:catA',
+            $propertyCacheKeyBase . ':records:v2:catAB',
             self::CACHE_TTL,
             function () use ($query) {
                 return $query->orderBy('Date', 'desc')->limit(100)->get();

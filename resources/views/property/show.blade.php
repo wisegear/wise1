@@ -54,16 +54,16 @@
     @if($ppdSet->isNotEmpty())
         @if($hasA && !$hasB)
             <div class="mb-6 text-sm text-zinc-600">
-                All transactions shown for this property are <span class="font-semibold">Category A</span> sales.  This means all sales were at market value in an arms length transaction.
+                All transactions shown for this property are <span class="font-semibold text-rose-500">Category A</span> sales.  This means all sales were at market value in an arms length transaction.
             </div>
         @elseif($hasB && !$hasA)
             <div class="mb-6 text-sm text-zinc-600">
-                All transactions shown for this property are <span class="font-bold">Category B</span> sales.  It may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
+                All transactions shown for this property are <span class="font-bold text-rose-500">Category B</span> sales.  It may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
                 may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
             </div>
         @elseif($hasA && $hasB)
             <div class="mb-6 text-sm text-zinc-600">
-                This property has a <span class="font-semibold">mix of Category A and Category B</span> sales.  Category A means all sales were at market value in an arms length transaction.  Category B may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
+                This property has a <span class="font-semibold text-rose-500">mix of Category A and Category B</span> sales.  Category A means all sales were at market value in an arms length transaction.  Category B may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
                 may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
             </div>
         @else
@@ -122,7 +122,7 @@
         <p>No transactions found for this property.</p>
     @else
         <table class="min-w-full text-sm border border-zinc-200 rounded-md">
-            <thead class="bg-zinc-50">
+            <thead class="bg-zinc-100">
                 <tr class="text-left">
                     <th class="px-3 py-2">Date</th>
                     <th class="px-3 py-2">Price</th>
@@ -134,7 +134,7 @@
             </thead>
             <tbody>
                 @foreach($results as $row)
-                <tr class="border-t">
+                <tr class="border-t bg-white">
                     <td class="px-3 py-2">{{ \Carbon\Carbon::parse($row->Date)->format('d-m-Y') }}</td>
                     <td class="px-3 py-2">£{{ number_format($row->Price) }}</td>
                     <td class="px-3 py-2">
@@ -175,13 +175,22 @@
                 @endforeach
             </tbody>
         </table>
+        <!-- Cat A note on charts -->
+        @if(isset($hasB) ? $hasB : ($results->pluck('PPDCategoryType')->contains('B')))
+        <div class="text-center mt-2 text-sm">
+            <p>The Property history above contains Category B sales, as these are not sales at an arm's length and can skew the charts below; no Category B sales are included.
+                Category B sales are included in the table above for information only. In the event there are only Category B sales, the price history of the property chart will 
+                show no data.
+            </p>
+        </div>
+        @endif
     @endif
 
     <!-- EPC Matches (collapsible) -->
     @php
         $epcCount = is_countable($epcMatches ?? []) ? count($epcMatches ?? []) : 0;
     @endphp
-    <details class="mt-10 group">
+    <details class="mt-6 group">
         <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
             <div>
                 <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & address)</h2>
@@ -251,81 +260,81 @@
         </div>
     </details>
 
-<div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
-        <canvas id="priceHistoryChart" class="block w-full"></canvas>
+    <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
+            <canvas id="priceHistoryChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $postcode }}</h2>
+            <canvas id="postcodePriceChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
+            <canvas id="postcodeSalesChart" class="block w-full"></canvas>
+        </div>
+        <!-- Locality Charts (moved up) -->
+        @if($showLocalityCharts)
+        <!-- Locality Charts (shown only when locality is present and distinct) -->
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
+            <canvas id="localityPropertyTypesChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($locality)) }}</h2>
+            <canvas id="localityPriceChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($locality)) }}</h2>
+            <canvas id="localitySalesChart" class="block w-full"></canvas>
+        </div>
+        @endif
+        @if($showTownCharts)
+        <!-- Town/City Charts -->
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
+            <canvas id="townPropertyTypesChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($town)) }}</h2>
+            <canvas id="townPriceChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($town)) }}</h2>
+            <canvas id="townSalesChart" class="block w-full"></canvas>
+        </div>
+        @endif
+        <!-- District Charts -->
+        @if($showDistrictCharts)
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <canvas id="districtPropertyTypesChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <canvas id="districtPriceChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <canvas id="districtSalesChart" class="block w-full"></canvas>
+        </div>
+        @endif
+        @if(!empty($county))
+        <!-- County Charts -->
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
+            <canvas id="countyPropertyTypesChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
+            <canvas id="countyPriceChart" class="block w-full"></canvas>
+        </div>
+        <div class="border border-zinc-200 rounded-md p-2">
+            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
+            <canvas id="countySalesChart" class="block w-full"></canvas>
+        </div>
+        @endif
     </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $postcode }}</h2>
-        <canvas id="postcodePriceChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
-        <canvas id="postcodeSalesChart" class="block w-full"></canvas>
-    </div>
-    <!-- Locality Charts (moved up) -->
-    @if($showLocalityCharts)
-    <!-- Locality Charts (shown only when locality is present and distinct) -->
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localityPropertyTypesChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localityPriceChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($locality)) }}</h2>
-        <canvas id="localitySalesChart" class="block w-full"></canvas>
-    </div>
-    @endif
-    @if($showTownCharts)
-    <!-- Town/City Charts -->
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townPropertyTypesChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townPriceChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($town)) }}</h2>
-        <canvas id="townSalesChart" class="block w-full"></canvas>
-    </div>
-    @endif
-    <!-- District Charts -->
-    @if($showDistrictCharts)
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtPropertyTypesChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtPriceChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
-        <canvas id="districtSalesChart" class="block w-full"></canvas>
-    </div>
-    @endif
-    @if(!empty($county))
-    <!-- County Charts -->
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPropertyTypesChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countyPriceChart" class="block w-full"></canvas>
-    </div>
-    <div class="border border-zinc-200 rounded-md p-2">
-        <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
-        <canvas id="countySalesChart" class="block w-full"></canvas>
-    </div>
-    @endif
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
