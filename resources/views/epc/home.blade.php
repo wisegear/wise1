@@ -13,6 +13,9 @@
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 Data covers the period from January 2008 to July 2025
             </p>
+            <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
+                <a href="/epc/search" class="standard-button">Search For EPCs</a>
+            </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
             <img src="{{ asset('assets/images/site/epc_search.svg') }}" alt="EPC Dashboard" class="w-64 h-auto">
