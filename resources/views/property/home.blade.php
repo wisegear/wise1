@@ -10,6 +10,9 @@
                 The dashboard allows various options and search patters by address variables.  Land registry data is provided monthly.  In total there are over 32m records dating back to 1995.  Given the large dataset
                 all of the static charts that are not interactive, therefore will not change during the month are cached so that visitors do not have to wait for queries to run.
             </p>
+            <p class="mt-2 text-sm leading-6 text-gray-700">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</p>  
+            <p class="mt-2 text-sm leading-6 text-gray-700">All property data includes Category A sales only, these are sales at market value on an arms length basis.  Category B sales are not included as they are transactions for a variety of reasons not neccessairly at 
+                arms length therefore skew the data so are excluded.</p>     
             <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
                 <a href="/property/search" class="standard-button">Individual Property Search</a>
                 <a href="/property/outer-prime-london" class="standard-button">Outer Prime London</a>
@@ -24,7 +27,6 @@
 
 <!-- Charts -->
 
-<div class="flex justify-center text-rose-400 text-sm mb-4 font-semibold">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</div>
 <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <canvas id="salesChart" class="w-full h-full"></canvas>
