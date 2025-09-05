@@ -36,8 +36,7 @@
                 <div id="primaryNav" class="hidden md:flex flex-1 gap-2 text-sm md:ml-8 flex-col md:flex-row mt-3 md:mt-0">
                     <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
                     <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
-                    <a href="{{ url('/hpi') }}" class="px-3 py-2 rounded {{ request()->is('hpi') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">HPI</a>
-
+                    
                     <div class="relative">
                         <button id="propertyMenuButton" aria-haspopup="true" aria-controls="propertyDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
                             Property
@@ -68,9 +67,32 @@
                         </div>
                     </div>
 
-                    <a href="{{ url('/approvals') }}" class="px-3 py-2 rounded {{ request()->is('approvals') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Mortgage Approvals</a>
+                    <div class="relative">
+                        <button id="mortgagesMenuButton" aria-haspopup="true" aria-controls="mortgagesDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
+                            Mortgages
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="mortgagesDropdown" role="menu" aria-labelledby="mortgagesMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
+                            <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">HPI</a>
+                            <a href="{{ url('/approvals') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Approvals</a>
+                            <a href="{{ url('/repossessions') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Repossessions</a>
+                        </div>
+                    </div>
 
-                    <a href="{{ url('/repossessions') }}" class="px-3 py-2 rounded {{ request()->is('repossessions') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Repossessions</a>
+                    <div class="relative">
+                        <button id="calculatorsMenuButton" aria-haspopup="true" aria-controls="calculatorsDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
+                            Calculators
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="calculatorsDropdown" role="menu" aria-labelledby="calculatorsMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
+                            <a href="{{ url('/mortgage-calculator') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Calculator</a>
+                        </div>
+                    </div>
+
                     <a href="{{ url('/interest-rates') }}" class="px-3 py-2 rounded {{ request()->is('interest-rates') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Interest Rates</a>
                     <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
                 </div>
@@ -128,7 +150,6 @@
         <div id="mobileNav" class="hidden flex-col mt-3 space-y-1">
             <a href="{{ url('/') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Home</a>
             <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Blog</a>
-            <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
 
             {{-- Property dropdown for mobile --}}
             <div class="">
@@ -161,8 +182,32 @@
                 </div>
             </div>
 
-            <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
-            <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
+            <div class="">
+                <button id="mobileMortgagesBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
+                    Mortgages
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div id="mobileMortgagesMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                    <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
+                    <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
+                    <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
+                </div>
+            </div>
+
+            <div class="">
+                <button id="mobileCalculatorsBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
+                    Calculators
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div id="mobileCalculatorsMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                    <a href="{{ url('/mortgage-calculator') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Calculator</a>
+                </div>
+            </div>
+
             <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>
             <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>
 

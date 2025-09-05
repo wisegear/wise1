@@ -128,6 +128,101 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// Mortgages dropdown toggle functionality (desktop) - mirrors EPC/Property logic
+document.addEventListener('DOMContentLoaded', () => {
+  const mortBtn  = document.getElementById('mortgagesMenuButton');
+  const mortMenu = document.getElementById('mortgagesDropdown');
+
+  if (!mortBtn || !mortMenu) return; // IDs missing in Blade
+
+  const openMenu = () => {
+    mortMenu.classList.remove('hidden');
+    mortMenu.classList.add('transition', 'duration-150', 'ease-out');
+    requestAnimationFrame(() => {
+      mortMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+    });
+    mortBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeMenu = () => {
+    mortMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+    const onEnd = (e) => {
+      if (e.target !== mortMenu) return;
+      mortMenu.classList.add('hidden');
+      mortMenu.removeEventListener('transitionend', onEnd);
+    };
+    mortMenu.addEventListener('transitionend', onEnd);
+    mortBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  mortBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = mortMenu.classList.contains('hidden');
+    isHidden ? openMenu() : closeMenu();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    const open = !mortMenu.classList.contains('hidden');
+    if (!open) return;
+    if (!mortMenu.contains(e.target) && !mortBtn.contains(e.target)) closeMenu();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+});
+
+// Calculators dropdown toggle functionality (desktop) - mirrors others
+document.addEventListener('DOMContentLoaded', () => {
+  const calcBtn  = document.getElementById('calculatorsMenuButton');
+  const calcMenu = document.getElementById('calculatorsDropdown');
+
+  if (!calcBtn || !calcMenu) return; // IDs missing in Blade
+
+  const openMenu = () => {
+    calcMenu.classList.remove('hidden');
+    calcMenu.classList.add('transition', 'duration-150', 'ease-out');
+    requestAnimationFrame(() => {
+      calcMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+    });
+    calcBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeMenu = () => {
+    calcMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+    const onEnd = (e) => {
+      if (e.target !== calcMenu) return;
+      calcMenu.classList.add('hidden');
+      calcMenu.removeEventListener('transitionend', onEnd);
+    };
+    calcMenu.addEventListener('transitionend', onEnd);
+    calcBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  calcBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = calcMenu.classList.contains('hidden');
+    isHidden ? openMenu() : closeMenu();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    const open = !calcMenu.classList.contains('hidden');
+    if (!open) return;
+    if (!calcMenu.contains(e.target) && !calcBtn.contains(e.target)) closeMenu();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+});
+
+
 // Mobile navigation toggles
 document.addEventListener('DOMContentLoaded', () => {
   // Mobile main nav toggle
@@ -161,6 +256,43 @@ document.addEventListener('DOMContentLoaded', () => {
     epcBtn.addEventListener('click', () => {
       const isHidden = epcMenu.classList.contains('hidden');
       epcMenu.classList.toggle('hidden', !isHidden);
+    });
+  }
+
+  // Mobile Mortgages submenu toggle - mirrors other mobile submenu logic
+  const mortMobileBtn = document.getElementById('mobileMortgagesBtn');
+  const mortMobileMenu = document.getElementById('mobileMortgagesMenu');
+
+  if (mortMobileBtn && mortMobileMenu) {
+    mortMobileBtn.addEventListener('click', () => {
+      const isHidden = mortMobileMenu.classList.contains('hidden');
+      mortMobileMenu.classList.toggle('hidden', !isHidden);
+    });
+  }
+
+  // Mobile Calculators submenu toggle
+  const calcMobileBtn = document.getElementById('mobileCalculatorsBtn');
+  const calcMobileMenu = document.getElementById('mobileCalculatorsMenu');
+
+  if (calcMobileBtn && calcMobileMenu) {
+    calcMobileBtn.addEventListener('click', () => {
+      const isHidden = calcMobileMenu.classList.contains('hidden');
+      calcMobileMenu.classList.toggle('hidden', !isHidden);
+    });
+  }
+});
+
+// Mortgage Calculator value input transform.
+
+document.addEventListener("DOMContentLoaded", () => {
+  const amountInput = document.getElementById("amount");
+
+  if (amountInput) {
+    amountInput.addEventListener("input", (e) => {
+      let value = e.target.value.replace(/,/g, ""); // remove existing commas
+      if (!isNaN(value) && value.length > 0) {
+        e.target.value = parseInt(value, 10).toLocaleString("en-GB");
+      }
     });
   }
 });
