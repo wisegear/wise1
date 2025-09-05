@@ -9,6 +9,7 @@ use App\Http\Controllers\RepossessionsController;
 use App\Http\Controllers\InterestRateController;
 use App\Http\Controllers\MortgageApprovalController;
 use App\Http\Controllers\MortgageCalcController;
+use App\Http\Controllers\StampDutyController;
 use App\Http\Controllers\EpcController;
 use App\Http\Controllers\HpiDashboardController;
 use App\Http\Controllers\BlogController;
@@ -47,6 +48,9 @@ Route::get('/epc', [EpcController::class, 'home'])->name('epc.home');
 Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
 Route::get('/hpi', [HpiDashboardController::class, 'index'])->name('hpi.home');
 Route::match(['get', 'post'], '/mortgage-calculator', [MortgageCalcController::class, 'index'])->name('mortgagecalc.index');
+
+Route::get('/stamp-duty', [StampDutyController::class, 'index']);
+Route::post('/stamp-duty/calc', [StampDutyController::class, 'calculate']);
 
 
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
