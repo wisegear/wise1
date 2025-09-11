@@ -22,11 +22,33 @@ Alpine.start();
     registry.forEach(({ btn, menu }) => {
       if (menu === exceptMenu) return;
       if (!menu.classList.contains('hidden')) {
-        // Hide immediately and reset animation-related classes
-        menu.classList.add('hidden', 'opacity-0', 'scale-95', 'pointer-events-none');
+        window._animateClose(menu);
       }
       if (btn) btn.setAttribute('aria-expanded', 'false');
     });
+  };
+
+  // --- Shared animation helpers for dropdowns ---
+  window._animateOpen = function (menuEl) {
+    if (!menuEl) return;
+    menuEl.classList.remove('hidden');
+    menuEl.classList.add('transition', 'duration-150', 'ease-out');
+    requestAnimationFrame(() => {
+      menuEl.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+    });
+  };
+
+  window._animateClose = function (menuEl, cb) {
+    if (!menuEl) return;
+    if (menuEl.classList.contains('hidden')) { if (cb) cb(); return; }
+    menuEl.classList.add('transition', 'duration-100', 'ease-in', 'opacity-0', 'scale-95', 'pointer-events-none');
+    const onEnd = (e) => {
+      if (e.target !== menuEl) return;
+      menuEl.classList.add('hidden');
+      menuEl.removeEventListener('transitionend', onEnd);
+      if (cb) cb();
+    };
+    menuEl.addEventListener('transitionend', onEnd);
   };
 })();
 
@@ -40,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Close dropdown when clicking outside
     document.addEventListener('click', function (e) {
         if (!button.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.add('hidden');
+            window._animateClose(dropdown);
         }
     });
 
@@ -48,8 +70,12 @@ document.addEventListener('DOMContentLoaded', function () {
     button.addEventListener('click', function (e) {
         e.preventDefault();
         const willOpen = dropdown.classList.contains('hidden');
-        if (willOpen) window._closeAllDropdownsExcept(dropdown);
-        dropdown.classList.toggle('hidden');
+        if (willOpen) {
+          window._closeAllDropdownsExcept(dropdown);
+          window._animateOpen(dropdown);
+        } else {
+          window._animateClose(dropdown);
+        }
         button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
 });
@@ -66,24 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openMenu = () => {
     window._closeAllDropdownsExcept(propMenu);
-    propMenu.classList.remove('hidden');
-    // Optional: smooth pop (only if your Blade has these classes available)
-    propMenu.classList.add('transition', 'duration-150', 'ease-out');
-    requestAnimationFrame(() => {
-      propMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-    });
+    window._animateOpen(propMenu);
     propBtn.setAttribute('aria-expanded', 'true');
   };
 
   const closeMenu = () => {
-    // Optional animation out
-    propMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-    const onEnd = (e) => {
-      if (e.target !== propMenu) return;
-      propMenu.classList.add('hidden');
-      propMenu.removeEventListener('transitionend', onEnd);
-    };
-    propMenu.addEventListener('transitionend', onEnd);
+    window._animateClose(propMenu, () => { /* no-op */ });
     propBtn.setAttribute('aria-expanded', 'false');
   };
 
@@ -119,24 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openMenu = () => {
     window._closeAllDropdownsExcept(epcMenu);
-    epcMenu.classList.remove('hidden');
-    // Optional: smooth pop (only if your Blade has these classes available)
-    epcMenu.classList.add('transition', 'duration-150', 'ease-out');
-    requestAnimationFrame(() => {
-      epcMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-    });
+    window._animateOpen(epcMenu);
     epcBtn.setAttribute('aria-expanded', 'true');
   };
 
   const closeMenu = () => {
-    // Optional animation out
-    epcMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-    const onEnd = (e) => {
-      if (e.target !== epcMenu) return;
-      epcMenu.classList.add('hidden');
-      epcMenu.removeEventListener('transitionend', onEnd);
-    };
-    epcMenu.addEventListener('transitionend', onEnd);
+    window._animateClose(epcMenu, () => {});
     epcBtn.setAttribute('aria-expanded', 'false');
   };
 
@@ -172,22 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openMenu = () => {
     window._closeAllDropdownsExcept(mortMenu);
-    mortMenu.classList.remove('hidden');
-    mortMenu.classList.add('transition', 'duration-150', 'ease-out');
-    requestAnimationFrame(() => {
-      mortMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-    });
+    window._animateOpen(mortMenu);
     mortBtn.setAttribute('aria-expanded', 'true');
   };
 
   const closeMenu = () => {
-    mortMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-    const onEnd = (e) => {
-      if (e.target !== mortMenu) return;
-      mortMenu.classList.add('hidden');
-      mortMenu.removeEventListener('transitionend', onEnd);
-    };
-    mortMenu.addEventListener('transitionend', onEnd);
+    window._animateClose(mortMenu, () => {});
     mortBtn.setAttribute('aria-expanded', 'false');
   };
 
@@ -222,22 +214,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const openMenu = () => {
     window._closeAllDropdownsExcept(calcMenu);
-    calcMenu.classList.remove('hidden');
-    calcMenu.classList.add('transition', 'duration-150', 'ease-out');
-    requestAnimationFrame(() => {
-      calcMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
-    });
+    window._animateOpen(calcMenu);
     calcBtn.setAttribute('aria-expanded', 'true');
   };
 
   const closeMenu = () => {
-    calcMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-    const onEnd = (e) => {
-      if (e.target !== calcMenu) return;
-      calcMenu.classList.add('hidden');
-      calcMenu.removeEventListener('transitionend', onEnd);
-    };
-    calcMenu.addEventListener('transitionend', onEnd);
+    window._animateClose(calcMenu, () => {});
     calcBtn.setAttribute('aria-expanded', 'false');
   };
 
@@ -284,8 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window._registerDropdownPair(propBtn, propMenu);
     propBtn.addEventListener('click', () => {
       const willOpen = propMenu.classList.contains('hidden');
-      if (willOpen) window._closeAllDropdownsExcept(propMenu);
-      propMenu.classList.toggle('hidden', !willOpen);
+      if (willOpen) { window._closeAllDropdownsExcept(propMenu); window._animateOpen(propMenu); }
+      else { window._animateClose(propMenu); }
       propBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
@@ -298,8 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window._registerDropdownPair(epcBtn, epcMenu);
     epcBtn.addEventListener('click', () => {
       const willOpen = epcMenu.classList.contains('hidden');
-      if (willOpen) window._closeAllDropdownsExcept(epcMenu);
-      epcMenu.classList.toggle('hidden', !willOpen);
+      if (willOpen) { window._closeAllDropdownsExcept(epcMenu); window._animateOpen(epcMenu); }
+      else { window._animateClose(epcMenu); }
       epcBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
@@ -312,8 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window._registerDropdownPair(mortMobileBtn, mortMobileMenu);
     mortMobileBtn.addEventListener('click', () => {
       const willOpen = mortMobileMenu.classList.contains('hidden');
-      if (willOpen) window._closeAllDropdownsExcept(mortMobileMenu);
-      mortMobileMenu.classList.toggle('hidden', !willOpen);
+      if (willOpen) { window._closeAllDropdownsExcept(mortMobileMenu); window._animateOpen(mortMobileMenu); }
+      else { window._animateClose(mortMobileMenu); }
       mortMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
@@ -326,8 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window._registerDropdownPair(calcMobileBtn, calcMobileMenu);
     calcMobileBtn.addEventListener('click', () => {
       const willOpen = calcMobileMenu.classList.contains('hidden');
-      if (willOpen) window._closeAllDropdownsExcept(calcMobileMenu);
-      calcMobileMenu.classList.toggle('hidden', !willOpen);
+      if (willOpen) { window._closeAllDropdownsExcept(calcMobileMenu); window._animateOpen(calcMobileMenu); }
+      else { window._animateClose(calcMobileMenu); }
       calcMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
