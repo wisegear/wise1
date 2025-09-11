@@ -139,7 +139,7 @@
 
 <script>
 (function(){
-  const fmtGBP = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 2 }).format(n);
+  const fmtGBP = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
   const el = (id) => document.getElementById(id);
 
   const regionSel = el('region');
