@@ -26,7 +26,7 @@
 
                     <div>
                         <label class="block text-sm mb-1" for="price">Property price (£)</label>
-                        <input id="price" name="price" type="number" step="1" min="0" class="w-full border rounded p-2" placeholder="e.g. 350000" required>
+                     <input id="price" name="price" type="text" inputmode="numeric" pattern="[0-9,]*" class="w-full border rounded p-2" placeholder="e.g. 350,000" required>
                     </div>
 
                     <div>
@@ -63,17 +63,6 @@
                     <button type="submit" class="w-full md:w-auto px-4 py-2 rounded bg-lime-600 hover:bg-lime-500 text-white cursor-pointer">Calculate</button>
                 </form>
             </div>
-
-            {{-- Notes --}}
-            <div class="mt-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-700">
-                <h3 class="font-medium text-gray-900 mb-2">Notes</h3>
-                <ul class="list-disc ml-5 space-y-1">
-                    <li>England &amp; NI: SDLT higher rates add <strong>+5%</strong> to the full price; non‑resident adds <strong>+2%</strong> (both cumulative).</li>
-                    <li>Scotland: LBTT ADS is <strong>8%</strong> on the full price; FTB nil‑rate band increased to £175,000.</li>
-                    <li>Wales: LTT has separate higher‑rates bands for additional properties; no FTB relief.</li>
-                    <li>This tool is a guide only and does not constitute advice.</li>
-                </ul>
-            </div>
         </div>
 
         {{-- Results panel --}}
@@ -84,15 +73,15 @@
                 <div id="summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 hidden">
                     <div class="rounded border border-gray-200 p-4">
                         <div class="text-xs text-gray-500">Jurisdiction</div>
-                        <div id="jurisdiction" class="text-base font-medium"></div>
+                        <div id="jurisdiction" class="text-sm mt-2 font-medium"></div>
                     </div>
                     <div class="rounded border border-gray-200 p-4">
                         <div class="text-xs text-gray-500">Total tax due</div>
-                        <div id="total_tax" class="text-xl font-semibold"></div>
+                        <div id="total_tax" class="text-xl mt-2 font-semibold"></div>
                     </div>
                     <div class="rounded border border-gray-200 p-4">
                         <div class="text-xs text-gray-500">Base tax (before surcharges)</div>
-                        <div id="base_tax" class="text-base font-medium"></div>
+                        <div id="base_tax" class="text-xl mt-2 font-semibold"></div>
                     </div>
                 </div>
 
@@ -134,6 +123,17 @@
                 <div id="placeholder" class="text-sm text-gray-600">Enter details on the left and hit <em>Calculate</em> to see the breakdown.</div>
             </div>
         </div>
+
+        {{-- Notes --}}
+        <div class="lg:col-span-3 mt-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm text-sm text-gray-700">
+            <h3 class="font-medium text-gray-900 mb-2">Notes</h3>
+            <ul class="list-disc ml-5 space-y-1">
+                <li>England &amp; NI: SDLT higher rates add <strong>+5%</strong> to the full price; non‑resident adds <strong>+2%</strong> (both cumulative).</li>
+                <li>Scotland: LBTT ADS is <strong>8%</strong> on the full price; FTB nil‑rate band increased to £175,000.</li>
+                <li>Wales: LTT has separate higher‑rates bands for additional properties; no FTB relief.</li>
+                <li>This tool is a guide only and does not constitute advice.</li>
+            </ul>
+        </div>
     </section>
 </div>
 
@@ -158,7 +158,8 @@
     e.preventDefault();
     const form = e.target;
     const payload = {
-      price: Number(form.price.value),
+      // Normalise comma-formatted price to a number
+      price: Number((form.price.value || '').replace(/,/g, '')),
       region: form.region.value,
       buyer_type: form.buyer_type.value,
       additional_property: form.additional_property.checked,
@@ -228,6 +229,21 @@
     }
 
     // raw json
+  }
+
+  // Format price input with commas while typing
+  const priceInput = el('price');
+  if (priceInput) {
+    const format = () => {
+      const raw = priceInput.value.replace(/,/g, '');
+      if (raw === '') { priceInput.value = ''; return; }
+      // Keep only digits
+      const digits = raw.replace(/\D/g, '');
+      if (digits.length === 0) { priceInput.value = ''; return; }
+      priceInput.value = Number(digits).toLocaleString('en-GB');
+    };
+    priceInput.addEventListener('input', format);
+    priceInput.addEventListener('blur', format);
   }
 })();
 </script>
