@@ -7,11 +7,35 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
+// --- Global dropdown registry to ensure only one is open at a time ---
+(function () {
+  const registry = (window._navDropdowns = new Set());
+
+  // Register a [button, menu] pair so we can close others when one opens
+  window._registerDropdownPair = function (btn, menu) {
+    if (!btn || !menu) return;
+    registry.add({ btn, menu });
+  };
+
+  // Close all registered dropdowns except the provided menu
+  window._closeAllDropdownsExcept = function (exceptMenu) {
+    registry.forEach(({ btn, menu }) => {
+      if (menu === exceptMenu) return;
+      if (!menu.classList.contains('hidden')) {
+        // Hide immediately and reset animation-related classes
+        menu.classList.add('hidden', 'opacity-0', 'scale-95', 'pointer-events-none');
+      }
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  };
+})();
 
 // User menu dropdown toggle functionality
 document.addEventListener('DOMContentLoaded', function () {
     const button = document.getElementById('userMenuButton');
     const dropdown = document.getElementById('userDropdown');
+
+    if (button && dropdown) window._registerDropdownPair(button, dropdown);
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function (e) {
@@ -23,7 +47,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Toggle dropdown on button click
     button.addEventListener('click', function (e) {
         e.preventDefault();
+        const willOpen = dropdown.classList.contains('hidden');
+        if (willOpen) window._closeAllDropdownsExcept(dropdown);
         dropdown.classList.toggle('hidden');
+        button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
 });
 
@@ -35,7 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!propBtn || !propMenu) return; // IDs missing in Blade
 
+  window._registerDropdownPair(propBtn, propMenu);
+
   const openMenu = () => {
+    window._closeAllDropdownsExcept(propMenu);
     propMenu.classList.remove('hidden');
     // Optional: smooth pop (only if your Blade has these classes available)
     propMenu.classList.add('transition', 'duration-150', 'ease-out');
@@ -85,7 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!epcBtn || !epcMenu) return; // IDs missing in Blade
 
+  window._registerDropdownPair(epcBtn, epcMenu);
+
   const openMenu = () => {
+    window._closeAllDropdownsExcept(epcMenu);
     epcMenu.classList.remove('hidden');
     // Optional: smooth pop (only if your Blade has these classes available)
     epcMenu.classList.add('transition', 'duration-150', 'ease-out');
@@ -135,7 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!mortBtn || !mortMenu) return; // IDs missing in Blade
 
+  window._registerDropdownPair(mortBtn, mortMenu);
+
   const openMenu = () => {
+    window._closeAllDropdownsExcept(mortMenu);
     mortMenu.classList.remove('hidden');
     mortMenu.classList.add('transition', 'duration-150', 'ease-out');
     requestAnimationFrame(() => {
@@ -182,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!calcBtn || !calcMenu) return; // IDs missing in Blade
 
+  window._registerDropdownPair(calcBtn, calcMenu);
+
   const openMenu = () => {
+    window._closeAllDropdownsExcept(calcMenu);
     calcMenu.classList.remove('hidden');
     calcMenu.classList.add('transition', 'duration-150', 'ease-out');
     requestAnimationFrame(() => {
@@ -242,9 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const propMenu = document.getElementById('mobilePropertyMenu');
 
   if (propBtn && propMenu) {
+    window._registerDropdownPair(propBtn, propMenu);
     propBtn.addEventListener('click', () => {
-      const isHidden = propMenu.classList.contains('hidden');
-      propMenu.classList.toggle('hidden', !isHidden);
+      const willOpen = propMenu.classList.contains('hidden');
+      if (willOpen) window._closeAllDropdownsExcept(propMenu);
+      propMenu.classList.toggle('hidden', !willOpen);
+      propBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 
@@ -253,9 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const epcMenu = document.getElementById('mobileEpcMenu');
 
   if (epcBtn && epcMenu) {
+    window._registerDropdownPair(epcBtn, epcMenu);
     epcBtn.addEventListener('click', () => {
-      const isHidden = epcMenu.classList.contains('hidden');
-      epcMenu.classList.toggle('hidden', !isHidden);
+      const willOpen = epcMenu.classList.contains('hidden');
+      if (willOpen) window._closeAllDropdownsExcept(epcMenu);
+      epcMenu.classList.toggle('hidden', !willOpen);
+      epcBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 
@@ -264,9 +309,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const mortMobileMenu = document.getElementById('mobileMortgagesMenu');
 
   if (mortMobileBtn && mortMobileMenu) {
+    window._registerDropdownPair(mortMobileBtn, mortMobileMenu);
     mortMobileBtn.addEventListener('click', () => {
-      const isHidden = mortMobileMenu.classList.contains('hidden');
-      mortMobileMenu.classList.toggle('hidden', !isHidden);
+      const willOpen = mortMobileMenu.classList.contains('hidden');
+      if (willOpen) window._closeAllDropdownsExcept(mortMobileMenu);
+      mortMobileMenu.classList.toggle('hidden', !willOpen);
+      mortMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 
@@ -275,9 +323,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const calcMobileMenu = document.getElementById('mobileCalculatorsMenu');
 
   if (calcMobileBtn && calcMobileMenu) {
+    window._registerDropdownPair(calcMobileBtn, calcMobileMenu);
     calcMobileBtn.addEventListener('click', () => {
-      const isHidden = calcMobileMenu.classList.contains('hidden');
-      calcMobileMenu.classList.toggle('hidden', !isHidden);
+      const willOpen = calcMobileMenu.classList.contains('hidden');
+      if (willOpen) window._closeAllDropdownsExcept(calcMobileMenu);
+      calcMobileMenu.classList.toggle('hidden', !willOpen);
+      calcMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 });
