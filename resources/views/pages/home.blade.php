@@ -99,7 +99,7 @@
                 <h2 class="text-lg font-semibold text-zinc-900">Energy Performance Certificates - EPC</h2>
                 <span class="rounded-lg bg-orange-200 px-2 py-1 text-xs text-zinc-700">Beta</span>
             </div>
-            <p class="mt-2 text-sm text-zinc-700">Monthly BoE approvals for house purchases, remortgaging and other secured lending.</p>
+            <p class="mt-2 text-sm text-zinc-700">Basic EPC report details for England, Wales and now Scotland.</p>
             <div class="mt-4 inline-flex items-center text-sm font-medium text-cyan-700 group-hover:underline">Open EPC Dashboard
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="ml-1 h-4 w-4"><path d="M13 5l7 7-7 7v-4H4v-6h9V5z"/></svg>
             </div>
