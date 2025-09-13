@@ -29,100 +29,116 @@ class EpcWarmer extends Command
         DB::connection()->disableQueryLog();
         if (function_exists('set_time_limit')) { set_time_limit(0); }
 
-        // Time windows
-        $today     = Carbon::today();
-        $last30    = $today->copy()->subDays(30);
-        $last365   = $today->copy()->subDays(365);
-        $since2008 = Carbon::create(2008, 1, 1);
+        $today = Carbon::today();
+        $ttl   = now()->addDays(45); // match controller's 45-day TTL cadence
+        $ratings = ['A','B','C','D','E','F','G'];
 
-        // Cache keys (must match controller keys)
-        $kStats          = 'epc.stats';
-        $kByYear         = 'epc.byYear';
-        $kRatingDist     = 'epc.ratingDist';
-        $kRatingByYear   = 'epc.ratingByYear';
-        $kPotentialByYear= 'epc.potentialByYear';
-
-        // TTL (match controller TTL)
-        $ttl = now()->addDays(45); // monthly feed cadence – cache for 45 days
-
-        // 1) Totals & recency
-        $maxDate = DB::table('epc_certificates')->max('lodgement_date');
-        $last30FromLatest = $maxDate
-            ? Carbon::parse($maxDate)->copy()->subDays(30)
-            : $today->copy()->subDays(30);
-
-        $stats = [
-            'total'            => (int) DB::table('epc_certificates')->count(),
-            'latest_lodgement' => $maxDate,
-            'last30_count'     => $maxDate
-                ? (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last30FromLatest, $maxDate])->count()
-                : 0,
-            // keep last 12 months as rolling from today for now
-            'last365_count'    => (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last365, $today])->count(),
+        // Nations to warm: England & Wales (ew) and Scotland (scotland)
+        $nations = [
+            'ew' => [
+                'table'        => 'epc_certificates',
+                'dateExpr'     => 'lodgement_date',
+                'yearExpr'     => 'YEAR(lodgement_date)',
+                'currentCol'   => 'current_energy_rating',
+                'potentialCol' => 'potential_energy_rating',
+                'since'        => Carbon::create(2008, 1, 1),
+            ],
+            'scotland' => [
+                'table'        => 'epc_certificates_scotland',
+                'dateExpr'     => "STR_TO_DATE(LODGEMENT_DATE, '%Y-%m-%d')",
+                'yearExpr'     => "SUBSTRING(LODGEMENT_DATE,1,4)",
+                'currentCol'   => 'CURRENT_ENERGY_RATING',
+                'potentialCol' => 'POTENTIAL_ENERGY_RATING',
+                'since'        => Carbon::create(2015, 1, 1),
+            ],
         ];
-        Cache::put($kStats, $stats, $ttl);
-        $this->line('✔ stats cached');
 
-        // 2) EPCs by year (since 2008)
-        $byYear = DB::table('epc_certificates')
-            ->selectRaw('YEAR(lodgement_date) as yr, COUNT(*) as cnt')
-            ->whereNotNull('lodgement_date')
-            ->where('lodgement_date', '>=', $since2008)
-            ->groupBy('yr')
-            ->orderBy('yr', 'asc')
-            ->get();
-        Cache::put($kByYear, $byYear, $ttl);
-        $this->line('✔ byYear cached');
+        $ck = function (string $nation, string $key) {
+            return "epc:{$nation}:{$key}";
+        };
 
-        // 3) Current energy ratings by year (A–G only)
-        $ratingByYear = DB::table('epc_certificates')
-            ->selectRaw('YEAR(lodgement_date) as yr, current_energy_rating as rating, COUNT(*) as cnt')
-            ->whereNotNull('lodgement_date')
-            ->where('lodgement_date', '>=', $since2008)
-            ->whereIn('current_energy_rating', ['A','B','C','D','E','F','G'])
-            ->groupBy('yr', 'rating')
-            ->orderBy('yr', 'asc')
-            ->orderByRaw("FIELD(current_energy_rating, 'A','B','C','D','E','F','G')")
-            ->get();
-        Cache::put($kRatingByYear, $ratingByYear, $ttl);
-        $this->line('✔ ratingByYear cached');
+        foreach ($nations as $nation => $cfg) {
+            $this->line("→ Warming {$nation} ({$cfg['table']})...");
 
-        // 3b) Potential energy ratings by year (A–G only)
-        $potentialByYear = DB::table('epc_certificates')
-            ->selectRaw('YEAR(lodgement_date) as yr, potential_energy_rating as rating, COUNT(*) as cnt')
-            ->whereNotNull('lodgement_date')
-            ->where('lodgement_date', '>=', $since2008)
-            ->whereIn('potential_energy_rating', ['A','B','C','D','E','F','G'])
-            ->groupBy('yr', 'rating')
-            ->orderBy('yr', 'asc')
-            ->orderByRaw("FIELD(potential_energy_rating, 'A','B','C','D','E','F','G')")
-            ->get();
-        Cache::put($kPotentialByYear, $potentialByYear, $ttl);
-        $this->line('✔ potentialByYear cached');
+            // 1) Stats (totals & recency)
+            $maxDate = DB::table($cfg['table'])
+                ->selectRaw("MAX({$cfg['dateExpr']}) as d")
+                ->value('d');
 
-        // 4) Distribution of current energy ratings (single pass, no GROUP BY)
-        $ratingCounts = DB::table('epc_certificates')
-            ->selectRaw("
-                SUM(current_energy_rating = 'A') as A,
-                SUM(current_energy_rating = 'B') as B,
-                SUM(current_energy_rating = 'C') as C,
-                SUM(current_energy_rating = 'D') as D,
-                SUM(current_energy_rating = 'E') as E,
-                SUM(current_energy_rating = 'F') as F,
-                SUM(current_energy_rating = 'G') as G,
-                SUM(current_energy_rating IS NULL) as Unknown,
-                SUM(current_energy_rating IS NOT NULL AND current_energy_rating NOT IN ('A','B','C','D','E','F','G')) as Other
-            ")
-            ->first();
+            $last30FromLatest = $maxDate ? Carbon::parse($maxDate)->copy()->subDays(30) : $today->copy()->subDays(30);
 
-        $ratingDist = collect(['A','B','C','D','E','F','G','Other','Unknown'])->map(function ($key) use ($ratingCounts) {
-            return (object) [
-                'rating' => $key,
-                'cnt'    => (int) ($ratingCounts->{$key} ?? 0),
+            $last30Count = $maxDate
+                ? (int) DB::table($cfg['table'])
+                    ->whereBetween(DB::raw($cfg['dateExpr']), [$last30FromLatest, $maxDate])
+                    ->count()
+                : 0;
+
+            $last365Count = (int) DB::table($cfg['table'])
+                ->whereBetween(DB::raw($cfg['dateExpr']), [$today->copy()->subDays(365), $today])
+                ->count();
+
+            $stats = [
+                'total'            => (int) DB::table($cfg['table'])->count(),
+                'latest_lodgement' => $maxDate,
+                'last30_count'     => $last30Count,
+                'last365_count'    => $last365Count,
             ];
-        });
-        Cache::put($kRatingDist, $ratingDist, $ttl);
-        $this->line('✔ ratingDist cached');
+            Cache::put($ck($nation, 'stats'), $stats, $ttl);
+            $this->line("✔ {$nation}: stats cached");
+
+            // 2) Certificates by year
+            $byYear = DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->groupBy('yr')
+                ->orderBy('yr', 'asc')
+                ->get();
+            Cache::put($ck($nation, 'byYear'), $byYear, $ttl);
+            $this->line("✔ {$nation}: byYear cached");
+
+            // 3) Current energy ratings by year (A–G)
+            $ratingByYear = DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$cfg['currentCol']} as rating, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn($cfg['currentCol'], $ratings)
+                ->groupBy('yr', 'rating')
+                ->orderBy('yr', 'asc')
+                ->orderByRaw("FIELD({$cfg['currentCol']}, 'A','B','C','D','E','F','G')")
+                ->get();
+            Cache::put($ck($nation, 'ratingByYear'), $ratingByYear, $ttl);
+            $this->line("✔ {$nation}: ratingByYear cached");
+
+            // 3b) Potential energy ratings by year (A–G)
+            $potentialByYear = DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$cfg['potentialCol']} as rating, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn($cfg['potentialCol'], $ratings)
+                ->groupBy('yr', 'rating')
+                ->orderBy('yr', 'asc')
+                ->orderByRaw("FIELD({$cfg['potentialCol']}, 'A','B','C','D','E','F','G')")
+                ->get();
+            Cache::put($ck($nation, 'potentialByYear'), $potentialByYear, $ttl);
+            $this->line("✔ {$nation}: potentialByYear cached");
+
+            // 4) Distribution of current ratings (A–G, Other, Unknown)
+            $ratingDist = DB::table($cfg['table'])
+                ->selectRaw("
+                    CASE
+                        WHEN {$cfg['currentCol']} IN ('A','B','C','D','E','F','G') THEN {$cfg['currentCol']}
+                        WHEN {$cfg['currentCol']} IS NULL THEN 'Unknown'
+                        ELSE 'Other'
+                    END as rating,
+                    COUNT(*) as cnt
+                ")
+                ->groupBy('rating')
+                ->orderByRaw("FIELD(rating, 'A','B','C','D','E','F','G','Other','Unknown')")
+                ->get();
+            Cache::put($ck($nation, 'ratingDist'), $ratingDist, $ttl);
+            $this->line("✔ {$nation}: ratingDist cached");
+        }
 
         $elapsed = round((microtime(true) - $started), 2);
         $this->info("Done in {$elapsed}s");

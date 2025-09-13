@@ -8,12 +8,30 @@
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">EPC Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
-                <span class="font-semibold">Only England &amp; Wales are currently available</span>
+                @if(($nation ?? 'ew') === 'scotland')
+                    <span class="font-semibold">Scotland data</span>
+                @else
+                    <span class="font-semibold">England &amp; Wales data</span>
+                @endif
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from January 2008 to July 2025
+                @if(($nation ?? 'ew') === 'scotland')
+                    Data covers the period from 2015 to {{ \Carbon\Carbon::parse($stats['latest_lodgement'])->format('M Y') }}
+                @else
+                    Data covers the period from January 2008 to {{ \Carbon\Carbon::parse($stats['latest_lodgement'])->format('M Y') }}
+                @endif
             </p>
             <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
+                <a href="{{ url('/epc?nation=ew') }}"
+                   class="standard-button {{ (($nation ?? 'ew') === 'ew') ? 'bg-lime-600 text-white' : '' }}"
+                   aria-current="{{ (($nation ?? 'ew') === 'ew') ? 'page' : 'false' }}">
+                   England &amp; Wales
+                </a>
+                <a href="{{ url('/epc?nation=scotland') }}"
+                   class="standard-button {{ (($nation ?? 'ew') === 'scotland') ? 'bg-lime-600 text-white' : '' }}"
+                   aria-current="{{ (($nation ?? 'ew') === 'scotland') ? 'page' : 'false' }}">
+                   Scotland
+                </a>
                 <a href="/epc/search" class="standard-button">Search For EPCs</a>
             </div>
         </div>

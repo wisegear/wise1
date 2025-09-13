@@ -46,6 +46,9 @@ Route::get('/property/outer-prime-london', [OuterPrimeLondonController::class, '
 Route::get('/property/ultra-prime-central-london', [UltraLondonController::class, 'home'])->name('property.upcl');
 Route::get('/epc', [EpcController::class, 'home'])->name('epc.home');
 Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
+// routes/web.php
+Route::get('/epc/search_scotland', [\App\Http\Controllers\EpcController::class, 'searchScotland'])
+    ->name('epc.search_scotland');
 Route::get('/hpi', [HpiDashboardController::class, 'index'])->name('hpi.home');
 Route::match(['get', 'post'], '/mortgage-calculator', [MortgageCalcController::class, 'index'])->name('mortgagecalc.index');
 

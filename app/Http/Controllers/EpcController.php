@@ -17,74 +17,105 @@ class EpcController extends Controller
      */
     public function home()
     {
-        // Time windows we'll reuse
-        $today         = Carbon::today();
-        $last30        = $today->copy()->subDays(30);
-        $last365       = $today->copy()->subDays(365);
-        $since2008     = Carbon::create(2008, 1, 1); // include all data since 2008
-        $ttl           = 60 * 60 * 24 * 45;          // cache for 45 days (monthly feed)
+        $nation = request()->query('nation', 'ew'); // 'ew' | 'scotland'
+
+        // Nation-specific config to avoid duplicated query blocks
+        $cfg = ($nation === 'scotland')
+            ? [
+                'table'        => 'epc_certificates_scotland',
+                'dateExpr'     => "STR_TO_DATE(LODGEMENT_DATE, '%Y-%m-%d')",
+                'yearExpr'     => "SUBSTRING(LODGEMENT_DATE,1,4)",
+                'dateCol'      => 'LODGEMENT_DATE',
+                'currentCol'   => 'CURRENT_ENERGY_RATING',
+                'potentialCol' => 'POTENTIAL_ENERGY_RATING',
+                'since'        => Carbon::create(2015, 1, 1),
+              ]
+            : [
+                'table'        => 'epc_certificates',
+                'dateExpr'     => 'lodgement_date',
+                'yearExpr'     => 'YEAR(lodgement_date)',
+                'dateCol'      => 'lodgement_date',
+                'currentCol'   => 'current_energy_rating',
+                'potentialCol' => 'potential_energy_rating',
+                'since'        => Carbon::create(2008, 1, 1),
+              ];
+
+        $today   = Carbon::today();
+        $ttl     = 60 * 60 * 24 * 45; // 45 days
+        $ck      = fn(string $k) => "epc:{$nation}:{$k}"; // cache key helper
+        $ratings = ['A','B','C','D','E','F','G'];
 
         // 1) Totals & recency
-        $stats = Cache::remember('epc.stats', $ttl, function () use ($today, $last365) {
-            $maxDate = DB::table('epc_certificates')->max('lodgement_date');
-            $last30FromLatest = $maxDate
-                ? Carbon::parse($maxDate)->copy()->subDays(30)
-                : $today->copy()->subDays(30);
+        $stats = Cache::remember($ck('stats'), $ttl, function () use ($cfg, $today) {
+            // Latest date from dataset
+            $maxDate = DB::table($cfg['table'])
+                ->selectRaw("MAX({$cfg['dateExpr']}) as d")
+                ->value('d');
+
+            $last30FromLatest = $maxDate ? Carbon::parse($maxDate)->copy()->subDays(30) : $today->copy()->subDays(30);
+
+            $last30Count = $maxDate
+                ? (int) DB::table($cfg['table'])
+                    ->whereBetween(DB::raw($cfg['dateExpr']), [$last30FromLatest, $maxDate])
+                    ->count()
+                : 0;
+
+            $last365Count = (int) DB::table($cfg['table'])
+                ->whereBetween(DB::raw($cfg['dateExpr']), [$today->copy()->subDays(365), $today])
+                ->count();
 
             return [
-                'total'            => (int) DB::table('epc_certificates')->count(),
+                'total'            => (int) DB::table($cfg['table'])->count(),
                 'latest_lodgement' => $maxDate,
-                'last30_count'     => $maxDate
-                    ? (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last30FromLatest, $maxDate])->count()
-                    : 0,
-                'last365_count'    => (int) DB::table('epc_certificates')->whereBetween('lodgement_date', [$last365, $today])->count(),
+                'last30_count'     => $last30Count,
+                'last365_count'    => $last365Count,
             ];
         });
 
-        // 2) EPCs by year (All years)
-        $byYear = Cache::remember('epc.byYear', $ttl, function () use ($since2008) {
-            return DB::table('epc_certificates')
-                ->selectRaw('YEAR(lodgement_date) as yr, COUNT(*) as cnt')
-                ->whereNotNull('lodgement_date')
-                ->where('lodgement_date', '>=', $since2008)
+        // 2) Certificates by year
+        $byYear = Cache::remember($ck('byYear'), $ttl, function () use ($cfg) {
+            return DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
                 ->groupBy('yr')
                 ->orderBy('yr', 'asc')
                 ->get();
         });
 
-        // 3) Energy ratings by year (A–G only)
-        $ratingByYear = Cache::remember('epc.ratingByYear', $ttl, function () use ($since2008) {
-            return DB::table('epc_certificates')
-                ->selectRaw('YEAR(lodgement_date) as yr, current_energy_rating as rating, COUNT(*) as cnt')
-                ->whereNotNull('lodgement_date')
-                ->where('lodgement_date', '>=', $since2008)
-                ->whereIn('current_energy_rating', ['A','B','C','D','E','F','G'])
+        // 3) Actual energy ratings by year (A–G only)
+        $ratingByYear = Cache::remember($ck('ratingByYear'), $ttl, function () use ($cfg, $ratings) {
+            return DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$cfg['currentCol']} as rating, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn($cfg['currentCol'], $ratings)
                 ->groupBy('yr', 'rating')
                 ->orderBy('yr', 'asc')
-                ->orderByRaw("FIELD(current_energy_rating, 'A','B','C','D','E','F','G')")
+                ->orderByRaw("FIELD({$cfg['currentCol']}, 'A','B','C','D','E','F','G')")
                 ->get();
         });
 
-        // 3b) Potential energy ratings by year (A–G only)
-        $potentialByYear = Cache::remember('epc.potentialByYear', $ttl, function () use ($since2008) {
-            return DB::table('epc_certificates')
-                ->selectRaw('YEAR(lodgement_date) as yr, potential_energy_rating as rating, COUNT(*) as cnt')
-                ->whereNotNull('lodgement_date')
-                ->where('lodgement_date', '>=', $since2008)
-                ->whereIn('potential_energy_rating', ['A','B','C','D','E','F','G'])
+        // 4) Potential energy ratings by year (A–G only)
+        $potentialByYear = Cache::remember($ck('potentialByYear'), $ttl, function () use ($cfg, $ratings) {
+            return DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$cfg['potentialCol']} as rating, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn($cfg['potentialCol'], $ratings)
                 ->groupBy('yr', 'rating')
                 ->orderBy('yr', 'asc')
-                ->orderByRaw("FIELD(potential_energy_rating, 'A','B','C','D','E','F','G')")
+                ->orderByRaw("FIELD({$cfg['potentialCol']}, 'A','B','C','D','E','F','G')")
                 ->get();
         });
 
-        // 4) Distribution of current energy ratings (A–G, plus NULL/other)
-        $ratingDist = Cache::remember('epc.ratingDist', $ttl, function () {
-            return DB::table('epc_certificates')
+        // 5) Distribution of current ratings (optional for Scotland too)
+        $ratingDist = Cache::remember($ck('ratingDist'), $ttl, function () use ($cfg, $ratings) {
+            return DB::table($cfg['table'])
                 ->selectRaw("
                     CASE
-                        WHEN current_energy_rating IN ('A','B','C','D','E','F','G') THEN current_energy_rating
-                        WHEN current_energy_rating IS NULL THEN 'Unknown'
+                        WHEN {$cfg['currentCol']} IN ('A','B','C','D','E','F','G') THEN {$cfg['currentCol']}
+                        WHEN {$cfg['currentCol']} IS NULL THEN 'Unknown'
                         ELSE 'Other'
                     END as rating,
                     COUNT(*) as cnt
@@ -95,11 +126,12 @@ class EpcController extends Controller
         });
 
         return view('epc.home', [
-            'stats'        => $stats,
-            'byYear'       => $byYear,
-            'ratingByYear' => $ratingByYear,
-            'potentialByYear' => $potentialByYear,
-            'ratingDist'   => $ratingDist,
+            'stats'            => $stats,
+            'byYear'           => $byYear,
+            'ratingByYear'     => $ratingByYear,
+            'potentialByYear'  => $potentialByYear,
+            'ratingDist'       => $ratingDist ?? collect(),
+            'nation'           => $nation,
         ]);
     }
 
@@ -149,6 +181,69 @@ class EpcController extends Controller
         $results = $query->paginate(50)->withQueryString();
 
         return view('epc.search', compact('results'));
+    }
+
+    // Scotland: Search EPC certificates by postcode (exact match)
+    public function searchScotland(Request $request)
+    {
+        // If no postcode provided, just render the Scotland form
+        $postcodeInput = (string) $request->query('postcode', '');
+        if (trim($postcodeInput) === '') {
+            return view('epc.search_scotland');
+        }
+
+        // Validate: require a plausible full UK postcode (same rule as E&W)
+        $request->validate([
+            'postcode' => ['required','string','max:16','regex:/^[A-Za-z]{1,2}\\d[A-Za-z\\d]?\\s*\\d[A-Za-z]{2}$/'],
+        ], [
+            'postcode.regex' => 'Please enter a full UK postcode (e.g. G12 8QQ).',
+        ]);
+
+        // Normalise to canonical form: uppercase and single space before last 3 chars
+        $postcode = $this->normalisePostcode($postcodeInput);
+
+        // Sorting (whitelist fields)
+        $allowedSorts = [
+            'lodgement_date'          => 'lodgement_date',
+            'address'                 => 'address',
+            'current_energy_rating'   => 'current_energy_rating',
+            'potential_energy_rating' => 'potential_energy_rating',
+            'property_type'           => 'property_type',
+            'total_floor_area'        => 'total_floor_area',
+        ];
+        $sort   = $request->query('sort', 'lodgement_date');
+        $dir    = strtolower($request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sortCol = $allowedSorts[$sort] ?? 'lodgement_date';
+
+        // Build address expression that works whether Scotland data has a single `address` column
+        $addressExpr = DB::raw("NULLIF(TRIM(CONCAT_WS(', ',
+            NULLIF(ADDRESS1, ''),
+            NULLIF(ADDRESS2, ''),
+            NULLIF(ADDRESS3, '')
+        )), '') as address");
+
+        $resultsQuery = DB::table('epc_certificates_scotland')
+            ->select([
+                DB::raw("BUILDING_REFERENCE_NUMBER as lmk_key"),
+                DB::raw("POSTCODE as postcode"),
+                DB::raw("LODGEMENT_DATE as lodgement_date"),
+                DB::raw("CURRENT_ENERGY_RATING as current_energy_rating"),
+                DB::raw("POTENTIAL_ENERGY_RATING as potential_energy_rating"),
+                DB::raw("PROPERTY_TYPE as property_type"),
+                DB::raw("TOTAL_FLOOR_AREA as total_floor_area"),
+                DB::raw("LOCAL_AUTHORITY_LABEL as local_authority_label"),
+                $addressExpr,
+            ])
+            ->where('POSTCODE', $postcode)
+            ->orderBy($sortCol, $dir);
+
+        if ($sortCol !== 'lodgement_date') {
+            $resultsQuery->orderBy('lodgement_date', 'desc');
+        }
+
+        $results = $resultsQuery->paginate(50)->withQueryString();
+
+        return view('epc.search_scotland', compact('results'));
     }
 
     /**
