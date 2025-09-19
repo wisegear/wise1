@@ -1,6 +1,6 @@
 <?php
 
-use ZipArchive;
+//use ZipArchive;  (Not required)
 
 return [
 
