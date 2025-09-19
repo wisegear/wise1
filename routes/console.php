@@ -31,3 +31,9 @@ Schedule::command('warm:all-town')->monthlyOn(2, '03:15');
 
 // Sitemap
 Schedule::command('sitemap:generate')->dailyAt('01:10');
+
+// Spatie Backups
+
+Schedule::command('backup:clean')->dailyAt('01:00');
+Schedule::command('backup:run')->dailyAt('01:10')->withoutOverlapping();
+Schedule::command('backup:monitor')->dailyAt('01:20');
