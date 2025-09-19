@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class epc extends Model
+class EPC extends Model
 {
     protected $table = 'epc_certificates';
     protected $primaryKey = 'lmk_key';
