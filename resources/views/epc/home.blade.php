@@ -9,7 +9,7 @@
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">EPC Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 @if(($nation ?? 'ew') === 'scotland')
-                    <span class="font-semibold">Scotland data (quarterly)</span>
+                    <span class="font-semibold">Scotland data (Quarterly)</span>
                 @else
                     <span class="font-semibold">England &amp; Wales data (Monthly)</span>
                 @endif
