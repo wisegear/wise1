@@ -51,6 +51,7 @@
                             <a href="{{ url('/property/outer-prime-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Outer Prime London</a>
                             <a href="{{ url('/property/prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Prime Central London</a>
                             <a href="{{ url('/property/ultra-prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Ultra Prime Central London</a>
+                            <a href="{{ url('/new-old') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">New vs Existing</a>
                         </div>
                     </div>
 
@@ -168,6 +169,7 @@
                     <a href="{{ url('/property/outer-prime-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Outer Prime London</a>
                     <a href="{{ url('/property/prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Prime Central London</a>
                     <a href="{{ url('/property/ultra-prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Ultra Prime Central London</a>
+                    <a href="{{ url('/new-old') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">New vs Existing</a>
                 </div>
             </div>
 
@@ -241,5 +243,7 @@
              <p>&copy; Lee Wisener, PropertyResearch.uk</p>
         </footer>
     </div>
+
+    @stack('scripts')
 </body>
 </html>

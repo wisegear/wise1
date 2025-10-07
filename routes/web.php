@@ -12,6 +12,7 @@ use App\Http\Controllers\MortgageCalcController;
 use App\Http\Controllers\StampDutyController;
 use App\Http\Controllers\EpcController;
 use App\Http\Controllers\HpiDashboardController;
+use App\Http\Controllers\NewOldController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
@@ -50,6 +51,8 @@ Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
 Route::get('/epc/search_scotland', [\App\Http\Controllers\EpcController::class, 'searchScotland'])
     ->name('epc.search_scotland');
 Route::get('/hpi', [HpiDashboardController::class, 'index'])->name('hpi.home');
+// New vs Existing (New/Old) dashboard
+Route::get('/new-old', [NewOldController::class, 'index'])->name('newold.index');
 Route::match(['get', 'post'], '/mortgage-calculator', [MortgageCalcController::class, 'index'])->name('mortgagecalc.index');
 
 Route::get('/stamp-duty', [StampDutyController::class, 'index']);
