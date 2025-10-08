@@ -14,9 +14,9 @@ public function index(Request $request)
     $includeAggregates = (bool) $request->boolean('include_aggregates', false);
     $yearParam = $request->input('year'); // optional YYYY
 
-    // Available years (for dropdown)
-    $availableYears = DB::table('new_old_prices')
-        ->selectRaw('DISTINCT YEAR(date) as year')
+    // Available years (for dropdown) from HPI table
+    $availableYears = DB::table('hpi_monthly')
+        ->selectRaw('DISTINCT YEAR(`Date`) as year')
         ->orderBy('year', 'desc')
         ->limit(20)
         ->pluck('year')
@@ -27,21 +27,29 @@ public function index(Request $request)
     $latestYear = $availableYears[0] ?? null;
     $snapshotYear = $yearParam ?: $latestYear;
 
-    // Base query for the snapshot YEAR
-    $base = DB::table('new_old_prices')
-        ->whereRaw('YEAR(date) = ?', [$snapshotYear]);
+    // Base query for the snapshot YEAR (HPI)
+    $base = DB::table('hpi_monthly')
+        ->whereRaw('YEAR(`Date`) = ?', [$snapshotYear]);
 
     if (!$includeAggregates) {
-        $base->where('is_aggregate', 0);
+        // Exclude K* aggregate rows (UK/GB/England roll-ups)
+        $base->whereRaw("LEFT(`AreaCode`, 1) <> 'K'");
     }
 
-    // Country-level aggregates for the snapshot YEAR
+    // Country-level aggregates for the snapshot YEAR (derive from AreaCode prefix)
     $countryRows = (clone $base)
-        ->select(
-            'country_name',
-            DB::raw('SUM(new_build_sales_volume) as new_vol'),
-            DB::raw('SUM(existing_property_sales_volume) as old_vol')
-        )
+        ->selectRaw(
+            "CASE LEFT(`AreaCode`, 1)
+                WHEN 'E' THEN 'England'
+                WHEN 'W' THEN 'Wales'
+                WHEN 'S' THEN 'Scotland'
+                WHEN 'N' THEN 'Northern Ireland'
+                WHEN 'K' THEN 'Aggregate'
+                ELSE 'Other'
+            END as country_name",
+            )
+        ->selectRaw('COALESCE(SUM(`NewSalesVolume`),0) as new_vol')
+        ->selectRaw('COALESCE(SUM(`OldSalesVolume`),0) as old_vol')
         ->groupBy('country_name')
         ->orderBy('country_name')
         ->get();
@@ -49,53 +57,49 @@ public function index(Request $request)
     $totNew = (int) $countryRows->sum('new_vol');
     $totOld = (int) $countryRows->sum('old_vol');
 
-    $countries = $countryRows->map(function ($r) use ($totNew, $totOld) {
+    $countries = $countryRows->map(function ($r) {
+        $new = (int) $r->new_vol;
+        $old = (int) $r->old_vol;
+        $total = $new + $old;
         return [
             'country' => $r->country_name,
-            'new_vol' => (int) $r->new_vol,
-            'old_vol' => (int) $r->old_vol,
-            'new_share_pct' => $totNew ? round(100 * $r->new_vol / $totNew, 2) : null,
-            'old_share_pct' => $totOld ? round(100 * $r->old_vol / $totOld, 2) : null,
+            'new_vol' => $new,
+            'old_vol' => $old,
+            'new_share_pct' => $total > 0 ? round(100 * $new / $total, 2) : 0,
+            'old_share_pct' => $total > 0 ? round(100 * $old / $total, 2) : 0,
         ];
     })->values()->all();
+
+    $sort = $request->input('sort', 'new_share_pct');
+    $direction = $request->input('direction', 'desc');
+
+    $allowedSorts = ['region_name','new_vol','old_vol','total_vol','new_share_pct'];
+    if (!in_array($sort, $allowedSorts)) {
+        $sort = 'new_share_pct';
+    }
+    $direction = strtolower($direction) === 'asc' ? 'asc' : 'desc';
 
     // Top 20 areas by **annual** total volume for the snapshot YEAR
-    $regionRows = (clone $base)
-        ->select(
-            'area_code',
-            'region_name',
-            DB::raw('COALESCE(SUM(new_build_sales_volume),0) as new_vol'),
-            DB::raw('COALESCE(SUM(existing_property_sales_volume),0) as old_vol'),
-            DB::raw('(COALESCE(SUM(new_build_sales_volume),0) + COALESCE(SUM(existing_property_sales_volume),0)) as total_vol')
-        )
-        ->groupBy('area_code', 'region_name')
-        ->orderByDesc('total_vol')
-        ->limit(20)
-        ->get();
+    $regions = (clone $base)
+        ->whereNotIn('AreaCode', ['E92000001','S92000003','W92000004','N92000002'])
+        ->select('AreaCode as area_code', 'RegionName as region_name')
+        ->selectRaw('COALESCE(SUM(`NewSalesVolume`),0) as new_vol')
+        ->selectRaw('COALESCE(SUM(`OldSalesVolume`),0) as old_vol')
+        ->selectRaw('(COALESCE(SUM(`NewSalesVolume`),0) + COALESCE(SUM(`OldSalesVolume`),0)) as total_vol')
+        ->selectRaw('CASE WHEN (COALESCE(SUM(`NewSalesVolume`),0) + COALESCE(SUM(`OldSalesVolume`),0)) = 0 THEN 0 ELSE ROUND(100 * COALESCE(SUM(`NewSalesVolume`),0) / (COALESCE(SUM(`NewSalesVolume`),0) + COALESCE(SUM(`OldSalesVolume`),0)), 1) END as new_share_pct')
+        ->groupBy('AreaCode', 'RegionName')
+        ->orderBy($sort, $direction)
+        ->paginate(20)
+        ->withQueryString();
 
-    $regions = $regionRows->map(function ($r) {
-        $total = (int) $r->total_vol;
-        $new = (int) $r->new_vol;
-        return [
-            'area_code'   => $r->area_code,
-            'region_name' => $r->region_name,
-            'new_vol'     => $new,
-            'old_vol'     => (int) $r->old_vol,
-            'total_vol'   => $total,
-            'new_share_pct' => $total ? round(100 * $new / $total, 1) : null,
-        ];
-    })->values()->all();
-
-    // Trend over last 15 years: UK-level, grouped YEARLY
-    $trendRows = DB::table('new_old_prices')
-        ->when(!$includeAggregates, fn($q) => $q->where('is_aggregate', 0))
-        ->select(
-            DB::raw('YEAR(date) as year'),
-            DB::raw('SUM(new_build_sales_volume) as new_vol'),
-            DB::raw('SUM(existing_property_sales_volume) as old_vol')
-        )
-        ->groupBy(DB::raw('YEAR(date)'))
-        ->orderBy(DB::raw('YEAR(date)'), 'desc')
+    // Trend over last 15 years: UK-level from HPI, grouped YEARLY
+    $trendRows = DB::table('hpi_monthly')
+        ->when(!$includeAggregates, fn($q) => $q->whereRaw("LEFT(`AreaCode`, 1) <> 'K'"))
+        ->selectRaw('YEAR(`Date`) as year')
+        ->selectRaw('SUM(`NewSalesVolume`) as new_vol')
+        ->selectRaw('SUM(`OldSalesVolume`) as old_vol')
+        ->groupBy(DB::raw('YEAR(`Date`)'))
+        ->orderBy(DB::raw('YEAR(`Date`)'), 'desc')
         ->limit(15)
         ->get()
         ->reverse()

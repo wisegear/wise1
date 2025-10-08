@@ -40,58 +40,105 @@
     </form>
   </div>
 
-  {{-- Country summary cards --}}
-  @if(!empty($countries))
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    @foreach($countries as $c)
-      <div class="border rounded p-4 bg-white">
-        <div class="text-sm text-zinc-500">{{ $c['country'] }}</div>
-        <div class="mt-2 text-sm">New: <span class="font-semibold">{{ number_format($c['new_vol']) }}</span> ({{ $c['new_share_pct'] }}%)</div>
-        <div class="text-sm">Existing: <span class="font-semibold">{{ number_format($c['old_vol']) }}</span> ({{ $c['old_share_pct'] }}%)</div>
-      </div>
-    @endforeach
+  {{-- Nations table --}}
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold">Nations — annual sales volumes</h2>
+    <p class="mb-3 text-sm">Note that Northern Ireland only provides updates annually, so the current year will have no data.</p>
+    <div class="overflow-x-auto border rounded">
+      <table class="min-w-full text-sm">
+        <thead class="bg-zinc-50">
+          <tr class="text-left">
+            <th class="py-2 px-3">Nation</th>
+            <th class="py-2 px-3">New</th>
+            <th class="py-2 px-3">Existing</th>
+            <th class="py-2 px-3">Total</th>
+            <th class="py-2 px-3">% New</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse(collect($countries)->sortByDesc('new_share_pct') as $c)
+            @php $total = (int)($c['new_vol'] + $c['old_vol']); @endphp
+            <tr class="border-t">
+              <td class="py-2 px-3">{{ $c['country'] }}</td>
+              <td class="py-2 px-3">{{ number_format($c['new_vol']) }}</td>
+              <td class="py-2 px-3">{{ number_format($c['old_vol']) }}</td>
+              <td class="py-2 px-3 font-semibold">{{ number_format($total) }}</td>
+              <td class="py-2 px-3">{{ $c['new_share_pct'] }}%</td>
+            </tr>
+          @empty
+            <tr><td colspan="5" class="py-6 px-3 text-center text-zinc-500">No nation data for this year.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
   </div>
-  @endif
 
-  {{-- Top areas table --}}
+  {{-- Areas table (paginated) --}}
   <div class="mb-10">
     <div class="flex items-center justify-between mb-3">
-      <h2 class="text-xl font-semibold">Top areas by annual sales volume</h2>
-      <span class="text-sm text-zinc-500">Showing top {{ count($regions ?? []) }}</span>
+      <h2 class="text-xl font-semibold">All areas — annual sales volume</h2>
+      @if($regions instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        <span class="text-sm text-zinc-500">Page {{ $regions->currentPage() }} of {{ $regions->lastPage() }}</span>
+      @endif
     </div>
+
+    @php
+      $currentSort = request('sort', 'new_share_pct');
+      $currentDir  = strtolower(request('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+      $qsBase = request()->except(['sort','direction','page']);
+      function sort_qs($col, $currentSort, $currentDir, $qsBase) {
+          $dir = ($currentSort === $col && $currentDir === 'asc') ? 'desc' : 'asc';
+          return '?'.http_build_query(array_merge($qsBase, ['sort' => $col, 'direction' => $dir]));
+      }
+      function sort_label($label, $col, $currentSort, $currentDir) {
+          if ($currentSort === $col) {
+              return $label.($currentDir === 'asc' ? ' ▲' : ' ▼');
+          }
+          return $label.' ↕';
+      }
+    @endphp
 
     <div class="overflow-x-auto border rounded">
       <table class="min-w-full text-sm">
         <thead class="bg-zinc-50">
           <tr class="text-left">
-            <th class="py-2 px-3">Area</th>
-            <th class="py-2 px-3">Area Code</th>
-            <th class="py-2 px-3">New</th>
-            <th class="py-2 px-3">Existing</th>
-            <th class="py-2 px-3">Total</th>
-            <th class="py-2 px-3">% New (sorted)</th>
+            <th class="py-2 px-3"><a href="{{ sort_qs('region_name', $currentSort, $currentDir, $qsBase) }}" class="hover:underline">{{ sort_label('Area', 'region_name', $currentSort, $currentDir) }}</a></th>
+            <th class="py-2 px-3"><a href="{{ sort_qs('new_vol', $currentSort, $currentDir, $qsBase) }}" class="hover:underline">{{ sort_label('New', 'new_vol', $currentSort, $currentDir) }}</a></th>
+            <th class="py-2 px-3"><a href="{{ sort_qs('old_vol', $currentSort, $currentDir, $qsBase) }}" class="hover:underline">{{ sort_label('Existing', 'old_vol', $currentSort, $currentDir) }}</a></th>
+            <th class="py-2 px-3"><a href="{{ sort_qs('total_vol', $currentSort, $currentDir, $qsBase) }}" class="hover:underline">{{ sort_label('Total', 'total_vol', $currentSort, $currentDir) }}</a></th>
+            <th class="py-2 px-3"><a href="{{ sort_qs('new_share_pct', $currentSort, $currentDir, $qsBase) }}" class="hover:underline">{{ sort_label('% New', 'new_share_pct', $currentSort, $currentDir) }}</a></th>
           </tr>
         </thead>
         <tbody>
-          @php
-            $regions = collect($regions ?? [])->sortByDesc('new_share_pct')->values();
-          @endphp
           @forelse($regions as $r)
+            @php
+              $regionName = is_array($r) ? ($r['region_name'] ?? '') : ($r->region_name ?? '');
+              $areaCode   = is_array($r) ? ($r['area_code'] ?? '')   : ($r->area_code ?? '');
+              $newVol     = (int) (is_array($r) ? ($r['new_vol'] ?? 0)     : ($r->new_vol ?? 0));
+              $oldVol     = (int) (is_array($r) ? ($r['old_vol'] ?? 0)     : ($r->old_vol ?? 0));
+              $totalVol   = (int) (is_array($r) ? ($r['total_vol'] ?? 0)   : ($r->total_vol ?? 0));
+              $sharePct   = (float) (is_array($r) ? ($r['new_share_pct'] ?? 0) : ($r->new_share_pct ?? 0));
+            @endphp
             <tr class="border-t">
-              <td class="py-2 px-3">{{ $r['region_name'] }}</td>
-              <td class="py-2 px-3 text-zinc-500">{{ $r['area_code'] }}</td>
-              <td class="py-2 px-3">{{ number_format($r['new_vol']) }}</td>
-              <td class="py-2 px-3">{{ number_format($r['old_vol']) }}</td>
-              <td class="py-2 px-3 font-semibold">{{ number_format($r['total_vol']) }}</td>
-              <td class="py-2 px-3">{{ $r['new_share_pct'] }}%</td>
+              <td class="py-2 px-3">{{ $regionName }}</td>
+              <td class="py-2 px-3">{{ number_format($newVol) }}</td>
+              <td class="py-2 px-3">{{ number_format($oldVol) }}</td>
+              <td class="py-2 px-3 font-semibold">{{ number_format($totalVol) }}</td>
+              <td class="py-2 px-3">{{ number_format($sharePct, 1) }}%</td>
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="py-6 px-3 text-center text-zinc-500">No data for this year.</td>
+              <td colspan="5" class="py-6 px-3 text-center text-zinc-500">No area data for this year.</td>
             </tr>
           @endforelse
         </tbody>
       </table>
+    </div>
+
+    <div class="mt-4">
+      @if($regions instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        {{ $regions->onEachSide(1)->links() }}
+      @endif
     </div>
   </div>
 
