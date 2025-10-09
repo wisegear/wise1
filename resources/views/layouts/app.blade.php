@@ -47,6 +47,7 @@
                         </button>
                         <div id="propertyDropdown" role="menu" aria-labelledby="propertyMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
                             <a href="{{ url('/property') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Dashboard</a>
+                            <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">HPI</a>
                             <a href="{{ url('/property/search') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Property Search</a>
                             <a href="{{ url('/property/outer-prime-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Outer Prime London</a>
                             <a href="{{ url('/property/prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Prime Central London</a>
@@ -77,7 +78,6 @@
                             </svg>
                         </button>
                         <div id="mortgagesDropdown" role="menu" aria-labelledby="mortgagesMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">HPI</a>
                             <a href="{{ url('/approvals') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Approvals</a>
                             <a href="{{ url('/repossessions') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Repossessions</a>
                         </div>
@@ -165,6 +165,7 @@
                 </button>
                 <div id="mobilePropertyMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
                     <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
+                    <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
                     <a href="{{ url('/property/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Property Search</a>
                     <a href="{{ url('/property/outer-prime-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Outer Prime London</a>
                     <a href="{{ url('/property/prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Prime Central London</a>
@@ -195,7 +196,6 @@
                     </svg>
                 </button>
                 <div id="mobileMortgagesMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
-                    <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
                     <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
                     <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
                 </div>
