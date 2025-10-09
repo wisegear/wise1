@@ -247,6 +247,80 @@ class EpcController extends Controller
     }
 
     /**
+     * Show a single EPC report by LMK/Building Reference.
+     *
+     * Scotland uses BUILDING_REFERENCE_NUMBER, while England & Wales use lmk_key.
+     * We attempt Scotland first, then fall back to E&W. We pass the full row
+     * (all columns) through to the view so we can decide later what to surface.
+     */
+    public function show(Request $request, string $lmk)
+    {
+        $encoded = $request->query('r');
+        $incomingReturn = $request->query('return');
+
+        $decoded = null;
+        if ($encoded) {
+            $decoded = base64_decode($encoded, true) ?: null;
+        }
+
+        // Prefer decoded `r`, then plain `return` param
+        $backUrlParam = $decoded ?: $incomingReturn;
+        $fallbackScot = route('epc.search_scotland');
+        $fallbackEW   = route('epc.search');
+
+        // --- Try Scotland first
+        $scot = DB::table('epc_certificates_scotland')
+            ->where('BUILDING_REFERENCE_NUMBER', $lmk)
+            ->first();
+
+        if ($scot) {
+            // Build a readable address similar to searchScotland()
+            $address = trim(implode(', ', array_filter([
+                $scot->ADDRESS1 ?? null,
+                $scot->ADDRESS2 ?? null,
+                $scot->ADDRESS3 ?? null,
+            ])));
+
+            $record = (array) $scot;
+            $record['address_display'] = $address;
+            $record['nation'] = 'scotland';
+
+            return view('epc.show', [
+                'nation'  => 'scotland',
+                'lmk'     => $lmk,
+                'record'  => $record,   // full row as associative array
+                'columns' => array_keys($record),
+                'backUrl' => $backUrlParam ?: $fallbackScot,
+            ]);
+        }
+
+        // --- Fall back to England & Wales
+        $ew = DB::table('epc_certificates')
+            ->where('lmk_key', $lmk)
+            ->first();
+
+        if ($ew) {
+            $record = (array) $ew;
+            // Keep a consistent extra field for display if needed
+            if (!array_key_exists('address_display', $record)) {
+                $record['address_display'] = $record['address'] ?? null;
+            }
+            $record['nation'] = 'ew';
+
+            return view('epc.show', [
+                'nation'  => 'ew',
+                'lmk'     => $lmk,
+                'record'  => $record,   // full row as associative array
+                'columns' => array_keys($record),
+                'backUrl' => $backUrlParam ?: $fallbackEW,
+            ]);
+        }
+
+        // Not found in either dataset
+        abort(404);
+    }
+
+    /**
      * Normalise a UK postcode to uppercase with a single space before the final 3 characters.
      */
     protected function normalisePostcode(string $pc): string

@@ -1,6 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $pcRaw = request('postcode');
+    $pcClean = null;
+    if (!empty($pcRaw)) {
+        $pcClean = strtoupper(preg_replace('/\s+/', '', $pcRaw));
+        if (strlen($pcClean) >= 5) {
+            $pcClean = substr($pcClean, 0, -3) . ' ' . substr($pcClean, -3);
+        }
+    }
+    // Build a clean return URL where spaces are encoded as '+' (no %20)
+    $current = request()->fullUrl();
+    $parts = parse_url($current);
+    $qs = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $qs);
+    }
+    if ($pcClean) {
+        $qs['postcode'] = $pcClean; // keep a readable space here; we'll render as '+' below
+    }
+    $scheme = $parts['scheme'] ?? (request()->isSecure() ? 'https' : 'http');
+    $host   = $parts['host']   ?? request()->getHost();
+    $port   = isset($parts['port']) ? ':' . $parts['port'] : '';
+    $path   = $parts['path']   ?? request()->getPathInfo();
+    $query  = http_build_query($qs, '', '&', PHP_QUERY_RFC1738); // RFC1738 encodes spaces as '+'
+    $cleanReturnUrl = $scheme . '://' . $host . $port . $path . ($query ? ('?' . $query) : '');
+@endphp
 <div class="mx-auto max-w-7xl px-4 py-10 md:py-12">
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
@@ -58,7 +84,7 @@
             </div>
         @else
             <div class="mb-3 text-sm text-zinc-600">
-                Showing <span class="font-semibold">{{ number_format($count) }}</span> result{{ $count === 1 ? '' : 's' }} for postcode <span class="font-semibold">{{ request('postcode') }}</span>.
+                Showing <span class="font-semibold">{{ number_format($count) }}</span> result{{ $count === 1 ? '' : 's' }} for postcode <span class="font-semibold">{{ $pcClean ?? request('postcode') }}</span>.
             </div>
 
             <div class="overflow-x-auto rounded border border-zinc-200 bg-white">
@@ -171,9 +197,19 @@
                                     {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
                                 </td>
                                 <td class="px-3 py-2 align-top border-b">{{ $row->local_authority_label }}</td>
-                                <td class="px-3 py-2 align-top border-b">
+                                <td class="px-3 py-2 align-top border-b text-center">
                                     @if(function_exists('route') && Route::has('epc.show'))
-                                        <a href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}" class="text-lime-700 hover:text-lime-900 underline">View</a>
+                                        <a
+                                            href="{{ route('epc.show', ['lmk' => $row->lmk_key, 'r' => base64_encode($cleanReturnUrl)]) }}"
+                                            class="inline-flex items-center justify-center gap-1 text-lime-700 hover:text-lime-900"
+                                            title="View report"
+                                            aria-label="View EPC report for {{ $row->address }}, {{ $row->postcode }}"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
+                                            </svg>
+                                            <span class="sr-only">View</span>
+                                        </a>
                                     @else
                                         <a class="">N/A</a>
                                     @endif

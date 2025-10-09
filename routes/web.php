@@ -50,6 +50,7 @@ Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
 // routes/web.php
 Route::get('/epc/search_scotland', [\App\Http\Controllers\EpcController::class, 'searchScotland'])
     ->name('epc.search_scotland');
+Route::get('/epc/{lmk}', [EpcController::class, 'show'])->name('epc.show');
 Route::get('/hpi', [HpiDashboardController::class, 'index'])->name('hpi.home');
 // New vs Existing (New/Old) dashboard
 Route::get('/new-old', [NewOldController::class, 'index'])->name('newold.index');
