@@ -97,7 +97,7 @@
            class="group block rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-zinc-900">Energy Performance Certificates - EPC</h2>
-                <span class="rounded-lg bg-orange-200 px-2 py-1 text-xs text-zinc-700">Beta</span>
+                <span class="rounded-lg bg-lime-300 px-2 py-1 text-xs text-zinc-700">Live</span>
             </div>
             <p class="mt-2 text-sm text-zinc-700">Basic EPC report details for England, Wales and now Scotland.</p>
             <div class="mt-4 inline-flex items-center text-sm font-medium text-cyan-700 group-hover:underline">Open EPC Dashboard
