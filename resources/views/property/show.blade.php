@@ -217,7 +217,7 @@
                                 <th class="px-3 py-2 border-b">Address</th>
                                 <th class="px-3 py-2 border-b text-right">floor space (sq ft)</th>
                                 <th class="px-3 py-2 border-b">Match Score</th>
-                                <th class="px-3 py-2 border-b">View</th>
+                                <th class="px-3 py-2 border-b text-center">View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -231,7 +231,7 @@
                                     <td class="px-3 py-2 border-b text-right">
                                         {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
                                     </td>
-                                    <td class="px-3 py-2 border-b">
+                                    <td class="px-3 py-2 border-b text-center">
                                         @php($s = (int) round($m['score'] ?? 0))
                                         @php(
                                             $badge = $s >= 80 ? ['High','bg-green-100 text-green-800 border-green-200'] : (
@@ -246,9 +246,19 @@
                                     </td>
                                     <td class="px-3 py-2 border-b">
                                         @if(function_exists('route') && Route::has('epc.show'))
-                                            <a href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}" class="text-lime-700 hover:text-lime-900 underline">View</a>
+                                            <a
+                                                href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}"
+                                                class="inline-flex items-center justify-center gap-1 text-lime-700 hover:text-lime-900"
+                                                title="View EPC report"
+                                                aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
+                                                </svg>
+                                                <span class="sr-only">View</span>
+                                            </a>
                                         @else
-                                            <a class="">N/A</a>
+                                            <span class="text-zinc-400">N/A</span>
                                         @endif
                                     </td>
                                 </tr>
