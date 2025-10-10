@@ -1,69 +1,149 @@
 <?php
-// database/migrations/2025_08_30_100000_create_epc_certificates_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void
     {
+        // ⚠️ This will DROP the existing epc_certificates table and recreate it
+        // to match the epc_staging structure (for frictionless LOAD DATA INFILE).
+        // If you want a backup first, uncomment the rename block below.
+
+        // if (Schema::hasTable('epc_certificates')) {
+        //     $backup = 'epc_certificates_backup_' . date('Ymd_His');
+        //     Schema::rename('epc_certificates', $backup);
+        // }
+
+        Schema::dropIfExists('epc_certificates');
+
         Schema::create('epc_certificates', function (Blueprint $t) {
             $t->engine('InnoDB');
             $t->charset('utf8mb4');
             $t->collation('utf8mb4_0900_ai_ci');
 
-            // Identity / linkage
-            $t->string('lmk_key', 128)->primary();
-            $t->string('building_reference_number', 64)->nullable()->index();
-            $t->unsignedBigInteger('uprn')->nullable()->index();
-            $t->string('uprn_source', 32)->nullable();
+            // Keep source header names for frictionless LOAD DATA
+            $t->string('LMK_KEY', 128)->nullable();
+            $t->text('ADDRESS1')->nullable();
+            $t->text('ADDRESS2')->nullable();
+            $t->text('ADDRESS3')->nullable();
+            $t->string('POSTCODE', 16)->nullable();
+            $t->string('BUILDING_REFERENCE_NUMBER', 64)->nullable();
+            $t->string('CURRENT_ENERGY_RATING', 8)->nullable();
+            $t->string('POTENTIAL_ENERGY_RATING', 8)->nullable();
+            $t->string('CURRENT_ENERGY_EFFICIENCY', 32)->nullable();
+            $t->string('POTENTIAL_ENERGY_EFFICIENCY', 32)->nullable();
+            $t->string('PROPERTY_TYPE', 255)->nullable();
+            $t->string('BUILT_FORM', 255)->nullable();
+            $t->string('INSPECTION_DATE', 32)->nullable();
+            $t->string('LOCAL_AUTHORITY', 255)->nullable();
+            $t->string('CONSTITUENCY', 255)->nullable();
+            $t->string('COUNTY', 255)->nullable();
+            $t->string('LODGEMENT_DATE', 32)->nullable();
+            $t->string('TRANSACTION_TYPE', 255)->nullable();
+            $t->string('ENVIRONMENT_IMPACT_CURRENT', 255)->nullable();
+            $t->string('ENVIRONMENT_IMPACT_POTENTIAL', 255)->nullable();
+            $t->string('ENERGY_CONSUMPTION_CURRENT', 255)->nullable();
+            $t->string('ENERGY_CONSUMPTION_POTENTIAL', 255)->nullable();
+            $t->string('CO2_EMISSIONS_CURRENT', 255)->nullable();
+            $t->string('CO2_EMISS_CURR_PER_FLOOR_AREA', 255)->nullable();
+            $t->string('CO2_EMISSIONS_POTENTIAL', 255)->nullable();
+            $t->string('LIGHTING_COST_CURRENT', 255)->nullable();
+            $t->string('LIGHTING_COST_POTENTIAL', 255)->nullable();
+            $t->string('HEATING_COST_CURRENT', 255)->nullable();
+            $t->string('HEATING_COST_POTENTIAL', 255)->nullable();
+            $t->string('HOT_WATER_COST_CURRENT', 255)->nullable();
+            $t->string('HOT_WATER_COST_POTENTIAL', 255)->nullable();
+            $t->string('TOTAL_FLOOR_AREA', 64)->nullable();
+            $t->string('ENERGY_TARIFF', 255)->nullable();
+            $t->string('MAINS_GAS_FLAG', 8)->nullable();
+            $t->string('FLOOR_LEVEL', 16)->nullable();
+            $t->string('FLAT_TOP_STOREY', 8)->nullable();
+            $t->string('FLAT_STOREY_COUNT', 16)->nullable();
+            $t->string('MAIN_HEATING_CONTROLS', 255)->nullable();
+            $t->string('MULTI_GLAZE_PROPORTION', 255)->nullable();
+            $t->string('GLAZED_TYPE', 255)->nullable();
+            $t->string('GLAZED_AREA', 255)->nullable();
+            $t->string('EXTENSION_COUNT', 16)->nullable();
+            $t->string('NUMBER_HABITABLE_ROOMS', 16)->nullable();
+            $t->string('NUMBER_HEATED_ROOMS', 16)->nullable();
+            $t->string('LOW_ENERGY_LIGHTING', 16)->nullable();
+            $t->string('NUMBER_OPEN_FIREPLACES', 16)->nullable();
+            $t->text('HOTWATER_DESCRIPTION')->nullable();
+            $t->string('HOT_WATER_ENERGY_EFF', 32)->nullable();
+            $t->string('HOT_WATER_ENV_EFF', 32)->nullable();
+            $t->text('FLOOR_DESCRIPTION')->nullable();
+            $t->string('FLOOR_ENERGY_EFF', 32)->nullable();
+            $t->string('FLOOR_ENV_EFF', 32)->nullable();
+            $t->text('WINDOWS_DESCRIPTION')->nullable();
+            $t->string('WINDOWS_ENERGY_EFF', 32)->nullable();
+            $t->string('WINDOWS_ENV_EFF', 32)->nullable();
+            $t->text('WALLS_DESCRIPTION')->nullable();
+            $t->string('WALLS_ENERGY_EFF', 32)->nullable();
+            $t->string('WALLS_ENV_EFF', 32)->nullable();
+            $t->text('SECONDHEAT_DESCRIPTION')->nullable();
+            $t->string('SHEATING_ENERGY_EFF', 32)->nullable();
+            $t->string('SHEATING_ENV_EFF', 32)->nullable();
+            $t->text('ROOF_DESCRIPTION')->nullable();
+            $t->string('ROOF_ENERGY_EFF', 32)->nullable();
+            $t->string('ROOF_ENV_EFF', 32)->nullable();
+            $t->text('MAINHEAT_DESCRIPTION')->nullable();
+            $t->string('MAINHEAT_ENERGY_EFF', 32)->nullable();
+            $t->string('MAINHEAT_ENV_EFF', 32)->nullable();
+            $t->text('MAINHEATCONT_DESCRIPTION')->nullable();
+            $t->string('MAINHEATC_ENERGY_EFF', 32)->nullable();
+            $t->string('MAINHEATC_ENV_EFF', 32)->nullable();
+            $t->text('LIGHTING_DESCRIPTION')->nullable();
+            $t->string('LIGHTING_ENERGY_EFF', 32)->nullable();
+            $t->string('LIGHTING_ENV_EFF', 32)->nullable();
+            $t->string('MAIN_FUEL', 255)->nullable();
+            $t->string('WIND_TURBINE_COUNT', 16)->nullable();
+            $t->string('HEAT_LOSS_CORRIDOR', 255)->nullable();
+            $t->string('UNHEATED_CORRIDOR_LENGTH', 255)->nullable();
+            $t->string('FLOOR_HEIGHT', 255)->nullable();
+            $t->string('PHOTO_SUPPLY', 255)->nullable();
+            $t->string('SOLAR_WATER_HEATING_FLAG', 8)->nullable();
+            $t->string('MECHANICAL_VENTILATION', 255)->nullable();
+            $t->text('ADDRESS')->nullable();
+            $t->string('LOCAL_AUTHORITY_LABEL', 255)->nullable();
+            $t->string('CONSTITUENCY_LABEL', 255)->nullable();
+            $t->string('POSTTOWN', 255)->nullable();
+            $t->string('CONSTRUCTION_AGE_BAND', 255)->nullable();
+            $t->string('LODGEMENT_DATETIME', 32)->nullable();
+            $t->string('TENURE', 255)->nullable();
+            $t->string('FIXED_LIGHTING_OUTLETS_COUNT', 16)->nullable();
+            $t->string('LOW_ENERGY_FIXED_LIGHT_COUNT', 16)->nullable();
+            $t->string('UPRN', 32)->nullable();
+            $t->string('UPRN_SOURCE', 32)->nullable();
+            $t->string('REPORT_TYPE', 16)->nullable();
 
-            // Address
-            $t->string('postcode', 16)->nullable()->index();
-            $t->string('address', 512)->nullable();
-            $t->string('posttown', 128)->nullable();
+            // optional loader bookkeeping
+            $t->timestamp('loaded_at')->useCurrent();
 
-            // Dates
-            $t->date('inspection_date')->nullable()->index();
-            $t->date('lodgement_date')->nullable()->index();
-            $t->dateTime('lodgement_datetime')->nullable()->index();
+            // ===== Indexes (fast lookups) =====
+            $t->index('LMK_KEY');
+            $t->index('POSTCODE');
+            $t->index('BUILDING_REFERENCE_NUMBER');
+            $t->index('UPRN');
+            $t->index('REPORT_TYPE');
+            $t->index('TRANSACTION_TYPE');
+            $t->index('LODGEMENT_DATE');
 
-            // Geo labels
-            $t->string('local_authority', 32)->nullable()->index();
-            $t->string('local_authority_label', 128)->nullable();
+            // Compound indexes commonly used in searches
+            $t->index(['POSTCODE', 'LODGEMENT_DATE']);
+            $t->index(['POSTCODE', 'CURRENT_ENERGY_RATING']);
 
-            // Property meta
-            $t->string('property_type', 64)->nullable()->index();
-            $t->string('built_form', 64)->nullable();
-            $t->string('construction_age_band', 64)->nullable();
-            $t->string('floor_level', 16)->nullable();
-            $t->string('flat_top_storey', 8)->nullable();
-            $t->decimal('flat_storey_count', 4, 1)->nullable();
-
-            // Headline metrics
-            $t->string('current_energy_rating', 8)->nullable();
-            $t->string('potential_energy_rating', 8)->nullable();
-            $t->unsignedSmallInteger('current_energy_efficiency')->nullable();
-            $t->unsignedSmallInteger('potential_energy_efficiency')->nullable();
-            $t->decimal('total_floor_area', 8, 2)->nullable();
-
-            // Context
-            $t->string('transaction_type', 255)->nullable();
-            $t->string('tenure', 255)->nullable();
-            $t->unsignedSmallInteger('number_habitable_rooms')->nullable();
-            $t->unsignedSmallInteger('extension_count')->nullable();
-
-            $t->timestamps();
-
-            // Composite index for common lookups (post code + date)
-            $t->index(['postcode', 'lodgement_date'], 'epc_postcode_lodged_idx');
+            // Fulltext for fuzzy address search (InnoDB supports FT in MySQL 5.7+)
+            $t->fullText(['ADDRESS', 'ADDRESS1', 'ADDRESS2', 'ADDRESS3']);
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('epc_certificates');
+        // Optionally, you could recreate the old simplified schema here if needed.
     }
 };
+

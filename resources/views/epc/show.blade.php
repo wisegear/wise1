@@ -280,12 +280,12 @@
         <div class="px-6 py-4 border-b border-zinc-200 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-zinc-900">Environmental impact (CO₂)</h2>
             <div class="text-sm text-zinc-500">
-                @if($envCur || $envCurLetter)
-                    Current: <span class="font-medium text-zinc-700">@if($envCur){{ $envCur }} @endif{{ $envCurLetter }}</span>
+                @if(!is_null($envCur))
+                    Current: <span class="font-medium text-zinc-700">{{ $envCur }}</span>
                 @endif
-                @if(($envCur || $envCurLetter) && ($envPot || $envPotLetter)) <span class="mx-2">|</span> @endif
-                @if($envPot || $envPotLetter)
-                    Potential: <span class="font-medium text-zinc-700">@if($envPot){{ $envPot }} @endif{{ $envPotLetter }}</span>
+                @if(!is_null($envCur) && !is_null($envPot)) <span class="mx-2">|</span> @endif
+                @if(!is_null($envPot))
+                    Potential: <span class="font-medium text-zinc-700">{{ $envPot }}</span>
                 @endif
             </div>
         </div>
@@ -329,8 +329,8 @@
                     <g transform="translate({{ $xCurCol2 }}, {{ $yMarker }})">
                         <polygon points="0,0 14,-8 14,8" fill="{{ $envCurColor }}" />
                         <rect x="14" y="-14" width="72" height="28" rx="6" fill="{{ $envCurColor }}" />
-                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $envCur ? $envCur.' ' : '' }}{{ $envCurLetter }}</text>
-                        <title>Current: {{ $envCur ? $envCur.' ' : '' }}{{ $envCurLetter }}</title>
+                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $envCur }}</text>
+                        <title>Current: {{ $envCur }}</title>
                     </g>
                 @endif
 
@@ -342,8 +342,8 @@
                     <g transform="translate({{ $xPotCol2 }}, {{ $yMarker }})">
                         <polygon points="0,0 14,-8 14,8" fill="{{ $envPotColor }}" />
                         <rect x="14" y="-14" width="72" height="28" rx="6" fill="{{ $envPotColor }}" />
-                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $envPot ? $envPot.' ' : '' }}{{ $envPotLetter }}</text>
-                        <title>Potential: {{ $envPot ? $envPot.' ' : '' }}{{ $envPotLetter }}</title>
+                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $envPot }}</text>
+                        <title>Potential: {{ $envPot }}</title>
                     </g>
                 @endif
             </svg>
