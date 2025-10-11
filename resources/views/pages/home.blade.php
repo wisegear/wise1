@@ -14,7 +14,7 @@
                 Property Research — clear, credible & fast datasets
             </h1>
             <p class="mt-3 text-base leading-7 text-zinc-700 md:text-lg">
-                Explore sales, repossessions and market signals across England &amp; Wales. Built for clarity, speed and repeatable analysis.
+                Explore sales, repossessions and market signals across England &amp; Wales (some Scotland & NI). Built for clarity, speed and repeatable analysis.
             </p>
 
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
