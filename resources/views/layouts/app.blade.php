@@ -45,14 +45,26 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        <div id="propertyDropdown" role="menu" aria-labelledby="propertyMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/property') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Dashboard</a>
-                            <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">HPI</a>
-                            <a href="{{ url('/property/search') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Property Search</a>
-                            <a href="{{ url('/property/outer-prime-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Outer Prime London</a>
-                            <a href="{{ url('/property/prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Prime Central London</a>
-                            <a href="{{ url('/property/ultra-prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Ultra Prime Central London</a>
-                            <a href="{{ url('/new-old') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">New vs Existing</a>
+                        <div id="propertyDropdown" role="menu" aria-labelledby="propertyMenuButton" class="absolute left-0 mt-4 w-[32rem] bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
+                            <div class="flex">
+                                <!-- Left column -->
+                                <div class="py-2 flex-1">
+                                    <a href="{{ url('/property') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Dashboard</a>
+                                    <a href="{{ url('/property/search') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Property Search</a>
+                                    <a href="{{ url('/property/outer-prime-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Outer Prime London</a>
+                                    <a href="{{ url('/property/prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Prime Central London</a>
+                                    <a href="{{ url('/property/ultra-prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Ultra Prime Central London</a>
+                                </div>
+
+                                <!-- Vertical divider with top/bottom space -->
+                                <div class="w-px bg-zinc-200 my-2"></div>
+
+                                <!-- Right column -->
+                                <div class="py-2 flex-1">
+                                    <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">House Price Index</a>
+                                    <a href="{{ url('/new-old') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">New Build Comparison</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -165,12 +177,12 @@
                 </button>
                 <div id="mobilePropertyMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
                     <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
-                    <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">HPI</a>
                     <a href="{{ url('/property/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Property Search</a>
                     <a href="{{ url('/property/outer-prime-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Outer Prime London</a>
                     <a href="{{ url('/property/prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Prime Central London</a>
                     <a href="{{ url('/property/ultra-prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Ultra Prime Central London</a>
-                    <a href="{{ url('/new-old') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">New vs Existing</a>
+                    <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">House Price Index</a>                    
+                    <a href="{{ url('/new-old') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">New Build Comparison</a>
                 </div>
             </div>
 

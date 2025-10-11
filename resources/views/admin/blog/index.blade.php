@@ -39,7 +39,7 @@
             @error('create_name')
                 <span class="text-red-500">{{ $message }}</span>
             @enderror
-            <input type="text" id="new_category_name" name="new_category_name" class="rounded mb-4" value="{{ old('create_name') }}">
+            <input type="text" id="new_category_name" name="new_category_name" class="rounded border p-1 mb-4" value="{{ old('create_name') }}">
 
             <button type="submit" class="inline-block self-start mx-auto mt-4 border rounded p-2 bg-lime-400 hover:bg-lime-300">Create</button>
         </div>
