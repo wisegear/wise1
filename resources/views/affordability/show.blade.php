@@ -8,7 +8,8 @@
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Affordability Outcomes</h1>
-            <p class="text-sm text-zinc-600 pt-2">To be clear again, this is a simplified view only.  It cannot take account of every lenders policy requirements.
+            <p class="text-sm text-zinc-600 pt-2">To be clear again, this is a simplified view only.  It cannot take account of every lenders policy requirements.  You
+                can find out more <a class="text-lime-600 hover:text-lime800" href="/blog/mortgage-affordability-calculator">here.</a>
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
