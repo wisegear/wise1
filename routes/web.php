@@ -16,6 +16,7 @@ use App\Http\Controllers\NewOldController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
+use App\Http\Controllers\AffordabilityController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,11 @@ use App\Http\Controllers\AdminPostCodesController;
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
 Route::get('/about', [PagesController::class, 'about'])->name('about');
+
+// Affordability
+Route::get('/affordability', [AffordabilityController::class, 'index'])->name('affordability.index');
+Route::get('/affordability/show/{token}', [AffordabilityController::class, 'show'])->name('affordability.show');
+Route::post('/affordability/calculate', [AffordabilityController::class, 'calculate'])->name('affordability.calculate');
 
 Route::get('/property', [PropertyController::class, 'home'])->name('property.home');
 Route::get('/property/search', [PropertyController::class, 'search'])->name('property.search');
