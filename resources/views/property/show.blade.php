@@ -94,7 +94,7 @@
         $zooplaUrl = "https://www.zoopla.co.uk{$zooplaPath}?q=" . urlencode($postcode) . "&search_source=home";
     @endphp
     <div class="mb-6 flex flex-wrap items-center justify-end gap-2 text-sm">
-        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($address) }}"
+        <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
            class="inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 shadow-sm transition">
@@ -102,6 +102,15 @@
                 <path d="M12 2a7 7 0 00-7 7c0 5.25 7 12 7 12s7-6.75 7-12a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
             </svg>
             <span>View in Google Maps</span>
+        </a>
+        <a href="https://www.google.com/search?q={{ urlencode($displayAddress) }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-800 text-white px-4 py-2 shadow-sm transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
+            </svg>
+            <span>Google search address</span>
         </a>
 
         @if($postcode !== '')
