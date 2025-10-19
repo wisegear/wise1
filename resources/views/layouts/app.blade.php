@@ -109,6 +109,7 @@
                         </div>
                     </div>
 
+                    <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
                     <a href="{{ url('/interest-rates') }}" class="px-3 py-2 rounded {{ request()->is('interest-rates') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Interest Rates</a>
                     <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
                 </div>
@@ -228,6 +229,7 @@
                 </div>
             </div>
 
+            <a href="{{ url('/deprivation') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Deprivation</a>
             <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>
             <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>
 

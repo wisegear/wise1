@@ -17,6 +17,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\AffordabilityController;
+use App\Http\Controllers\DeprivationController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,9 @@ Route::post('/stamp-duty/calc', [StampDutyController::class, 'calculate']);
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
+
+Route::get('/deprivation', [DeprivationController::class, 'index'])->name('deprivation.index');
+Route::get('/deprivation/{lsoa21cd}', [DeprivationController::class, 'show'])->name('deprivation.show');
 
 Route::resource('/blog', BlogController::class);
 

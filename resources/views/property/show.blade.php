@@ -127,6 +127,7 @@
         @endif
     </div>
 
+
     @if($results->isEmpty())
         <p>No transactions found for this property.</p>
     @else
@@ -231,7 +232,9 @@
                         </thead>
                         <tbody>
                             @foreach($epcMatches as $m)
-                                @php($row = $m['row'])
+                                @php
+                                    $row = $m['row'];
+                                @endphp
                                 <tr class="odd:bg-white even:bg-zinc-50">
                                     <td class="px-3 py-2 border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
                                     <td class="px-3 py-2 border-b">{{ $row->current_energy_rating }}</td>
@@ -241,11 +244,18 @@
                                         {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
                                     </td>
                                     <td class="px-3 py-2 border-b text-center">
-                                        @php($s = (int) round($m['score'] ?? 0))
-                                        @php(
-                                            $badge = $s >= 80 ? ['High','bg-green-100 text-green-800 border-green-200'] : (
-                                                     ($s >= 65 ? ['Medium','bg-amber-100 text-amber-800 border-amber-200'] : ['Low','bg-zinc-100 text-zinc-800 border-zinc-200']) )
-                                        )
+                                        @php
+                                            $s = (int) round($m['score'] ?? 0);
+                                        @endphp
+                                        @php
+                                            if ($s >= 80) {
+                                                $badge = ['High','bg-green-100 text-green-800 border-green-200'];
+                                            } elseif ($s >= 65) {
+                                                $badge = ['Medium','bg-amber-100 text-amber-800 border-amber-200'];
+                                            } else {
+                                                $badge = ['Low','bg-zinc-100 text-zinc-800 border-zinc-200'];
+                                            }
+                                        @endphp
                                         <span class="inline-flex items-center gap-2">
                                             <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium {{ $badge[1] }}">
                                                 {{ $badge[0] }}
@@ -274,6 +284,153 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+            @endif
+        </div>
+    </details>
+
+    {{-- Deprivation (IMD 2019) — collapsible panel resolved by postcode via ONSPD --}}
+    @php
+        $depr = null; $deprMsg = null; $lsoaLink = null;
+        $pcInput = trim((string)($postcode ?? ''));
+        if ($pcInput !== '') {
+            $pcKey = strtoupper(str_replace(' ', '', $pcInput));
+            // 1) Look up postcode in ONSPD (prefer latest record)
+            $pcRow = DB::table('onspd')
+                ->select(['lsoa21','lsoa11','lat','long'])
+                ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
+                ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
+                ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
+                ->orderByDesc('dointr')
+                ->first();
+
+            if ($pcRow) {
+                $lsoa11 = $pcRow->lsoa11; // IMD2019 uses 2011 codes
+                $lsoa21 = $pcRow->lsoa21; // for name / 2021 geography
+
+                // Bridge 2011→2021 if needed
+                if (!$lsoa21 && $lsoa11) {
+                    $map = DB::table('lsoa_2011_to_2021')->select('LSOA21CD')->where('LSOA11CD', $lsoa11)->first();
+                    $lsoa21 = $map->LSOA21CD ?? null;
+                }
+
+                if ($lsoa21 && str_starts_with($lsoa21, 'E')) {
+                    // Fetch LSOA21 name & rural/urban
+                    $geo = DB::table('lsoa21_ruc_geo')->select('LSOA21NM','LAT','LONG')->where('LSOA21CD', $lsoa21)->first();
+
+                    // Overall IMD decile + rank for this LSOA11
+                    $imdDec = DB::table('imd2019 as t')
+                        ->where('t.FeatureCode', $lsoa11)
+                        ->whereRaw("LOWER(TRIM(t.Measurement))='decile'")
+                        ->whereRaw("LOWER(TRIM(t.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
+                        ->value('Value');
+                    $imdRank = DB::table('imd2019 as t')
+                        ->where('t.FeatureCode', $lsoa11)
+                        ->whereRaw("LOWER(TRIM(t.Measurement))='rank'")
+                        ->whereRaw("LOWER(TRIM(t.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
+                        ->value('Value');
+
+                    // Total LSOAs (for percentile)
+                    $totalRank = (int) (DB::table('imd2019')
+                        ->whereRaw("LOWER(TRIM(Measurement))='rank'")
+                        ->whereRaw("LOWER(TRIM(`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
+                        ->max('Value') ?? 0);
+                    if ($totalRank === 0) { $totalRank = 32844; }
+
+                    $pct = null;
+                    if (!empty($imdRank)) {
+                        $pct = max(0, min(100, (int) round((1 - (($imdRank - 1) / $totalRank)) * 100)));
+                    }
+
+                    $depr = [
+                        'lsoa21' => $lsoa21,
+                        'lsoa11' => $lsoa11,
+                        'name'   => $geo->LSOA21NM ?? $lsoa21,
+                        'decile' => $imdDec,
+                        'rank'   => $imdRank,
+                        'pct'    => $pct,
+                        'lat'    => $geo->LAT ?? $pcRow->lat,
+                        'long'   => $geo->LONG ?? $pcRow->long,
+                    ];
+                    $lsoaLink = route('deprivation.show', $lsoa21);
+                } elseif ($lsoa21 && !str_starts_with($lsoa21, 'E')) {
+                    $deprMsg = 'This postcode resolves to a non‑English LSOA (IMD covers England only).';
+                } else {
+                    $deprMsg = 'No LSOA mapping found for this postcode.';
+                }
+            } else {
+                $deprMsg = 'Postcode not found in ONSPD.';
+            }
+        }
+
+        // Badge style for decile
+        $badgeClass = function($d){
+            $d = (int)($d ?? 0);
+            if ($d >= 8) return 'bg-emerald-100 text-emerald-800';
+            if ($d >= 5) return 'bg-amber-100 text-amber-800';
+            if ($d >= 1) return 'bg-rose-100 text-rose-800';
+            return 'bg-zinc-100 text-zinc-700';
+        };
+    @endphp
+
+    <details class="my-8 group">
+        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
+            <div>
+                <h2 class="text-lg font-semibold m-0">Local Deprivation Index</h2>
+                <p class="text-xs text-zinc-600 mt-1">Derived from postcode via ONSPD → LSOA (England only).</p>
+            </div>
+            <span class="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+
+        <div class="mt-4">
+            @if($depr)
+                <div class="rounded border border-zinc-200 bg-white p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left: everything except Decile/Rank -->
+                        <div>
+                            <div class="text-sm text-zinc-600">LSOA21</div>
+                            <div class="font-medium">{{ $depr['name'] }} <span class="text-xs text-zinc-500">({{ $depr['lsoa21'] }})</span></div>
+
+                            <div class="mt-4 flex flex-wrap items-center gap-2">
+                                @if($lsoaLink)
+                                    <a href="{{ $lsoaLink }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-lime-700 bg-lime-50 rounded-md hover:bg-lime-100 border border-lime-200">Full details</a>
+                                @endif
+                                @if(($depr['lat'] ?? null) && ($depr['long'] ?? null))
+                                    <a href="https://www.google.com/maps?q={{ $depr['lat'] }},{{ $depr['long'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-700 bg-white rounded-md hover:bg-zinc-50 border">View on map</a>
+                                @endif
+                            </div>
+
+                            <p class="mt-3 text-xs text-zinc-500">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places. IMD 2019 is the latest full release for England.</p>
+                        </div>
+
+                        <!-- Right: Decile & Rank presentation -->
+                        <div class="md:flex md:items-stretch md:justify-end">
+                            <div class="w-full md:w-auto rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-center">
+                                <div class="grid grid-cols-2 gap-4 md:flex md:flex-col md:gap-4 md:text-left">
+                                    <div class="md:order-1">
+                                        <div class="text-xs text-zinc-600 mb-1">Decile</div>
+                                        <span class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium {{ $badgeClass($depr['decile']) }}">
+                                            {{ $depr['decile'] ?? 'N/A' }}
+                                        </span>
+                                    </div>
+                                    <div class="md:order-2">
+                                        <div class="text-xs text-zinc-600 mb-1">Rank</div>
+                                        <div class="text-2xl font-semibold leading-none">{{ $depr['rank'] ? number_format($depr['rank']) : 'N/A' }}</div>
+                                        @if(!is_null($depr['pct']))
+                                            <div class="text-xs text-zinc-500 mt-1">
+                                                {{ number_format($totalRank) }} total · top {{ $depr['pct'] }}%
+                                                {{ ($depr['pct'] ?? 0) >= 50 ? 'most deprived' : 'least deprived' }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="rounded border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm">
+                    {{ $deprMsg ?? 'Unable to resolve this postcode to an English LSOA.' }}
                 </div>
             @endif
         </div>
