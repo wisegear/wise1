@@ -293,20 +293,24 @@
     @php
         $depr = null; $deprMsg = null; $lsoaLink = null;
         $pcInput = trim((string)($postcode ?? ''));
+
         if ($pcInput !== '') {
             $pcKey = strtoupper(str_replace(' ', '', $pcInput));
-            // 1) Look up postcode in ONSPD (prefer latest record)
-            $pcRow = DB::table('onspd')
-                ->select(['lsoa21','lsoa11','lat','long'])
-                ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
-                ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
-                ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
-                ->orderByDesc('dointr')
-                ->first();
+            $cacheKey = 'imd:pc:' . $pcKey;
 
-            if ($pcRow) {
-                $lsoa11 = $pcRow->lsoa11; // IMD2019 uses 2011 codes
-                $lsoa21 = $pcRow->lsoa21; // for name / 2021 geography
+            $depr = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addDays(30), function () use ($pcKey) {
+                // Resolve postcode → LSOA21/LSOA11 (prefer latest record)
+                $pcRow = DB::table('onspd')
+                    ->select(['lsoa21','lsoa11','lat','long'])
+                    ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
+                    ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
+                    ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
+                    ->orderByDesc('dointr')
+                    ->first();
+
+                if (!$pcRow) return ['error' => 'Postcode not found in ONSPD.'];
+
+                $lsoa11 = $pcRow->lsoa11; $lsoa21 = $pcRow->lsoa21;
 
                 // Bridge 2011→2021 if needed
                 if (!$lsoa21 && $lsoa11) {
@@ -314,53 +318,47 @@
                     $lsoa21 = $map->LSOA21CD ?? null;
                 }
 
-                if ($lsoa21 && str_starts_with($lsoa21, 'E')) {
-                    // Fetch LSOA21 name & rural/urban
-                    $geo = DB::table('lsoa21_ruc_geo')->select('LSOA21NM','LAT','LONG')->where('LSOA21CD', $lsoa21)->first();
+                if (!$lsoa21) return ['error' => 'No LSOA mapping found for this postcode.'];
+                if (substr($lsoa21, 0, 1) !== 'E') return ['error' => 'This postcode resolves to a non‑English LSOA (IMD is England‑only).'];
 
-                    // Overall IMD decile + rank for this LSOA11
-                    $imdDec = DB::table('imd2019 as t')
-                        ->where('t.FeatureCode', $lsoa11)
-                        ->whereRaw("LOWER(TRIM(t.Measurement))='decile'")
-                        ->whereRaw("LOWER(TRIM(t.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
-                        ->value('Value');
-                    $imdRank = DB::table('imd2019 as t')
-                        ->where('t.FeatureCode', $lsoa11)
-                        ->whereRaw("LOWER(TRIM(t.Measurement))='rank'")
-                        ->whereRaw("LOWER(TRIM(t.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
-                        ->value('Value');
+                $geo = DB::table('lsoa21_ruc_geo')->select('LSOA21NM','LAT','LONG')->where('LSOA21CD', $lsoa21)->first();
 
-                    // Total LSOAs (for percentile)
-                    $totalRank = (int) (DB::table('imd2019')
-                        ->whereRaw("LOWER(TRIM(Measurement))='rank'")
-                        ->whereRaw("LOWER(TRIM(`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
+                // Single query: get overall decile & rank via conditional aggregation on normalized cols
+                $imd = DB::table('imd2019 as t')
+                    ->selectRaw(
+                        "MAX(CASE WHEN t.measurement_norm='decile' AND t.iod_norm LIKE 'a. index of multiple deprivation%' THEN t.Value END) AS decile_val,\n" .
+                        "MAX(CASE WHEN t.measurement_norm='rank'   AND t.iod_norm LIKE 'a. index of multiple deprivation%' THEN t.Value END) AS rank_val"
+                    )
+                    ->whereRaw('t.FeatureCode = ?', [$lsoa11])
+                    ->first();
+
+                // Cached total LSOAs (max rank)
+                $totalRank = \Illuminate\Support\Facades\Cache::rememberForever('imd.total_rank', function () {
+                    $n = (int) (DB::table('imd2019')
+                        ->where('measurement_norm', 'rank')
+                        ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
                         ->max('Value') ?? 0);
-                    if ($totalRank === 0) { $totalRank = 32844; }
+                    return $n ?: 32844;
+                });
 
-                    $pct = null;
-                    if (!empty($imdRank)) {
-                        $pct = max(0, min(100, (int) round((1 - (($imdRank - 1) / $totalRank)) * 100)));
-                    }
+                $rank = (int)($imd->rank_val ?? 0);
+                $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $totalRank)) * 100))) : null;
 
-                    $depr = [
-                        'lsoa21' => $lsoa21,
-                        'lsoa11' => $lsoa11,
-                        'name'   => $geo->LSOA21NM ?? $lsoa21,
-                        'decile' => $imdDec,
-                        'rank'   => $imdRank,
-                        'pct'    => $pct,
-                        'lat'    => $geo->LAT ?? $pcRow->lat,
-                        'long'   => $geo->LONG ?? $pcRow->long,
-                    ];
-                    $lsoaLink = route('deprivation.show', $lsoa21);
-                } elseif ($lsoa21 && !str_starts_with($lsoa21, 'E')) {
-                    $deprMsg = 'This postcode resolves to a non‑English LSOA (IMD covers England only).';
-                } else {
-                    $deprMsg = 'No LSOA mapping found for this postcode.';
-                }
-            } else {
-                $deprMsg = 'Postcode not found in ONSPD.';
-            }
+                return [
+                    'lsoa21' => $lsoa21,
+                    'lsoa11' => $lsoa11,
+                    'name'   => $geo->LSOA21NM ?? $lsoa21,
+                    'decile' => $imd->decile_val ?? null,
+                    'rank'   => $rank ?: null,
+                    'pct'    => $pct,
+                    'total'  => $totalRank,
+                    'lat'    => $geo->LAT ?? $pcRow->lat,
+                    'long'   => $geo->LONG ?? $pcRow->long,
+                ];
+            });
+
+            if (isset($depr['error'])) { $deprMsg = $depr['error']; $depr = null; }
+            if ($depr) { $lsoaLink = route('deprivation.show', $depr['lsoa21']); }
         }
 
         // Badge style for decile
@@ -418,7 +416,7 @@
                                         <div class="text-2xl font-semibold leading-none">{{ $depr['rank'] ? number_format($depr['rank']) : 'N/A' }}</div>
                                         @if(!is_null($depr['pct']))
                                             <div class="text-xs text-zinc-500 mt-1">
-                                                {{ number_format($totalRank) }} total · top {{ $depr['pct'] }}%
+                                                {{ number_format($depr['total'] ?? 32844) }} total · top {{ $depr['pct'] }}%
                                                 {{ ($depr['pct'] ?? 0) >= 50 ? 'most deprived' : 'least deprived' }}
                                             </div>
                                         @endif
