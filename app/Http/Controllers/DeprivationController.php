@@ -56,8 +56,8 @@ class DeprivationController extends Controller
 
         // Total LSOA count for overall IMD rank (used to show percentile alongside rank)
         $totalRank = (int) (DB::table('imd2019')
-            ->whereRaw("LOWER(TRIM(Measurement)) = 'rank'")
-            ->whereRaw("LOWER(TRIM(`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'")
+            ->where('measurement_norm', 'rank')
+            ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
             ->max('Value') ?? 0);
         if ($totalRank === 0) {
             // Sensible fallback for England IMD if dataset shape changes
@@ -70,13 +70,13 @@ class DeprivationController extends Controller
             ->leftJoin('lsoa_2011_to_2021 as map', 'map.LSOA21CD', '=', 'g.LSOA21CD')
             ->leftJoin('imd2019 as imd_dec', function ($j) {
                 $j->on('imd_dec.FeatureCode', '=', 'map.LSOA11CD')
-                  ->whereRaw("LOWER(TRIM(imd_dec.Measurement)) = 'decile'")
-                  ->whereRaw("LOWER(TRIM(imd_dec.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'");
+                  ->where('imd_dec.measurement_norm', '=', 'decile')
+                  ->where('imd_dec.iod_norm', 'like', 'a. index of multiple deprivation%');
             })
             ->leftJoin('imd2019 as imd_rank', function ($j) {
                 $j->on('imd_rank.FeatureCode', '=', 'map.LSOA11CD')
-                  ->whereRaw("LOWER(TRIM(imd_rank.Measurement)) = 'rank'")
-                  ->whereRaw("LOWER(TRIM(imd_rank.`Indices_of_Deprivation`)) LIKE 'a. index of multiple deprivation%'");
+                  ->where('imd_rank.measurement_norm', '=', 'rank')
+                  ->where('imd_rank.iod_norm', 'like', 'a. index of multiple deprivation%');
             })
             ->whereRaw("LEFT(g.LSOA21CD, 1) = 'E'")
             ->select([
@@ -150,9 +150,9 @@ class DeprivationController extends Controller
 
         // Pull all Rank/Decile pairs for this LSOA11 across all domains
         $rows = DB::table('imd2019')
-            ->selectRaw("LOWER(TRIM(`Indices_of_Deprivation`)) as domain_label, LOWER(TRIM(`Measurement`)) as meas, Value")
-            ->whereRaw("REPLACE(TRIM(FeatureCode),' ','') = ?", [$base->LSOA11CD])
-            ->whereIn(DB::raw("LOWER(TRIM(`Measurement`))"), ['rank','decile'])
+            ->select(['iod_norm as domain_label', 'measurement_norm as meas', 'Value'])
+            ->where('FeatureCode', $base->LSOA11CD)
+            ->whereIn('measurement_norm', ['rank','decile'])
             ->get();
 
         // Map rows to canonical IMD domains using tolerant matching
