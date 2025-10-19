@@ -99,16 +99,67 @@
   {{-- Weights explainer --}}
   <section class="rounded border border-gray-200 bg-white/80 p-6 shadow-sm">
     <h3 class="text-base font-semibold text-gray-900 mb-2">How the overall IMD is weighted</h3>
-    <p class="text-sm text-gray-700">The overall IMD is a weighted combination of domains:</p>
-    <ul class="mt-2 text-sm text-gray-700 list-disc list-inside space-y-1">
-      <li>Income (22.5%)</li>
-      <li>Employment (22.5%)</li>
-      <li>Education, Skills & Training (13.5%)</li>
-      <li>Health Deprivation & Disability (13.5%)</li>
-      <li>Crime (9.3%)</li>
-      <li>Barriers to Housing & Services (9.3%)</li>
-      <li>Living Environment (9.3%)</li>
-    </ul>
+    <p class="text-sm text-gray-700">The overall IMD score is a weighted combination of seven domains. Each domain reflects a different aspect of area‑level disadvantage:</p>
+
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Income</div>
+          <span class="text-xs text-gray-500">22.5%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">People experiencing deprivation due to low income (e.g. income‑related benefits/tax credits), including children and older people affected by low household income.</p>
+      </div>
+
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Employment</div>
+          <span class="text-xs text-gray-500">22.5%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Involuntary exclusion from the labour market: unemployment, long‑term sickness or disability, caring responsibilities, and other barriers to work.</p>
+      </div>
+
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Education, Skills &amp; Training</div>
+          <span class="text-xs text-gray-500">13.5%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Attainment and skills in children and adults: early‑years and school results, absence, entry to higher education, and adult qualification levels.</p>
+      </div>
+
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Health Deprivation &amp; Disability</div>
+          <span class="text-xs text-gray-500">13.5%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Risk of premature death and impaired quality of life: illness and mortality indicators, hospital episodes, limiting long‑term conditions and mental health.</p>
+      </div>
+
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Crime</div>
+          <span class="text-xs text-gray-500">9.3%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Risk of personal and material victimisation: recorded rates of violence, burglary, theft and criminal damage.</p>
+      </div>
+
+      <div class="rounded border p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Barriers to Housing &amp; Services</div>
+          <span class="text-xs text-gray-500">9.3%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Physical and financial access to suitable housing and essential services: housing affordability/overcrowding and distance to GPs, schools, shops and post offices.</p>
+      </div>
+
+      <div class="rounded border p-4 md:col-span-2">
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-gray-900">Living Environment</div>
+          <span class="text-xs text-gray-500">9.3%</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-700">Quality of the local environment: housing condition (e.g. non‑decent homes, central heating), air quality/pollution and road traffic collisions.</p>
+      </div>
+    </div>
+
+    <p class="mt-4 text-xs text-gray-500">Notes: IMD 2019 covers England and is an area‑based, relative measure. Lower decile = more deprived; higher decile = less deprived.</p>
   </section>
 
 </div>
