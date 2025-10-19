@@ -294,19 +294,40 @@
         $depr = null; $deprMsg = null; $lsoaLink = null;
         $pcInput = trim((string)($postcode ?? ''));
 
-        if ($pcInput !== '') {
-            $pcKey = strtoupper(str_replace(' ', '', $pcInput));
-            $cacheKey = 'imd:pc:' . $pcKey;
+        // Helper to standardize UK postcode to ONS PCDS format (e.g., "WR5 3EU")
+        $stdPostcode = function($s) {
+            $s = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string)$s));
+            if ($s === '') return '';
+            if (strlen($s) <= 3) return $s; // not a real pc, but avoid crash
+            return substr($s, 0, -3) . ' ' . substr($s, -3);
+        };
 
-            $depr = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addDays(30), function () use ($pcKey) {
-                // Resolve postcode → LSOA21/LSOA11 (prefer latest record)
-                $pcRow = DB::table('onspd')
-                    ->select(['lsoa21','lsoa11','lat','long'])
-                    ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
-                    ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
-                    ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
-                    ->orderByDesc('dointr')
-                    ->first();
+        if ($pcInput !== '') {
+            $pcStd = $stdPostcode($pcInput);           // e.g. "WR5 3EU"
+            $pcKey = strtoupper(str_replace(' ', '', $pcInput)); // legacy key
+            $cacheKey = 'imd:pcstd:' . ($pcStd ?: $pcKey);
+
+            $depr = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addDays(30), function () use ($pcStd, $pcKey) {
+                // Resolve postcode → LSOA21/LSOA11 using indexed PCDS first
+                $pcRow = null;
+                if (!empty($pcStd)) {
+                    $pcRow = DB::table('onspd')
+                        ->select(['lsoa21','lsoa11','lat','long'])
+                        ->where('pcds', $pcStd)
+                        ->where(function($q){ $q->whereNull('doterm')->orWhere('doterm', ''); })
+                        ->orderByDesc('dointr')
+                        ->first();
+                }
+                if (!$pcRow) {
+                    // Fallback to normalized matching if oddly formatted
+                    $pcRow = DB::table('onspd')
+                        ->select(['lsoa21','lsoa11','lat','long'])
+                        ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
+                        ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
+                        ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
+                        ->orderByDesc('dointr')
+                        ->first();
+                }
 
                 if (!$pcRow) return ['error' => 'Postcode not found in ONSPD.'];
 
