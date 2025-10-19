@@ -117,15 +117,18 @@
             </div>
         </a>
 
-    </section>
+        <a href="{{ Route::has('deprivation.index') ? route('deprivation.index') : url('/deprivation') }}"
+           class="group block rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-900">Deprivation (IMD 2019)</h2>
+                <span class="rounded-lg bg-amber-300 px-2 py-1 text-xs text-zinc-700">Beta</span>
+            </div>
+            <p class="mt-2 text-sm text-zinc-700">Explore the Index of Multiple Deprivation at LSOA level. Search by postcode and see domain breakdowns.</p>
+            <div class="mt-4 inline-flex items-center text-sm font-medium text-cyan-700 group-hover:underline">Open Deprivation Dashboard
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="ml-1 h-4 w-4"><path d="M13 5l7 7-7 7v-4H4v-6h9V5z"/></svg>
+            </div>
+        </a>
 
-    {{-- Small print / provenance --}}
-    <section class="mt-10 rounded-lg border border-zinc-200 bg-white p-6">
-        <h3 class="text-sm font-semibold text-zinc-900">Data provenance</h3>
-        <p class="mt-2 text-sm leading-6 text-zinc-700">
-            Sales from HM Land Registry; repossessions from official MoJ statistics; interest rates &amp; approvals from the Bank of England. EPC data from Dept for Levelling Up, Housing & Communities. Names are standardised and official area 
-            codes are used for reliable joins.  All data is licensed under the Open Government Licence v3.0
-        </p>
     </section>
 
     <!-- Blog posts -->
