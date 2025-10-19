@@ -18,9 +18,4 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->create();
 
-// Register dev-only providers like Pail only in local
-if (env('APP_ENV') === 'local' && class_exists(\Laravel\Pail\PailServiceProvider::class)) {
-    $app->register(\Laravel\Pail\PailServiceProvider::class);
-}
-
 return $app;
