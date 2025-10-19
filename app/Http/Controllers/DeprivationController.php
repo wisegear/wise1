@@ -21,22 +21,45 @@ class DeprivationController extends Controller
         // Optional: direct postcode search (redirects to details page)
         $postcode = trim((string)$req->input('postcode'));
         if ($postcode !== '') {
-            $pc = strtoupper(preg_replace('/\s+/', '', $postcode));
+            // Standardize postcode to PCDS format (e.g., "WR5 3EU")
+            $std = function (string $s): string {
+                $s = strtoupper(preg_replace('/[^A-Z0-9]/', '', $s));
+                if ($s === '' || strlen($s) <= 3) return $s;
+                return substr($s, 0, -3) . ' ' . substr($s, -3);
+            };
 
-            // Look up postcode across pcds/pcd2/pcd; prefer latest record
-            $row = DB::table('onspd')
-                ->select(['lsoa21', 'lsoa11'])
-                ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pc])
-                ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pc])
-                ->orWhereRaw("REPLACE(UPPER(pcd),' ','') = ?", [$pc])
-                ->orderByDesc('dointr')
-                ->first();
+            $pcStd = $std($postcode);                                // "WR5 3EU"
+            $pcKey = strtoupper(str_replace(' ', '', $postcode));    // "WR53EU"
+            $cacheKey = 'onspd:pcmap:' . ($pcStd ?: $pcKey);
+
+            $row = Cache::remember($cacheKey, now()->addDays(30), function () use ($pcStd, $pcKey) {
+                // 1) Try exact indexed match on PCDS for current records first
+                if ($pcStd !== '') {
+                    $hit = DB::table('onspd')
+                        ->select(['lsoa21', 'lsoa11'])
+                        ->where('pcds', $pcStd)
+                        ->where(function ($q) {
+                            $q->whereNull('doterm')->orWhere('doterm', '');
+                        })
+                        ->orderByDesc('dointr')
+                        ->first();
+                    if ($hit) return $hit;
+                }
+                // 2) Fallback to normalized comparisons across pcds/pcd2/pcd
+                return DB::table('onspd')
+                    ->select(['lsoa21', 'lsoa11'])
+                    ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
+                    ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
+                    ->orWhereRaw("REPLACE(UPPER(pcd),' ','') = ?", [$pcKey])
+                    ->orderByDesc('dointr')
+                    ->first();
+            });
 
             if ($row) {
-                $lsoa21 = $row->lsoa21;
+                $lsoa21 = $row->lsoa21 ?? null;
 
                 // If only LSOA11 exists, bridge to 2021 code
-                if (!$lsoa21 && $row->lsoa11) {
+                if (!$lsoa21 && !empty($row->lsoa11)) {
                     $map = DB::table('lsoa_2011_to_2021')
                         ->select('LSOA21CD')
                         ->where('LSOA11CD', $row->lsoa11)
