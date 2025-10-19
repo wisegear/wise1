@@ -15,4 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->when(env('APP_ENV') === 'local', function (Application $app) {
+        // Register dev-only providers like Pail
+        if (class_exists(\Laravel\Pail\PailServiceProvider::class)) {
+            $app->register(\Laravel\Pail\PailServiceProvider::class);
+        }
+    })
+    ->create();
