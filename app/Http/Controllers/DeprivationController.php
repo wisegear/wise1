@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Pagination\Paginator;
 
 class DeprivationController extends Controller
 {
@@ -55,14 +57,13 @@ class DeprivationController extends Controller
         }
 
         // Total LSOA count for overall IMD rank (used to show percentile alongside rank)
-        $totalRank = (int) (DB::table('imd2019')
-            ->where('measurement_norm', 'rank')
-            ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
-            ->max('Value') ?? 0);
-        if ($totalRank === 0) {
-            // Sensible fallback for England IMD if dataset shape changes
-            $totalRank = 32844;
-        }
+        $totalRank = Cache::rememberForever('imd.total_rank', function () {
+            $n = (int) (DB::table('imd2019')
+                ->where('measurement_norm', 'rank')
+                ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
+                ->max('Value') ?? 0);
+            return $n ?: 32844;
+        });
 
         // Base: start from LSOA21 names (so UI is readable)
         // Join bridge to get LSOA11, then IMD decile/rank (overall IMD domain)
@@ -119,7 +120,23 @@ class DeprivationController extends Controller
 
         $rows->orderBy($sort, $dir)->orderBy('lsoa_name');
 
-        $data = $rows->simplePaginate($perPage)->appends($req->query());
+        // Cache the paginated results since IMD data is effectively static
+        $page = (int) ($req->input('page', 1));
+        $cacheKey = 'imd:index:' . md5(json_encode([
+            'q' => $q,
+            'decile' => $decile,
+            'ruc' => $ruc,
+            'lad' => $lad,
+            'sort' => $sort,
+            'dir' => $dir,
+            'per' => $perPage,
+            'page' => $page,
+        ]));
+
+        $ttl = now()->addDays(30); // IMD doesn’t change often
+        $data = Cache::remember($cacheKey, $ttl, function () use ($rows, $perPage, $req) {
+            return $rows->simplePaginate($perPage)->appends($req->query());
+        });
 
         return view('deprivation.index', [
             'data'   => $data,
