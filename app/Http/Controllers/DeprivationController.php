@@ -78,7 +78,7 @@ class DeprivationController extends Controller
                   ->where('imd_rank.measurement_norm', '=', 'rank')
                   ->where('imd_rank.iod_norm', 'like', 'a. index of multiple deprivation%');
             })
-            ->whereRaw("LEFT(g.LSOA21CD, 1) = 'E'")
+            ->where('g.LSOA21CD', 'like', 'E%')
             ->select([
                 'g.LSOA21CD as lsoa21cd',
                 'g.LSOA21NM as lsoa_name',
@@ -119,7 +119,7 @@ class DeprivationController extends Controller
 
         $rows->orderBy($sort, $dir)->orderBy('lsoa_name');
 
-        $data = $rows->paginate($perPage)->appends($req->query());
+        $data = $rows->simplePaginate($perPage)->appends($req->query());
 
         return view('deprivation.index', [
             'data'   => $data,
