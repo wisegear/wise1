@@ -27,12 +27,14 @@ class DeprivationController extends Controller
                 return substr($s, 0, -3) . ' ' . substr($s, -3);
             };
 
-            $pcStd = $std($postcode);                                // "WR5 3EU"
-            $pcKey = strtoupper(str_replace(' ', '', $postcode));    // "WR53EU"
-            $cacheKey = 'onspd:pcmap:' . ($pcStd ?: $pcKey);
+            $pcStd = $std($postcode);                                // e.g. "WR5 3EU"
+            $pcKey = strtoupper(str_replace(' ', '', $postcode));    // e.g. "WR53EU"
+            $cacheKey = 'onspd:pcmap:' . $pcKey;                     // strict, space-free key
 
-            $row = Cache::remember($cacheKey, now()->addDays(30), function () use ($pcStd, $pcKey) {
+            $row = Cache::get($cacheKey);
+            if (!$row) {
                 // 1) Try exact indexed match on PCDS for current records first
+                $hit = null;
                 if ($pcStd !== '') {
                     $hit = DB::table('onspd')
                         ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
@@ -42,17 +44,24 @@ class DeprivationController extends Controller
                         })
                         ->orderByDesc('dointr')
                         ->first();
-                    if ($hit) return $hit;
                 }
-                // 2) Fallback to normalized comparisons across pcds/pcd2/pcd
-                return DB::table('onspd')
-                    ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
-                    ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
-                    ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
-                    ->orWhereRaw("REPLACE(UPPER(pcd),' ','') = ?", [$pcKey])
-                    ->orderByDesc('dointr')
-                    ->first();
-            });
+
+                if (!$hit) {
+                    // 2) Fallback to normalized comparisons across pcds/pcd2/pcd
+                    $hit = DB::table('onspd')
+                        ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
+                        ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
+                        ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
+                        ->orWhereRaw("REPLACE(UPPER(pcd),' ','') = ?", [$pcKey])
+                        ->orderByDesc('dointr')
+                        ->first();
+                }
+
+                if ($hit) {
+                    Cache::put($cacheKey, $hit, now()->addDays(30));
+                    $row = $hit;
+                }
+            }
 
             if ($row) {
                 $lsoa21 = $row->lsoa21 ?? null;
@@ -68,7 +77,7 @@ class DeprivationController extends Controller
 
                 // If this is a Scottish postcode (Data Zone held in lsoa11 as S010…)
                 if (!empty($row->lsoa11) && (function_exists('str_starts_with') ? str_starts_with($row->lsoa11, 'S010') : substr($row->lsoa11, 0, 4) === 'S010')) {
-                    return redirect()->route('deprivation.scot.show', $row->lsoa11);
+                    return redirect()->route('deprivation.scot.show', ['dz' => $row->lsoa11, 'pcd' => $pcStd ?: $pcKey]);
                 }
 
                 // Redirect to details if English LSOA (IMD coverage)
@@ -285,11 +294,23 @@ class DeprivationController extends Controller
 
     public function showScotland(string $dz)
     {
-        // Fetch a representative row from the Scotland deprivation view
-        $row = DB::table('v_postcode_deprivation_scotland')
-            ->where('data_zone', $dz)
-            ->orderBy('postcode')
-            ->first();
+        $pcd = request('pcd');
+
+        // Prefer the exact postcode row if provided, otherwise fall back to any row in the DZ
+        $row = null;
+        if (!empty($pcd)) {
+            $row = DB::table('v_postcode_deprivation_scotland')
+                ->where('data_zone', $dz)
+                ->where('postcode', $pcd)
+                ->first();
+        }
+
+        if (!$row) {
+            $row = DB::table('v_postcode_deprivation_scotland')
+                ->where('data_zone', $dz)
+                ->orderBy('postcode')
+                ->first();
+        }
 
         if (!$row) {
             return back()->with('status', 'No SIMD data found for that Scottish Data Zone.');
