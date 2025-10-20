@@ -111,22 +111,26 @@ class DeprivationController extends Controller
             ]);
 
         $engTop10 = Cache::remember('imd:top10', $ttl, function () use ($imdBase) {
-            return (clone $imdBase)
+            $data = (clone $imdBase)
                 ->orderByDesc('rank') // highest rank = least deprived
                 ->limit(10)
                 ->get();
+            Cache::put('imd:last_warm', now()->toDateTimeString());
+            return $data;
         });
 
         $engBottom10 = Cache::remember('imd:bottom10', $ttl, function () use ($imdBase) {
-            return (clone $imdBase)
+            $data = (clone $imdBase)
                 ->orderBy('rank') // lowest rank = most deprived
                 ->limit(10)
                 ->get();
+            Cache::put('imd:last_warm', now()->toDateTimeString());
+            return $data;
         });
 
         // Scotland — SIMD Top/Bottom 10 (by overall rank). Use SIMD table directly for speed.
         $scoTop10 = Cache::remember('simd:top10', $ttl, function () {
-            return DB::table('simd2020')
+            $data = DB::table('simd2020')
                 ->select([
                     'Data_Zone as data_zone',
                     'Intermediate_Zone',
@@ -138,10 +142,12 @@ class DeprivationController extends Controller
                 ->orderByRaw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) DESC")
                 ->limit(10)
                 ->get();
+            Cache::put('simd:last_warm', now()->toDateTimeString());
+            return $data;
         });
 
         $scoBottom10 = Cache::remember('simd:bottom10', $ttl, function () {
-            return DB::table('simd2020')
+            $data = DB::table('simd2020')
                 ->select([
                     'Data_Zone as data_zone',
                     'Intermediate_Zone',
@@ -153,6 +159,8 @@ class DeprivationController extends Controller
                 ->orderByRaw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) ASC")
                 ->limit(10)
                 ->get();
+            Cache::put('simd:last_warm', now()->toDateTimeString());
+            return $data;
         });
 
         // Total ranks for contextual percentages

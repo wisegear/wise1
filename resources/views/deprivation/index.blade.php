@@ -11,6 +11,22 @@
       <p class="mt-2 text-sm leading-6 text-gray-700">
         Quick view of the most and least deprived areas using <strong>IMD 2019</strong> (England) and <strong>SIMD 2020</strong> (Scotland). Use the postcode box to jump straight to a specific place.
       </p>
+      @php
+        $imdLastWarm  = Cache::get('imd:last_warm');
+        $simdLastWarm = Cache::get('simd:last_warm');
+      @endphp
+      @if($imdLastWarm || $simdLastWarm)
+        <p class="mt-1 text-xs text-gray-500">
+          Cached:
+          @if($imdLastWarm)
+            England {{ \Carbon\Carbon::parse($imdLastWarm)->format('d M Y, H:i') }}
+          @endif
+          @if($imdLastWarm && $simdLastWarm) · @endif
+          @if($simdLastWarm)
+            Scotland {{ \Carbon\Carbon::parse($simdLastWarm)->format('d M Y, H:i') }}
+          @endif
+        </p>
+      @endif
       <p class="mt-2 text-xs text-gray-600">
         Decile colours: <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-100 text-rose-800">1–3</span> higher deprivation ·
         <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-amber-100 text-amber-800">4–7</span> mid ·

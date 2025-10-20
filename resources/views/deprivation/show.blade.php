@@ -36,7 +36,7 @@
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
       <style>
         /* Ensure Leaflet tiles aren't resized by global img styles and container has proper layout */
-        #lsoa-map { height: 18rem; position: relative; }
+        #lsoa-map { height: 28rem; position: relative; }
         .leaflet-container { height: 100%; width: 100%; position: relative; }
         .leaflet-container img { max-width: none !important; }
       </style>
