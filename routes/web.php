@@ -73,6 +73,8 @@ Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('r
 
 Route::get('/deprivation', [DeprivationController::class, 'index'])->name('deprivation.index');
 Route::get('/deprivation/{lsoa21cd}', [DeprivationController::class, 'show'])->name('deprivation.show');
+Route::get('/deprivation/scotland/{dz}', [\App\Http\Controllers\DeprivationController::class, 'showScotland'])
+    ->name('deprivation.scot.show');
 
 Route::resource('/blog', BlogController::class);
 

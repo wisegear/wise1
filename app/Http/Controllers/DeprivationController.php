@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Pagination\Paginator;
 
 class DeprivationController extends Controller
 {
@@ -36,7 +35,7 @@ class DeprivationController extends Controller
                 // 1) Try exact indexed match on PCDS for current records first
                 if ($pcStd !== '') {
                     $hit = DB::table('onspd')
-                        ->select(['lsoa21', 'lsoa11'])
+                        ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
                         ->where('pcds', $pcStd)
                         ->where(function ($q) {
                             $q->whereNull('doterm')->orWhere('doterm', '');
@@ -47,7 +46,7 @@ class DeprivationController extends Controller
                 }
                 // 2) Fallback to normalized comparisons across pcds/pcd2/pcd
                 return DB::table('onspd')
-                    ->select(['lsoa21', 'lsoa11'])
+                    ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
                     ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
                     ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
                     ->orWhereRaw("REPLACE(UPPER(pcd),' ','') = ?", [$pcKey])
@@ -67,30 +66,30 @@ class DeprivationController extends Controller
                     $lsoa21 = $map->LSOA21CD ?? null;
                 }
 
+                // If this is a Scottish postcode (Data Zone held in lsoa11 as S010…)
+                if (!empty($row->lsoa11) && (function_exists('str_starts_with') ? str_starts_with($row->lsoa11, 'S010') : substr($row->lsoa11, 0, 4) === 'S010')) {
+                    return redirect()->route('deprivation.scot.show', $row->lsoa11);
+                }
+
                 // Redirect to details if English LSOA (IMD coverage)
                 if ($lsoa21 && (function_exists('str_starts_with') ? str_starts_with($lsoa21, 'E') : substr($lsoa21, 0, 1) === 'E')) {
                     return redirect()->route('deprivation.show', $lsoa21);
                 }
 
-                // Found but not England (Wales/Scotland/NI): show message
-                session()->flash('status', 'Postcode found but not an English LSOA (IMD is England-only).');
+                // Found but outside England/Scotland handling
+                session()->flash('status', 'Postcode found but not currently supported for deprivation lookup (England IMD / Scotland SIMD only).');
             } else {
                 session()->flash('status', 'Postcode not found in ONSPD.');
             }
         }
 
-        // Total LSOA count for overall IMD rank (used to show percentile alongside rank)
-        $totalRank = Cache::rememberForever('imd.total_rank', function () {
-            $n = (int) (DB::table('imd2019')
-                ->where('measurement_norm', 'rank')
-                ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
-                ->max('Value') ?? 0);
-            return $n ?: 32844;
-        });
+        // If we reach here, we're not redirecting by postcode. Show a concise dashboard rather than a huge table.
 
-        // Base: start from LSOA21 names (so UI is readable)
-        // Join bridge to get LSOA11, then IMD decile/rank (overall IMD domain)
-        $rows = DB::table('lsoa21_ruc_geo as g')
+        // Cache helper
+        $ttl = now()->addDays(7);
+
+        // England — IMD base query (for top/bottom 10)
+        $imdBase = DB::table('lsoa21_ruc_geo as g')
             ->leftJoin('lsoa_2011_to_2021 as map', 'map.LSOA21CD', '=', 'g.LSOA21CD')
             ->leftJoin('imd2019 as imd_dec', function ($j) {
                 $j->on('imd_dec.FeatureCode', '=', 'map.LSOA11CD')
@@ -103,79 +102,96 @@ class DeprivationController extends Controller
                   ->where('imd_rank.iod_norm', 'like', 'a. index of multiple deprivation%');
             })
             ->where('g.LSOA21CD', 'like', 'E%')
+            ->whereNotNull('imd_rank.Value')
             ->select([
                 'g.LSOA21CD as lsoa21cd',
                 'g.LSOA21NM as lsoa_name',
-                'g.RUC21CD', 'g.RUC21NM', 'g.Urban_rura',
-                'g.LAT', 'g.LONG',
-                'imd_dec.Value as imd_decile',
-                'imd_rank.Value as imd_rank',
+                'imd_dec.Value as decile',
+                'imd_rank.Value as rank',
             ]);
 
-        // Apply filters
-        if ($q !== '') {
-            $rows->where(function ($w) use ($q) {
-                $w->where('g.LSOA21NM', 'like', "%$q%")
-                  ->orWhere('g.RUC21NM', 'like', "%$q%");
-            });
-        }
-        if ($lad !== '') {
-            // If you also stored LAD names/codes in lsoa21 table, filter here; if not, skip
-            $rows->where('g.LSOA21NM', 'like', "%$lad%"); // placeholder: often LSOA name contains LA name
-        }
-        if ($decile !== null && $decile !== '') {
-            $rows->where('imd_dec.Value', '=', (int)$decile);
-        }
-        if ($ruc !== null && $ruc !== '') {
-            $rows->where(function ($w) use ($ruc) {
-                $w->where('g.RUC21CD', '=', $ruc)
-                  ->orWhere('g.RUC21NM', 'like', "%$ruc%");
-            });
-        }
+        $engTop10 = Cache::remember('imd:top10', $ttl, function () use ($imdBase) {
+            return (clone $imdBase)
+                ->orderByDesc('rank') // highest rank = least deprived
+                ->limit(10)
+                ->get();
+        });
 
-        // Sorting (default: most deprived first)
-        $sort = $req->input('sort', 'imd_decile');    // imd_decile|imd_rank|lsoa_name
-        $dir  = $req->input('dir',  'asc');           // asc|desc
+        $engBottom10 = Cache::remember('imd:bottom10', $ttl, function () use ($imdBase) {
+            return (clone $imdBase)
+                ->orderBy('rank') // lowest rank = most deprived
+                ->limit(10)
+                ->get();
+        });
 
-        $allowed = ['imd_decile','imd_rank','lsoa_name'];
-        if (!in_array($sort, $allowed, true)) $sort = 'imd_decile';
-        if (!in_array($dir,  ['asc','desc'], true)) $dir = 'asc';
+        // Scotland — SIMD Top/Bottom 10 (by overall rank). Use SIMD table directly for speed.
+        $scoTop10 = Cache::remember('simd:top10', $ttl, function () {
+            return DB::table('simd2020')
+                ->select([
+                    'Data_Zone as data_zone',
+                    'Intermediate_Zone',
+                    'Council_area',
+                    DB::raw('CAST(SIMD2020v2_Decile AS UNSIGNED) as decile'),
+                    DB::raw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) as `rank`"),
+                ])
+                ->whereNotNull('SIMD2020v2_Rank')
+                ->orderByRaw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) DESC")
+                ->limit(10)
+                ->get();
+        });
 
-        $rows->orderBy($sort, $dir)->orderBy('lsoa_name');
+        $scoBottom10 = Cache::remember('simd:bottom10', $ttl, function () {
+            return DB::table('simd2020')
+                ->select([
+                    'Data_Zone as data_zone',
+                    'Intermediate_Zone',
+                    'Council_area',
+                    DB::raw('CAST(SIMD2020v2_Decile AS UNSIGNED) as decile'),
+                    DB::raw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) as `rank`"),
+                ])
+                ->whereNotNull('SIMD2020v2_Rank')
+                ->orderByRaw("CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED) ASC")
+                ->limit(10)
+                ->get();
+        });
 
-        // Cache the paginated results since IMD data is effectively static
-        $page = (int) ($req->input('page', 1));
-        $cacheKey = 'imd:index:' . md5(json_encode([
+        // Total ranks for contextual percentages
+        $totalIMD = Cache::rememberForever('imd.total_rank', function () {
+            $n = (int) (DB::table('imd2019')
+                ->where('measurement_norm', 'rank')
+                ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
+                ->max('Value') ?? 0);
+            return $n ?: 32844;
+        });
+
+        $totalSIMD = Cache::rememberForever('simd.total_rank', function () {
+            $row = DB::table('simd2020')->selectRaw("MAX(CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED)) as max_rank")->first();
+            $n = (int)($row->max_rank ?? 0);
+            return $n ?: 6976;
+        });
+
+        return view('deprivation.index', [
+            'engTop10'    => $engTop10,
+            'engBottom10' => $engBottom10,
+            'scoTop10'    => $scoTop10,
+            'scoBottom10' => $scoBottom10,
+            'totalIMD'    => $totalIMD,
+            'totalSIMD'   => $totalSIMD,
+            // keep postcode input working on the page
             'q' => $q,
             'decile' => $decile,
             'ruc' => $ruc,
             'lad' => $lad,
-            'sort' => $sort,
-            'dir' => $dir,
-            'per' => $perPage,
-            'page' => $page,
-        ]));
-
-        $ttl = now()->addDays(30); // IMD doesn’t change often
-        $data = Cache::remember($cacheKey, $ttl, function () use ($rows, $perPage, $req) {
-            return $rows->simplePaginate($perPage)->appends($req->query());
-        });
-
-        return view('deprivation.index', [
-            'data'   => $data,
-            'q'      => $q,
-            'decile' => $decile,
-            'ruc'    => $ruc,
-            'lad'    => $lad,
-            'sort'   => $sort,
-            'dir'    => $dir,
-            'perPage'=> $perPage,
-            'totalRank' => $totalRank,
         ]);
     }
 
     public function show(string $lsoa21cd)
     {
+        // If a Scottish Data Zone code is passed here, forward to the Scotland page
+        if ((function_exists('str_starts_with') ? str_starts_with($lsoa21cd, 'S010') : substr($lsoa21cd, 0, 4) === 'S010')) {
+            return redirect()->route('deprivation.scot.show', $lsoa21cd);
+        }
+
         // Resolve LSOA21 → LSOA11 (for IMD 2019 joins)
         $base = DB::table('lsoa21_ruc_geo as g')
             ->leftJoin('lsoa_2011_to_2021 as map', 'map.LSOA21CD', '=', 'g.LSOA21CD')
@@ -256,6 +272,47 @@ class DeprivationController extends Controller
         return view('deprivation.show', [
             'g'       => $base,
             'ordered' => $ordered,
+        ]);
+    }
+
+    public function showScotland(string $dz)
+    {
+        // Fetch a representative row from the Scotland deprivation view
+        $row = DB::table('v_postcode_deprivation_scotland')
+            ->where('data_zone', $dz)
+            ->orderBy('postcode')
+            ->first();
+
+        if (!$row) {
+            return back()->with('status', 'No SIMD data found for that Scottish Data Zone.');
+        }
+
+        // Total Data Zones for percentile (max rank); cache forever, fallback ~6976
+        $total = Cache::rememberForever('simd.total_rank', function () {
+            $row = DB::table('simd2020')->selectRaw("MAX(CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED)) as max_rank")->first();
+            $n = (int)($row->max_rank ?? 0);
+            return $n ?: 6976;
+        });
+
+        $rank = (int) str_replace(',', '', (string) ($row->rank ?? '0'));
+        $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
+
+        $domains = [
+            ['label' => 'Income',     'rank' => $row->income_rank ?? null],
+            ['label' => 'Employment', 'rank' => $row->employment_rank ?? null],
+            ['label' => 'Health',     'rank' => $row->health_rank ?? null],
+            ['label' => 'Education',  'rank' => $row->education_rank ?? null],
+            ['label' => 'Access',     'rank' => $row->access_rank ?? null],
+            ['label' => 'Crime',      'rank' => $row->crime_rank ?? null],
+            ['label' => 'Housing',    'rank' => $row->housing_rank ?? null],
+        ];
+
+        return view('deprivation.scotland_show', [
+            'dz'      => $dz,
+            'row'     => $row,
+            'total'   => $total,
+            'pct'     => $pct,
+            'domains' => $domains,
         ]);
     }
 }
