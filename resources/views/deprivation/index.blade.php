@@ -81,7 +81,7 @@
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="hover:underline">{{ $r->lsoa_name }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa21cd }}</td>
                     <td class="px-3 py-2">
@@ -135,7 +135,7 @@
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="hover:underline">{{ $r->lsoa_name }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa21cd }}</td>
                     <td class="px-3 py-2">
@@ -196,7 +196,7 @@
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.scot.show', $r->data_zone) }}" class="hover:underline">{{ $r->Intermediate_Zone ?? '—' }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.scot.show', $r->data_zone) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->Intermediate_Zone ?? '—' }}</a></div>
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
@@ -250,7 +250,7 @@
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.scot.show', $r->data_zone) }}" class="hover:underline">{{ $r->Intermediate_Zone ?? '—' }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.scot.show', $r->data_zone) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->Intermediate_Zone ?? '—' }}</a></div>
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
