@@ -75,6 +75,14 @@ class DeprivationController extends Controller
                     $lsoa21 = $map->LSOA21CD ?? null;
                 }
 
+                // If this is a Welsh postcode (WIMD coverage)
+                if (isset($row->ctry) && $row->ctry === 'W92000004' && !empty($row->lsoa11)) {
+                    return redirect()->route('deprivation.wales.show', [
+                        'lsoa' => $row->lsoa11,
+                        'pcd'  => $pcStd ?: $pcKey,
+                    ]);
+                }
+
                 // If this is a Scottish postcode (Data Zone held in lsoa11 as S010…)
                 if (!empty($row->lsoa11) && (function_exists('str_starts_with') ? str_starts_with($row->lsoa11, 'S010') : substr($row->lsoa11, 0, 4) === 'S010')) {
                     return redirect()->route('deprivation.scot.show', ['dz' => $row->lsoa11, 'pcd' => $pcStd ?: $pcKey]);
@@ -85,8 +93,8 @@ class DeprivationController extends Controller
                     return redirect()->route('deprivation.show', $lsoa21);
                 }
 
-                // Found but outside England/Scotland handling
-                session()->flash('status', 'Postcode found but not currently supported for deprivation lookup (England IMD / Scotland SIMD only).');
+                // Found but outside GB handling
+                session()->flash('status', 'Postcode found but not currently supported for deprivation lookup (England IMD / Scotland SIMD / Wales WIMD only).');
             } else {
                 session()->flash('status', 'Postcode not found in ONSPD.');
             }
@@ -172,6 +180,33 @@ class DeprivationController extends Controller
             return $data;
         });
 
+        // Wales — WIMD Top/Bottom 10 (by overall rank)
+        $wimdBase = DB::table('wimd2019')
+            ->select([
+                'LSOA_code as lsoa_code',
+                'LSOA_name as lsoa_name',
+                'WIMD_2019 as rank',
+                DB::raw('CEIL(WIMD_2019 / 190.9) as decile'), // 1..10
+            ]);
+
+        $walTop10 = Cache::remember('wimd:top10', $ttl, function () use ($wimdBase) {
+            $data = (clone $wimdBase)
+                ->orderByDesc('rank') // highest rank = least deprived
+                ->limit(10)
+                ->get();
+            Cache::put('wimd:last_warm', now()->toDateTimeString());
+            return $data;
+        });
+
+        $walBottom10 = Cache::remember('wimd:bottom10', $ttl, function () use ($wimdBase) {
+            $data = (clone $wimdBase)
+                ->orderBy('rank') // lowest rank = most deprived
+                ->limit(10)
+                ->get();
+            Cache::put('wimd:last_warm', now()->toDateTimeString());
+            return $data;
+        });
+
         // Total ranks for contextual percentages
         $totalIMD = Cache::rememberForever('imd.total_rank', function () {
             $n = (int) (DB::table('imd2019')
@@ -187,13 +222,21 @@ class DeprivationController extends Controller
             return $n ?: 6976;
         });
 
+        $totalWIMD = Cache::rememberForever('wimd.total_rank', function () {
+            $n = (int) (DB::table('wimd2019')->max('WIMD_2019') ?? 0);
+            return $n ?: 1909;
+        });
+
         return view('deprivation.index', [
             'engTop10'    => $engTop10,
             'engBottom10' => $engBottom10,
             'scoTop10'    => $scoTop10,
             'scoBottom10' => $scoBottom10,
+            'walTop10'     => $walTop10,
+            'walBottom10'  => $walBottom10,
             'totalIMD'    => $totalIMD,
             'totalSIMD'   => $totalSIMD,
+            'totalWIMD'   => $totalWIMD,
             // keep postcode input working on the page
             'q' => $q,
             'decile' => $decile,
@@ -338,6 +381,58 @@ class DeprivationController extends Controller
 
         return view('deprivation.scotland_show', [
             'dz'      => $dz,
+            'row'     => $row,
+            'total'   => $total,
+            'pct'     => $pct,
+            'domains' => $domains,
+        ]);
+    }
+
+    public function showWales(string $lsoa)
+    {
+        $pcd = request('pcd');
+
+        // Prefer the exact postcode row if provided, otherwise any row for the LSOA
+        $row = null;
+        if (!empty($pcd)) {
+            $row = DB::table('v_postcode_deprivation_wales')
+                ->where('lsoa_code', $lsoa)
+                ->where('postcode', $pcd)
+                ->first();
+        }
+        if (!$row) {
+            $row = DB::table('v_postcode_deprivation_wales')
+                ->where('lsoa_code', $lsoa)
+                ->orderBy('postcode')
+                ->first();
+        }
+        if (!$row) {
+            return back()->with('status', 'No WIMD data found for that Welsh LSOA.');
+        }
+
+        // Total LSOAs in Wales for percentile context (1,909)
+        $total = Cache::rememberForever('wimd.total_rank', function () {
+            $max = DB::table('wimd2019')->max('WIMD_2019');
+            $n = (int)($max ?? 0);
+            return $n ?: 1909;
+        });
+
+        $rank = (int) ($row->rank ?? 0); // 1 = most deprived ... total = least
+        $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
+
+        $domains = [
+            ['label' => 'Income',                'rank' => $row->income_rank ?? null],
+            ['label' => 'Employment',            'rank' => $row->employment_rank ?? null],
+            ['label' => 'Health',                'rank' => $row->health_rank ?? null],
+            ['label' => 'Education',             'rank' => $row->education_rank ?? null],
+            ['label' => 'Access to Services',    'rank' => $row->access_rank ?? null],
+            ['label' => 'Housing',               'rank' => $row->housing_rank ?? null],
+            ['label' => 'Community Safety',      'rank' => $row->community_safety_rank ?? null],
+            ['label' => 'Physical Environment',  'rank' => $row->physical_environment_rank ?? null],
+        ];
+
+        return view('deprivation.wales_show', [
+            'lsoa'    => $lsoa,
             'row'     => $row,
             'total'   => $total,
             'pct'     => $pct,

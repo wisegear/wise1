@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Deprivation — IMD (England) & SIMD (Scotland)')
+@section('title', 'Deprivation — IMD (England) · SIMD (Scotland) · WIMD (Wales)')
 
 @section('content')
 <div class="max-w-7xl mx-auto p-6 space-y-8">
@@ -9,21 +9,26 @@
     <div class="max-w-3xl">
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">
-        Quick view of the most and least deprived areas using <strong>IMD 2019</strong> (England) and <strong>SIMD 2020</strong> (Scotland). Use the postcode box to jump straight to a specific place.
+        Quick view of the most and least deprived areas using <strong>IMD 2019</strong> (England), <strong>SIMD 2020</strong> (Scotland) and <strong>WIMD 2019</strong> (Wales). Use the postcode box to jump straight to a specific place.
       </p>
       @php
         $imdLastWarm  = Cache::get('imd:last_warm');
         $simdLastWarm = Cache::get('simd:last_warm');
+        $wimdLastWarm = Cache::get('wimd:last_warm');
       @endphp
-      @if($imdLastWarm || $simdLastWarm)
+      @if($imdLastWarm || $simdLastWarm || $wimdLastWarm)
         <p class="mt-1 text-xs text-gray-500">
           Cached:
           @if($imdLastWarm)
             England {{ \Carbon\Carbon::parse($imdLastWarm)->format('d M Y, H:i') }}
           @endif
-          @if($imdLastWarm && $simdLastWarm) · @endif
+          @if(($imdLastWarm && $simdLastWarm) || ($imdLastWarm && $wimdLastWarm)) · @endif
           @if($simdLastWarm)
             Scotland {{ \Carbon\Carbon::parse($simdLastWarm)->format('d M Y, H:i') }}
+          @endif
+          @if(($simdLastWarm && $wimdLastWarm) || ($imdLastWarm && $wimdLastWarm && !$simdLastWarm)) · @endif
+          @if($wimdLastWarm)
+            Wales {{ \Carbon\Carbon::parse($wimdLastWarm)->format('d M Y, H:i') }}
           @endif
         </p>
       @endif
@@ -57,6 +62,9 @@
 
     $totalSIMDLocal = (int) ($totalSIMD ?? 6976);
     if ($totalSIMDLocal < 6000) { $totalSIMDLocal = 6976; }
+
+    $totalWIMDLocal = (int) ($totalWIMD ?? 1909);
+    if ($totalWIMDLocal < 1500) { $totalWIMDLocal = 1909; }
   @endphp
 
   {{-- England + Scotland Top/Bottom lists --}}
@@ -291,8 +299,123 @@
       </div>
       <p class="mt-3 text-xs text-zinc-500">Source: Scottish Index of Multiple Deprivation (2020).</p>
     </section>
+
+    {{-- Wales (WIMD) --}}
+    <section class="rounded border border-gray-200 bg-white/80 p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900">Wales — WIMD 2019</h2>
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- Least deprived (Top 10 by rank desc) --}}
+        <div>
+          <h3 class="text-sm font-medium text-gray-800">Least deprived (Top 10)</h3>
+          <div class="mt-2 overflow-hidden rounded border">
+            <table class="w-full text-sm">
+              <colgroup>
+                <col style="width: 52%">
+                <col style="width: 20%">
+                <col style="width: 10%">
+                <col style="width: 18%">
+              </colgroup>
+              <thead class="bg-zinc-50 text-zinc-700">
+                <tr>
+                  <th class="text-left px-3 py-2">Area</th>
+                  <th class="text-left px-3 py-2">Code</th>
+                  <th class="text-left px-3 py-2">Decile</th>
+                  <th class="text-left px-3 py-2">Rank</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                @foreach(($walTop10 ?? []) as $r)
+                  @php
+                    $d = (int)($r->decile ?? 0);
+                    $badge = match(true){
+                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
+                      $d >= 4 => 'bg-amber-100 text-amber-800',
+                      $d >= 1 => 'bg-rose-100 text-rose-800',
+                      default => 'bg-zinc-100 text-zinc-700'};
+                  @endphp
+                  <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
+                    <td class="px-3 py-2">
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.wales.show', $r->lsoa_code) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name ?? '—' }}</a></div>
+                    </td>
+                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
+                    <td class="px-3 py-2">
+                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
+                      <div class="text-xs text-zinc-500">
+                        @if(!is_null($r->rank))
+                          top {{ max(0, min(100, (int) round((1 - (((int)$r->rank - 1) / $totalWIMDLocal)) * 100, 1))) }}%
+                        @else
+                          —
+                        @endif
+                      </div>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {{-- Most deprived (Bottom 10 by rank asc) --}}
+        <div>
+          <h3 class="text-sm font-medium text-gray-800">Most deprived (Bottom 10)</h3>
+          <div class="mt-2 overflow-hidden rounded border">
+            <table class="w-full text-sm">
+              <colgroup>
+                <col style="width: 52%">
+                <col style="width: 20%">
+                <col style="width: 10%">
+                <col style="width: 18%">
+              </colgroup>
+              <thead class="bg-zinc-50 text-zinc-700">
+                <tr>
+                  <th class="text-left px-3 py-2">Area</th>
+                  <th class="text-left px-3 py-2">Code</th>
+                  <th class="text-left px-3 py-2">Decile</th>
+                  <th class="text-left px-3 py-2">Rank</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                @foreach(($walBottom10 ?? []) as $r)
+                  @php
+                    $d = (int)($r->decile ?? 0);
+                    $badge = match(true){
+                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
+                      $d >= 4 => 'bg-amber-100 text-amber-800',
+                      $d >= 1 => 'bg-rose-100 text-rose-800',
+                      default => 'bg-zinc-100 text-zinc-700'};
+                  @endphp
+                  <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
+                    <td class="px-3 py-2">
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.wales.show', $r->lsoa_code) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name ?? '—' }}</a></div>
+                    </td>
+                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
+                    <td class="px-3 py-2">
+                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
+                      <div class="text-xs text-zinc-500">
+                        @if(!is_null($r->rank))
+                          top {{ max(0, min(100, (int) round((1 - (((int)$r->rank - 1) / $totalWIMDLocal)) * 100, 1))) }}%
+                        @else
+                          —
+                        @endif
+                      </div>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-zinc-500">Source: Welsh Index of Multiple Deprivation (2019).</p>
+    </section>
   </div>
 
-  <p class="text-xs text-zinc-500">Postcode search covers England (IMD) and Scotland (SIMD). Wales (WIMD) coming later.</p>
+  <p class="text-xs text-zinc-500">Postcode search covers England (IMD), Scotland (SIMD) and Wales (WIMD).</p>
 </div>
 @endsection

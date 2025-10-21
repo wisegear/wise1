@@ -71,10 +71,11 @@ Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('in
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
 
+// Deprivation Routes
 Route::get('/deprivation', [DeprivationController::class, 'index'])->name('deprivation.index');
 Route::get('/deprivation/{lsoa21cd}', [DeprivationController::class, 'show'])->name('deprivation.show');
-Route::get('/deprivation/scotland/{dz}', [\App\Http\Controllers\DeprivationController::class, 'showScotland'])
-    ->name('deprivation.scot.show');
+Route::get('/deprivation/scotland/{dz}', [\App\Http\Controllers\DeprivationController::class, 'showScotland'])->name('deprivation.scot.show');
+Route::get('/deprivation/wales/{lsoa}', [DeprivationController::class, 'showWales'])->name('deprivation.wales.show');
 
 Route::resource('/blog', BlogController::class);
 
