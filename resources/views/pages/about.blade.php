@@ -62,7 +62,7 @@
         <h2 class="text-xl font-semibold text-gray-900">Contact</h2>
         <p class="mt-3 text-sm leading-6 text-gray-800">
             Feedback, corrections, or heckling welcome. The tone here is deliberately plain and occasionally dry,
-            if you prefer more personality check out my <a href="/blog"><span class="text-lime-600 hover:text-lime-500">blog</span></a>.
+            if you prefer more personality check out my <a href="/blog"><span class="text-lime-600 hover:text-lime-500">blog</span></a>.  Or, you can email me on lee@wisener.net
         </p>
     </section>
 
