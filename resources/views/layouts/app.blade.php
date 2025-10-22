@@ -63,24 +63,12 @@
                                 <div class="py-2 flex-1">
                                     <a href="{{ url('/hpi') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">House Price Index</a>
                                     <a href="{{ url('/new-old') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">New Build Comparison</a>
+                                    <a href="{{ url('/epc') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">EPC Dashboard</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="relative">
-                        <button id="epcMenuButton" aria-haspopup="true" aria-controls="epcDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
-                            EPC
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div id="epcDropdown" role="menu" aria-labelledby="epcMenuButton" class="absolute left-0 mt-4 w-60 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/epc') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Dashboard</a>
-                            <a href="{{ url('/epc/search') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Search EPCs (England/Wales)</a>
-                            <a href="{{ url('/epc/search_scotland') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Search EPCs (Scotland)</a>
-                        </div>
-                    </div>
 
                     <div class="relative">
                         <button id="mortgagesMenuButton" aria-haspopup="true" aria-controls="mortgagesDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -185,22 +173,10 @@
                     <a href="{{ url('/property/ultra-prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Ultra Prime Central London</a>
                     <a href="{{ url('/hpi') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">House Price Index</a>                    
                     <a href="{{ url('/new-old') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">New Build Comparison</a>
+                    <a href="{{ url('/epc') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">EPC Dashboard</a>
                 </div>
             </div>
 
-            <div class="">
-                <button id="mobileEpcBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
-                    EPC
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <div id="mobileEpcMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
-                    <a href="{{ url('/epc') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
-                    <a href="{{ url('/epc/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Search EPCs (England/Wales)</a>
-                    <a href="{{ url('/epc/search_scotland') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Search EPCs (Scotland)</a>
-                </div>
-            </div>
 
             <div class="">
                 <button id="mobileMortgagesBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">

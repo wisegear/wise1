@@ -62,20 +62,15 @@
         <h2 class="text-xl font-semibold text-gray-900">Contact</h2>
         <p class="mt-3 text-sm leading-6 text-gray-800">
             Feedback, corrections, or heckling welcome. The tone here is deliberately plain and occasionally dry,
-            if you prefer more personality, you’ll probably enjoy my blog.
+            if you prefer more personality check out my <a href="/blog"><span class="text-lime-600 hover:text-lime-500">blog</span></a>.
         </p>
-        <div class="mt-4 flex flex-wrap gap-3 text-sm">
-            <a href="mailto:lee@wisener.net" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-medium text-gray-800 hover:bg-gray-50">Email</a>
-            <a href="https://wisener.net/about" target="_blank" rel="noopener" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-medium text-gray-800 hover:bg-gray-50">About me (wisener.net)</a>
-        </div>
     </section>
 
     {{-- Thanks --}}
     <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Thanks</h2>
-        <p class="mt-3 text-sm leading-6 text-gray-800">
-            Special thanks to Bob for his help testing the site and suggesting improvements.
-        </p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">Special thanks to Bob for his help testing the site and suggesting improvements.</p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">A big thanks to Jeffrey for pointing out all my query errors!</p>
     </section>
 
     <p class="flex justify-center text-xs leading-6 text-gray-500">
