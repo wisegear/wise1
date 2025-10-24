@@ -148,8 +148,6 @@
 }
 
 .wise1text th {
-  @apply bg-gray-500;
-  @apply bg-slate-500;
-  @apply text-white;
+  @apply bg-zinc-200;
   text-align: left;
 }

@@ -36,7 +36,7 @@
         <input type="checkbox" name="include_aggregates" value="1" @checked(($include_aggregates ?? false))>
         Include aggregates
       </label>
-      <button class="px-3 py-1 rounded bg-zinc-900 text-white">Apply</button>
+      <button class="px-3 py-2 rounded bg-lime-600 hover:bg-lime-700 text-white text-sm cursor-pointer">Apply</button>
     </form>
   </div>
 

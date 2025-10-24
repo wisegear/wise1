@@ -39,7 +39,7 @@
             </div>
 
             <div>
-                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-lime-600 hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-lime-600 hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
                     Calculate
                 </button>
             </div>
@@ -159,7 +159,7 @@
         payments are made throughout the term.  Lenders will expect proof of ability to repay the loan at the end of the term.  This could be through selling the property or using an
         acceptable asset at or before the term ends.
       </p>
-      <p class="mt-3 text-xs text-gray-500">For every <span class="text-rose-500">£1</span> borrowed you pay <span class="text-rose-500">£{{ number_format($perPoundIO, 2) }}</span> over the term.</p>
+      <p class="mt-3 text-xs text-gray-500">For every <span class="text-rose-700">£1</span> borrowed you pay <span class="text-rose-700">£{{ number_format($perPoundIO, 2) }}</span> over the term.</p>
       <div class="mt-5">
         <h5 class="text-sm font-medium text-gray-700 mb-2">Balance over term</h5>
         <div class="relative h-56">
@@ -170,15 +170,15 @@
     </div>
   </div>
   <!-- Stress rate impact -->
-  <div class="text-smmt-8 rounded-lg border border-rose-200 p-5 mt-6">
-    <h4 class="text-base font-semibold text-rose-800 mb-2">Stress Rate Impact</h4>
-    <p class="text-sm text-rose-900">
+  <div class="text-smmt-8 rounded-lg border border-rose-600 p-5 mt-6">
+    <h4 class="text-base font-semibold text-rose-600 mb-2">Stress Rate Impact</h4>
+    <p class="text-sm text-zinc-700">
       Some lenders assess affordability by <em>stressing</em> the interest rate. Using a stress rate of
       <span class="font-semibold">{{ rtrim(rtrim(number_format($result['stress_rate'], 2), '0'), '.') }}%</span> on top of your entered rate of
       <span class="font-semibold">{{ rtrim(rtrim(number_format($result['rate_pct'], 2), '0'), '.') }}%</span> (total <span class="font-semibold">{{ rtrim(rtrim(number_format($stressedRatePct, 2), '0'), '.') }}%</span>).
       This is not the rate you will pay.  Lenders are demonstrating that if the rate was to increase, a borrower could still afford the payments.
     </p>
-    <ul class="mt-3 text-sm text-rose-900 space-y-1">
+    <ul class="mt-3 text-sm text-zinc-700 space-y-1">
       <li>
         • <span class="font-medium">Repayment</span>: you would pay an extra
         <span class="font-semibold">£{{ number_format($repaymentMonthlyExtra, 2) }}</span> each month, increasing the monthly payment to

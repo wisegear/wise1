@@ -21,7 +21,7 @@
         @endcan
         @guest
             <div class="mt-4">
-                <p class="dark:text-white">Want to comment on this page? <a href="/login" class="text-lime-700">Login</a> or <a href="/register" class="text-lime-700">Register</a>.</p>
+                <p class="">Want to comment on this page? <a href="/login" class="text-lime-700">Login</a> or <a href="/register" class="text-lime-700">Register</a>.</p>
             </div>
         @endguest
     </div>

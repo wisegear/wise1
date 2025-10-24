@@ -2,22 +2,30 @@
 
 @section('content')
 
-   <div class="my-10 max-w-7xl mx-auto">
-        <!-- Header section -->
-        <header>
-            <div class="mt-10 md:w-full lg:w-8/12">
-                <h2 class="mt-6 font-bold text-4xl md:text-5xl tracking-tight">Articles related to source, corrections and market information</h2>
-                <p class="mt-6 text-zinc-500 text-base">Some of these articles might be useful. Others might just pass the time while your kettle boils. 
-                    Either way, they may explain why I do some things the way I do.
-                </p>
-            </div>
-        </header>
-    </div>
+   {{-- Hero --}}
+   <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto my-10">
+       <div class="max-w-5xl relative z-10">
+           <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
+               <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
+               Blog insights and commentary
+           </div>
+           <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
+               Articles, insights &amp; updates
+           </h1>
+           <p class="mt-3 text-md leading-7 text-zinc-500">
+               Read through analysis, commentary, and notes on data sources, corrections, and market behaviour — the same ideas shaping how data is used across the site. 
+               A mix of practical research notes and observations from the housing market.
+           </p>
+       </div>
+       <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+           <img src="{{ asset('/assets/images/site/blog.svg') }}" alt="Blog" class="w-64 h-auto">
+       </div>
+   </section>
 
     <div class="flex-grow max-w-7xl mx-auto">
-        <!-- Split into 2 one for articles and another for whatever -->
-        <main class="my-10 md:my-20 flex gap-24">
-            <div class="md:w-7/12">
+        <!-- Split into 2, one for articles and another for whatever -->
+        <main class="my-10 md:my-20 flex gap-20">
+            <div class="md:w-8/12">
                 <div>
                     @foreach($posts as $post)
                         <article class="mb-10 transition-colors duration-200 hover:bg-zinc-100 p-4 rounded-xl">
@@ -67,9 +75,9 @@
                             </div>
 
                             <a href="/blog/{{ $post->slug }}">
-                                <h2 class="my-4 font-semibold text-sm hover:underline">{{ $post->title }}</h2>
+                                <h2 class="my-4 font-semibold hover:text-lime-600 text-sm hover:underline">{{ $post->title }}</h2>
                                 <p class="text-sm text-zinc-500">{{ $post->summary }}</p>
-                                <p class="text-sm text-teal-500 mt-4">Read article ></p>
+                                <p class="text-sm text-lime-600 mt-4 font-semibold tracking-tight">Read article</p>
                             </a>
                         </article>
                     @endforeach
@@ -83,13 +91,13 @@
             </div>
 
             <!-- Blog Sidebar -->
-            <div class="w-3/12 hidden md:block">
+            <div class="w-4/12 hidden md:block">
                 <!-- Search -->
                 <div class="mb-10 w-full">
                     <form method="get" action="/blog" class="mb-5">
                         <h2 class="text-lg font-bold mb-2">Search Blog</h2>
                         <div class="relative">
-                            <input type="text" class="border border-slate-300 rounded-md w-full text-sm pl-2 p-2" id="search" name="search" placeholder="Enter search term">
+                            <input type="text" class="border border-slate-300 rounded-md w-full text-sm pl-2 p-2 bg-white" id="search" name="search" placeholder="Enter search term">
                             <button class=" absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                     </form>

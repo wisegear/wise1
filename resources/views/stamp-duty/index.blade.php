@@ -41,7 +41,7 @@
                     <div>
                         <label class="block text-sm mb-1" for="buyer_type">Buyer type</label>
                         <select id="buyer_type" name="buyer_type" class="w-full border rounded p-2">
-                            <option value="main">Main residence</option>
+                            <option value="main">Currently own a property</option>
                             <option value="first_time">First‑time buyer</option>
                         </select>
                         <p class="mt-1 text-xs text-gray-500">If you also select “Second home”, first‑time buyer relief will be ignored automatically.</p>
@@ -50,12 +50,12 @@
                     <div class="space-y-2">
                         <label class="inline-flex items-center">
                             <input type="checkbox" id="additional_property" name="additional_property" class="mr-2">
-                            <span>Second home / additional property</span>
+                            <span>Second home/additional property?</span>
                         </label>
                         <div id="nr-wrap" class="hidden">
                             <label class="inline-flex items-center">
                                 <input type="checkbox" id="non_resident" name="non_resident" class="mr-2">
-                                <span>Non‑resident (SDLT only)</span>
+                                <span>Non‑resident? (SDLT only)</span>
                             </label>
                         </div>
                     </div>
