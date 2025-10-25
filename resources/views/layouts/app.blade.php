@@ -7,7 +7,7 @@
     <!-- moved this to the top due to FOUC -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('/assets/images/site/logo.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('/assets/images/site/favicon.ico') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- FontAwesome -->
     <script async src="https://kit.fontawesome.com/0ff5084395.js" crossorigin="anonymous"></script>
