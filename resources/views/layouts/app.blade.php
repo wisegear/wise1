@@ -8,7 +8,7 @@
     @isset($page)
     <!-- Twitter Meta -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@holoc45" />
+    <meta name="twitter:site" content="@ukprores" />
     <meta name="twitter:title" content="{{ $page->title }}" />
     <meta name="twitter:description" content="{{ $page->summary }}" />
     <meta name="twitter:image" content="{{ url('assets/images/uploads/' . 'medium_' . $page->original_image) }}" />
