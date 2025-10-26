@@ -61,7 +61,7 @@
                 {{-- Upload --}}
                 <div>
                     <p class="font-medium mb-2">Upload New Avatar</p>
-                    <label for="image" class="cursor-pointer inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black">Choose File</label>
+                    <label for="image" class="cursor-pointer inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-600">Choose File</label>
                     <input id="image" type="file" name="image" accept="image/*" onchange="loadFile(event)" class="hidden">
                     <p class="text-xs text-red-600 mt-2">
                         {{ $errors->has('image') ? 'Image must be JPG, JPEG, PNG or GIF. Max size: 500kb.' : '' }}
@@ -146,7 +146,7 @@
             </div>
 
             <div class="text-center pt-4">
-                <button type="submit" class="rounded-md bg-zinc-900 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black">Update Profile</button>
+                <button type="submit" class="rounded-md bg-zinc-900 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-600 cursor-pointer">Update Profile</button>
             </div>
         </section>
     </form>

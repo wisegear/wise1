@@ -24,7 +24,7 @@
 
         @if (Auth::user()->name_slug === $user->name_slug || Auth::user()->has_user_role('Admin'))
             <form action="/profile/{{ $user->name_slug }}/edit" method="GET">
-                <button type="submit" class="inline-flex items-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black">Edit Profile</button>
+                <button type="submit" class="inline-flex items-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-600 cursor-pointer">Edit Profile</button>
             </form>
         @endif
     </div>
