@@ -81,7 +81,7 @@
                             alt="{{ $page->Users->name }} avatar" 
                             class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shadow-lg border border-zinc-300 object-cover">
                         <div class="flex-1">
-                            <h3 class="font-semibold text-zinc-800 !text-lg">{{ $page->Users->name }}</h3>
+                            <h3 class="font-semibold text-zinc-600 !text-lg">Lee Wisener <span class="text-xs font-normal">CeMAP, CeRER, CeFAP, CSME</span></h3>
                             <p class="text-zinc-600 text-sm !mt-0">{{ $page->Users->bio }}</p>
                         </div>
                     </div>
