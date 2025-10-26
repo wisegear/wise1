@@ -51,11 +51,15 @@
             <div class="mt-10 text-center flex justify-center gap-4">
                 <a href="#blank"><button class="border border-gray-300 p-1 text-zinc-600 py-1 px-2 mr-2">Share</button></a>
 
-                <a href="https://twitter.com/share?text=why-i-deleted-thousands-of-x-followers-and-was-right-to-do-it &url=https://wisener.net/blog/{{ $page->slug }}">
-                    <button id="social-button" aria-label="linkedin-button" class="border border-gray-300 p-1 text-indigo-500 text-xs py-1 px-2 mr-2 hover:border-gray-400 cursor-pointer">
-                <svg viewBox="0 0 24 24" aria-hidden="true" class="h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-zinc-300">
-                    <path d="M13.3174 10.7749L19.1457 4H17.7646L12.7039 9.88256L8.66193 4H4L10.1122 12.8955L4 20H5.38119L10.7254 13.7878L14.994 20H19.656L13.3171 10.7749H13.3174ZM11.4257 12.9738L10.8064 12.0881L5.87886 5.03974H8.00029L11.9769 10.728L12.5962 11.6137L17.7652 19.0075H15.6438L11.4257 12.9742V12.9738Z"></path>
-                </svg>
+                @php
+                    $shareText = urlencode($page->title);
+                    $shareUrl  = urlencode(url('/blog/' . $page->slug));
+                @endphp
+                <a href="https://twitter.com/intent/tweet?text={{ $shareText }}&url={{ $shareUrl }}" target="_blank" rel="noopener">
+                    <button id="social-button" aria-label="x-button" class="border border-gray-300 p-1 text-indigo-500 text-xs py-1 px-2 mr-2 hover:border-gray-400 cursor-pointer">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-zinc-300">
+                            <path d="M13.3174 10.7749L19.1457 4H17.7646L12.7039 9.88256L8.66193 4H4L10.1122 12.8955L4 20H5.38119L10.7254 13.7878L14.994 20H19.656L13.3171 10.7749H13.3174ZM11.4257 12.9738L10.8064 12.0881L5.87886 5.03974H8.00029L11.9769 10.728L12.5962 11.6137L17.7652 19.0075H15.6438L11.4257 12.9742V12.9738Z"></path>
+                        </svg>
                     </button>
                 </a>
 

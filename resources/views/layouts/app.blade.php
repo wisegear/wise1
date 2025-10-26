@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'PropertyResearch') }}</title>
+
+    @isset($page)
+    <!-- Twitter Meta -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@holoc45" />
+    <meta name="twitter:title" content="{{ $page->title }}" />
+    <meta name="twitter:description" content="{{ $page->summary }}" />
+    <meta name="twitter:image" content="{{ url('assets/images/uploads/' . 'large_' . $page->original_image) }}" />
+
+    <!-- Open Graph Meta -->
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="{{ $page->title }}" />
+    <meta property="og:description" content="{{ $page->pagesummary }}" />
+    <meta property="og:url" content="{{ url()->current() }}" />
+    <meta property="og:image" content="{{ '/assets/images/uploads/' . 'large_' . $page->original_image }}" />
+    @endisset
+
     <!-- moved this to the top due to FOUC -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Favicon -->

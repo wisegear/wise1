@@ -22,34 +22,30 @@
     </head>
 
     <body class="font-sans antialiased">
+        <div class="min-h-screen flex flex-col bg-zinc-50 text-zinc-800">
 
-        <!-- Main outer container for the entire site -->
-        <div class="max-w-screen-xl px-5 mx-auto">
-
-            <!-- Main Navigation for the site -->
-            <div class="flex items-center py-4 border-b justify-center">
-                <div class="space-x-4 hidden md:block md:text-center md:w-8/12">
-                    <a href="/" class="hover:text-red-500">Site Home</a>
-                    <a href="/admin" class="hover:text-red-500">Admin Home</a>
-                    <a href="/admin/users" class="hover:text-red-500">Users</a>
-                    <a href="/admin/blog" class="hover:text-red-500">Blog</a>
-                    <a href="/admin/postcodes" class="hover:text-red-500">Postcodes</a>
+            <header class="sticky top-0 z-40 bg-white border-b border-zinc-200 shadow-sm">
+                <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+                    <a href="/" class="font-semibold text-zinc-900 hover:text-lime-600">PropertyResearch.uk</a>
+                    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-700">
+                        <a href="/admin" class="hover:text-lime-600">Dashboard</a>
+                        <a href="/admin/users" class="hover:text-lime-600">Users</a>
+                        <a href="/admin/blog" class="hover:text-lime-600">Blog</a>
+                        <a href="/admin/articles" class="hover:text-lime-600">Articles</a>
+                        <a href="/admin/support" class="hover:text-lime-600">Support</a>
+                    </nav>
                 </div>
-            </div>
+            </header>
 
-            <!-- This is where the content for each page is rendered -->
-            <div class="my-10">
+            <main class="flex-grow py-10 px-4 md:px-8">
                 @yield('content')
-            </div>
+            </main>
 
-            <!-- Footer for entire site -->
-            <!-- Footer -->
-            <div class="border-t border-gray-300 mt-auto mb-10">
-                <p class="text-center py-2">PropertyBlog.Scot, by Lee Wisener</p>
-            </div>
+            <footer class="border-t border-zinc-200 bg-white py-6 text-center text-sm text-zinc-500">
+                <p>© {{ date('Y') }} PropertyResearch.uk — Admin Console by Lee Wisener</p>
+            </footer>
 
         </div>
-
     </body>
 
 </html>
