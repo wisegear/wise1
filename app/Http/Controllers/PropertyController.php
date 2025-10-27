@@ -39,6 +39,53 @@ class PropertyController extends Controller
                 ->get();
         });
 
+        // Monthly sales — last 24 months (England & Wales, Cat A)
+        [$sales24Labels, $sales24Data] = Cache::remember(
+            'dashboard:sales_last_24m:EW:catA:v2',
+            self::CACHE_TTL,
+            function () {
+                // Seed a wider window so we can trim to the true last available month
+                $seedMonths = 36;
+                $seedStart  = now()->startOfMonth()->subMonths($seedMonths - 1);
+                $seedEnd    = now()->startOfMonth();
+
+                $raw = DB::table('land_registry')
+                    ->selectRaw("DATE_FORMAT(`Date`, '%Y-%m-01') as month_start, COUNT(*) as sales")
+                    ->where('PPDCategoryType', 'A')
+                    ->whereDate('Date', '>=', $seedStart)
+                    ->groupBy('month_start')
+                    ->orderBy('month_start')
+                    ->pluck('sales', 'month_start')
+                    ->toArray();
+
+                // Determine last month with data
+                $keys = array_keys($raw);
+                if (!empty($keys)) {
+                    sort($keys); // ascending
+                    $lastDataKey = end($keys); // e.g., '2025-08-01'
+                    $seriesEnd = \Carbon\Carbon::createFromFormat('Y-m-d', $lastDataKey)->startOfMonth();
+                } else {
+                    // If nothing in window, use end of previous month
+                    $seriesEnd = $seedEnd->copy()->subMonth();
+                }
+
+                // Build exactly 24 months ending at last available month
+                $start = $seriesEnd->copy()->subMonths(23)->startOfMonth();
+
+                $labels = [];
+                $data   = [];
+                $cursor = $start->copy();
+                while ($cursor->lte($seriesEnd)) {
+                    $key = $cursor->format('Y-m-01');
+                    $labels[] = $cursor->format('M Y');  // will be formatted to MM/YY in the tick callback
+                    $data[]   = (int)($raw[$key] ?? 0);
+                    $cursor->addMonth();
+                }
+
+                return [$labels, $data];
+            }
+        );
+
 
         // ========= ENGLAND & WALES (Cat A): P90 and Top 5% =========
         $ewP90 = Cache::remember('ew:p90:catA:v1', self::CACHE_TTL, function () {
@@ -106,7 +153,8 @@ class PropertyController extends Controller
         //    cached aggregates for charts to the Blade view
         // =========================================================
         return view('property.home', compact(
-            'salesByYear', 'avgPriceByYear', 'ewP90', 'ewTop5', 'ewTopSalePerYear', 'ewTop3PerYear'
+            'salesByYear', 'avgPriceByYear', 'ewP90', 'ewTop5', 'ewTopSalePerYear', 'ewTop3PerYear',
+            'sales24Labels', 'sales24Data'
         ));
     }
 

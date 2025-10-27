@@ -25,7 +25,108 @@
         </div>
     </section>
 
-<!-- Charts -->
+
+{{-- Monthly Sales — Last 24 Months (England) --}}
+@php
+    // Allow page to render even if controller hasn't provided these yet
+    $sales24Labels = $sales24Labels ?? [];
+    $sales24Data   = $sales24Data ?? [];
+    $hasMonthly24  = !empty($sales24Labels) && !empty($sales24Data);
+@endphp
+
+<section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm mb-6">
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 class="text-lg text-gray-900">Monthly sales — last 24 months (England &amp; Wales)</h2>
+    </div>
+    <p class="mt-1 text-xs text-gray-500 italic">
+        Note: Land Registry backfills the most recent months; the last few months may be incomplete. April 2025 is likely a rush ahead of year end.
+    </p>
+    <div class="flex flex-wrap items-baseline justify-between gap-3">
+    </div>
+
+    <div class="mt-4 h-64">
+        <canvas id="sales24Chart"></canvas>
+    </div>
+
+    @unless($hasMonthly24)
+        <p class="mt-3 text-sm text-gray-500">
+            Monthly data not loaded yet. Add <code>$sales24Labels</code> and <code>$sales24Data</code> in the controller to enable this chart.
+        </p>
+    @endunless
+</section>
+
+@push('scripts')
+<script>
+(function(){
+  const labels = @json($sales24Labels ?? []);
+  const data   = @json($sales24Data ?? []);
+
+  if (!labels.length || !data.length) return;
+
+
+  const ctx = document.getElementById('sales24Chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Sales',
+          data,
+          type: 'bar',
+          backgroundColor: 'rgba(54, 162, 235, 0.9)',
+          borderWidth: 0,
+          maxBarThickness: 28
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.parsed.y ?? 0;
+              return new Intl.NumberFormat('en-GB').format(v) + ' sales';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            autoSkip: false,       // show every label
+            maxRotation: 0,
+            minRotation: 0,
+            callback: function(value, index, ticks) {
+              const lbl = this.getLabelForValue(value);
+              const [month, year] = lbl.split(' ');
+              const mMap = {
+                Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06',
+                Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12'
+              };
+              const shortYear = year ? year.slice(-2) : '';
+              return (mMap[month] ?? month) + '/' + shortYear;
+            },
+            padding: 6
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (v) => new Intl.NumberFormat('en-GB').format(v)
+          }
+        }
+      }
+    }
+  });
+})();
+</script>
+@endpush
 
 <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
@@ -34,7 +135,7 @@
     <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <canvas id="topSaleChart" class="w-full h-full"></canvas>
     </div>
-    <div class="border p-4 bg-white rounded-lg shadow h-80 md:h-80 lg:h-96 md:col-span-2 overflow-hidden">
+    <div class="border p-4 bg-white rounded-lg shadow h-80 md:col-span-2 overflow-hidden">
         <canvas id="p90AvgTop5Chart" class="w-full h-full"></canvas>
     </div>
 </div>
@@ -353,14 +454,14 @@
     function barColorsFrom(values) {
         return values.map(v => {
             if (v === null || typeof v === 'undefined') return 'rgba(150,150,150,0.6)';
-            return v >= 0 ? 'rgba(34,197,94,0.7)' : 'rgba(239,68,68,0.7)'; // green for up, red for down
+            return v >= 0 ? 'rgba(87,161,0,0.7)' : 'rgba(239,68,68,0.7)'; // green for up, red for down
         });
     }
 
     function borderColorsFrom(values) {
         return values.map(v => {
             if (v === null || typeof v === 'undefined') return 'rgba(150,150,150,1)';
-            return v >= 0 ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,1)';
+            return v >= 0 ? 'rgba(87,161,0,1)' : 'rgba(239,68,68,1)';
         });
     }
 

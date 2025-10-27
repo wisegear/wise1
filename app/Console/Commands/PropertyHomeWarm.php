@@ -35,8 +35,8 @@ class PropertyHomeWarm extends Command
             return self::SUCCESS;
         }
 
-        // Orchestrator mode: define the six independent tasks
-        $tasks = ['sales','avgPrice','p90','top5','topSale','top3'];
+        // Orchestrator mode: define the seven independent tasks
+        $tasks = ['sales','avgPrice','p90','top5','topSale','top3','monthly24'];
 
         $parallel = max(1, (int) ($this->option('parallel') ?? 1));
         if ($parallel <= 1) {
@@ -57,7 +57,7 @@ class PropertyHomeWarm extends Command
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        $maxWorkers = (int) min($parallel, 6); // safety cap (we only have 6 tasks)
+        $maxWorkers = (int) min($parallel, 7); // safety cap (we have 7 tasks)
         $queue = $tasks; // array of strings
         $running = [];
 
@@ -169,6 +169,50 @@ class PropertyHomeWarm extends Command
                     ->orderBy('rn')
                     ->get();
                 Cache::put('ew:top3PerYear:catA:v1', $data, $ttl);
+                break;
+
+            case 'monthly24':
+                // Monthly sales — last 24 months (England & Wales, Cat A)
+                // Build a slightly wider seed window, then trim to last available month and take 24 months
+                $seedMonths = 36;
+                $seedStart  = now()->startOfMonth()->subMonths($seedMonths - 1);
+                $seedEnd    = now()->startOfMonth();
+
+                $raw = DB::table('land_registry')
+                    ->selectRaw("DATE_FORMAT(`Date`, '%Y-%m-01') as month_start, COUNT(*) as sales")
+                    ->where('PPDCategoryType', 'A')
+                    ->whereDate('Date', '>=', $seedStart)
+                    ->groupBy('month_start')
+                    ->orderBy('month_start')
+                    ->pluck('sales', 'month_start')
+                    ->toArray();
+
+                // Determine last month with data
+                $keys = array_keys($raw);
+                if (!empty($keys)) {
+                    sort($keys); // ascending
+                    $lastDataKey = end($keys); // e.g., '2025-08-01'
+                    $seriesEnd = \Carbon\Carbon::createFromFormat('Y-m-d', $lastDataKey)->startOfMonth();
+                } else {
+                    // If nothing in window, use end of previous month
+                    $seriesEnd = $seedEnd->copy()->subMonth();
+                }
+
+                // Build exactly 24 months ending at last available month
+                $start = $seriesEnd->copy()->subMonths(23)->startOfMonth();
+
+                $labels = [];
+                $data   = [];
+                $cursor = $start->copy();
+                while ($cursor->lte($seriesEnd)) {
+                    $key = $cursor->format('Y-m-01');
+                    $labels[] = $cursor->format('M Y');  // matches controller (formatted to MM/YY in ticks)
+                    $data[]   = (int)($raw[$key] ?? 0);
+                    $cursor->addMonth();
+                }
+
+                // Store combined payload to match controller Cache::remember() contract
+                Cache::put('dashboard:sales_last_24m:EW:catA:v2', [$labels, $data], $ttl);
                 break;
 
             default:
