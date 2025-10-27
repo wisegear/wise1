@@ -39,9 +39,9 @@
   </div>
 
   <div class="flex gap-4 mb-6">
-    <button type="button" data-section="change" class="standard-button">12m Change</button>
-    <button type="button" data-section="types" class="standard-button">Property Types</button>
-    <button type="button" data-section="movers" class="standard-button">Movers / Losers</button>
+    <button type="button" data-section="change" class="standard-button filter-btn">12m Change</button>
+    <button type="button" data-section="types" class="standard-button filter-btn">Property Types</button>
+    <button type="button" data-section="movers" class="standard-button filter-btn">Movers / Losers</button>
   </div>
   <div id="section-change">
   <h2 class="text-xl font-semibold mt-8">12‑Month Change by Nation &amp; UK</h2>
