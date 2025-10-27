@@ -39,9 +39,9 @@
   </div>
 
   <div class="flex gap-4 mb-6">
-    <button type="button" data-section="change" class="filter-btn px-3 py-1 rounded bg-lime-600 text-white text-sm cursor-pointer">12m Change</button>
-    <button type="button" data-section="types" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Property Types</button>
-    <button type="button" data-section="movers" class="filter-btn px-3 py-1 rounded bg-neutral-200 text-sm cursor-pointer">Movers / Losers</button>
+    <button type="button" data-section="change" class="standard-button">12m Change</button>
+    <button type="button" data-section="types" class="standard-button">Property Types</button>
+    <button type="button" data-section="movers" class="standard-button">Movers / Losers</button>
   </div>
   <div id="section-change">
   <h2 class="text-xl font-semibold mt-8">12‑Month Change by Nation &amp; UK</h2>
@@ -75,7 +75,7 @@
 (function () {
   try {
     const series = @json($seriesByArea);
-    const POS = '#16a34a';  // green
+    const POS = '#57A100';  // green (#57A100)
     const NEG = '#dc2626';  // red
     const FIRST_YEAR = 1969;
 
@@ -133,7 +133,9 @@
             data: values,
             backgroundColor: colors,
             hoverBackgroundColor: colors,
-            borderWidth: 0,
+            borderColor: colors,
+            hoverBorderColor: colors,
+            borderWidth: 1,
             borderSkipped: false,
             spanGaps: true
           }]
@@ -241,7 +243,7 @@
         const COLORS = {
           Detached: '#3b82f6',      // brighter blue
           SemiDetached: '#f97316',  // brighter orange
-          Terraced: '#22c55e',      // brighter green
+          Terraced: '#57A100',      // green (#57A100)
           Flat: '#ef4444'           // brighter red
         };
 
@@ -318,7 +320,7 @@
               ds.fill = !!focusLabel && isFocus;
               if (ds.label === 'Detached')      ds.backgroundColor = isFocus ? 'rgba(59,130,246,0.07)' : 'transparent';
               if (ds.label === 'Semi-detached') ds.backgroundColor = isFocus ? 'rgba(249,115,22,0.07)' : 'transparent';
-              if (ds.label === 'Terraced')      ds.backgroundColor = isFocus ? 'rgba(34,197,94,0.07)'  : 'transparent';
+              if (ds.label === 'Terraced')      ds.backgroundColor = isFocus ? 'rgba(87,161,0,0.07)'  : 'transparent';
               if (ds.label === 'Flat')          ds.backgroundColor = isFocus ? 'rgba(239,68,68,0.07)'  : 'transparent';
             });
           }

@@ -36,7 +36,7 @@
 
 .standard-button {
 
-  @apply rounded p-2 mt-4 bg-lime-600 text-white text-sm hover:bg-lime-700 cursor-pointer;
+  @apply rounded p-2 mt-4 bg-zinc-700 text-white text-xs hover:bg-zinc-500 cursor-pointer;
 
 }
 

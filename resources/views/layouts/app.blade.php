@@ -51,8 +51,8 @@
                   </svg>
                 </button>
                 <div id="primaryNav" class="hidden md:flex flex-1 gap-2 text-sm md:ml-8 flex-col md:flex-row mt-3 md:mt-0">
-                    <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
-                    <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
+                    <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
+                    <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
                     
                     <div class="relative">
                         <button id="propertyMenuButton" aria-haspopup="true" aria-controls="propertyDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -114,9 +114,9 @@
                         </div>
                     </div>
 
-                    <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
-                    <a href="{{ url('/interest-rates') }}" class="px-3 py-2 rounded {{ request()->is('interest-rates') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Interest Rates</a>
-                    <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-lime-100 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
+                    <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
+                    <a href="{{ url('/interest-rates') }}" class="px-3 py-2 rounded {{ request()->is('interest-rates') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Interest Rates</a>
+                    <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
                 </div>
                 <ul class="flex items-center gap-2 text-sm">
                     @if(Auth::check())
@@ -146,8 +146,8 @@
                         </li>
                     @else
                         <li class="flex items-center gap-2 text-xs">
-                            <a href="/login" class="px-4 py-2 rounded bg-lime-600 text-white hover:bg-lime-700 transition">Login</a>
-                            <a href="/register" class="px-4 py-2 rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition hover:text-white">Register</a>
+                            <a href="/login" class="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-500 transition">Login</a>
+                            <a href="/register" class="px-4 py-2 rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition hover:text-black">Register</a>
                         </li>
                     @endif
                 </ul>
@@ -235,7 +235,7 @@
                 </form>
             @else
                 <div class="flex justify-between space-x-2 px-3">
-                    <a href="/login" class="flex-1 text-center py-1 px-2 rounded bg-lime-600 text-white text-sm hover:bg-lime-700 transition">Login</a>
+                    <a href="/login" class="flex-1 text-center py-1 px-2 rounded bg-zinc-700 text-white text-sm hover:bg-zinc-500 transition">Login</a>
                     <a href="/register" class="flex-1 text-center py-1 px-2 rounded bg-zinc-200 text-zinc-700 text-sm hover:bg-zinc-300 transition">Register</a>
                 </div>
             @endauth

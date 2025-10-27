@@ -51,7 +51,7 @@
     <div class="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md">
       <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
              class="flex-grow rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
-      <button class="rounded bg-lime-600 text-white px-4 py-1.5 text-sm hover:bg-lime-700 transition-colors duration-150 whitespace-nowrap">Search</button>
+      <button class="rounded bg-zinc-700 text-white px-4 py-1.5 text-sm hover:bg-zinc-500 transition-colors duration-150 whitespace-nowrap">Search</button>
     </div>
   </form>
 

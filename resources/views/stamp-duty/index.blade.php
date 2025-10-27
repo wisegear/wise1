@@ -60,7 +60,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full md:w-auto px-4 py-2 rounded bg-lime-600 hover:bg-lime-500 text-white cursor-pointer">Calculate</button>
+                    <button type="submit" class="standard-button">Calculate</button>
                 </form>
             </div>
         </div>

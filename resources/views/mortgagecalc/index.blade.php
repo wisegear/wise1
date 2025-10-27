@@ -39,7 +39,7 @@
             </div>
 
             <div>
-                <button type="submit" class="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-lime-600 hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                <button type="submit" class="standard-button">
                     Calculate
                 </button>
             </div>

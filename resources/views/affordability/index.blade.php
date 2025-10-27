@@ -41,6 +41,7 @@
                 <span class="flex items-center gap-2 md:gap-3">
                     <span class="text-lg md:text-xl font-semibold text-gray-900">Property Details</span>
                     <span id="status-property" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
+                    <span id="label-property" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
                 </span>
                 <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
             </summary>
@@ -95,6 +96,7 @@
                 <span class="flex items-center gap-2 md:gap-3">
                     <span class="text-lg md:text-xl font-semibold text-gray-900">Income Details</span>
                     <span id="status-income" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
+                    <span id="label-income" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
                 </span>
                 <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
             </summary>
@@ -150,6 +152,7 @@
                 <span class="flex items-center gap-2 md:gap-3">
                     <span class="text-lg md:text-xl font-semibold text-gray-900">Financial Commitments</span>
                     <span id="status-commitments" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
+                    <span id="label-commitments" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
                 </span>
                 <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
             </summary>
@@ -194,7 +197,7 @@
         </details>
 
         <div class="flex justify-end">
-            <button type="submit" class="inline-flex items-center px-6 py-2 text-sm font-semibold text-white bg-lime-600 rounded-md hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-lime-500">
+            <button type="submit" class="standard-button">
                 View Results
             </button>
         </div>
@@ -293,13 +296,26 @@ document.addEventListener('DOMContentLoaded', function(){
     return el ? String(el.value).trim() : '';
   };
 
-  // Set a specific color + tooltip on a status dot
+  // Set a specific color + tooltip on a status dot and update label
   const setDot = (id, color, title) => {
     const dot = document.getElementById(id);
     if (!dot) return;
     dot.classList.remove('bg-emerald-500','bg-amber-500','bg-rose-500');
     dot.classList.add(color);
     if (title) dot.setAttribute('title', title);
+
+    // Also set the text label next to the dot
+    const labelId = id.replace('status', 'label');
+    const label = document.getElementById(labelId);
+    if (label) {
+      label.textContent = title || '';
+      label.classList.remove('text-emerald-600','text-amber-600','text-rose-600');
+      let textClass = 'text-zinc-600';
+      if (color.includes('emerald')) textClass = 'text-emerald-600';
+      else if (color.includes('amber')) textClass = 'text-amber-600';
+      else if (color.includes('rose')) textClass = 'text-rose-600';
+      label.classList.add(textClass);
+    }
   };
 
   // Completion rules
@@ -312,21 +328,21 @@ document.addEventListener('DOMContentLoaded', function(){
     if (propertyComplete()) {
       setDot('status-property', 'bg-emerald-500', 'Complete');
     } else {
-      setDot('status-property', 'bg-rose-500', 'Required fields missing');
+      setDot('status-property', 'bg-rose-500', 'Incomplete');
     }
 
     // Income: required → green if complete, red if not
     if (incomeComplete()) {
       setDot('status-income', 'bg-emerald-500', 'Complete');
     } else {
-      setDot('status-income', 'bg-rose-500', 'Required fields missing');
+      setDot('status-income', 'bg-rose-500', 'Incomplete');
     }
 
     // Commitments: optional → green if any provided, amber if none
     if (commitmentsAny()) {
-      setDot('status-commitments', 'bg-emerald-500', 'Provided');
+      setDot('status-commitments', 'bg-emerald-500', 'Complete');
     } else {
-      setDot('status-commitments', 'bg-amber-500', 'Optional: none provided');
+      setDot('status-commitments', 'bg-amber-500', 'Optional');
     }
   };
 

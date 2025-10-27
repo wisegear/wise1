@@ -142,8 +142,8 @@
 
         {{-- Buttons --}}
         <div class="mt-5 flex items-center gap-3">
-            <button type="submit" class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-medium text-white hover:bg-lime-400 cursor-pointer">Apply</button>
-            <a href="{{ route('repossessions.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Reset</a>
+            <button type="submit" class="standard-button">Apply</button>
+            <a href="{{ route('repossessions.index') }}" class="standard-button">Reset</a>
         </div>
     </form>
 
