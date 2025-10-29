@@ -69,7 +69,7 @@
                                 return $currentSort === $key ? ' ('.strtoupper($currentDir).')' : '';
                             };
                             $thClass = function($key) use ($currentSort) {
-                                return $currentSort === $key ? 'bg-lime-100 font-bold' : '';
+                                return $currentSort === $key ? 'bg-zinc-300 font-bold' : '';
                             };
                         @endphp
                         <tr class="text-left">
@@ -219,7 +219,7 @@
                                             'street'   => $row->Street ?? '',
                                             'saon'     => $row->SAON ?? ''
                                         ]) }}"
-                                        class="bg-lime-600 hover:bg-lime-500 text-white p-2 rounded inline-flex items-center"
+                                        class="bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded inline-flex items-center"
                                         title="View property details"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentcolor" viewBox="0 0 20 20" width="16" height="16">

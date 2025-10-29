@@ -106,7 +106,7 @@
         <a href="https://www.google.com/search?q={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-800 text-white px-4 py-2 shadow-sm transition">
+           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-4 py-2 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
@@ -263,7 +263,7 @@
                                             <span class="text-xs text-zinc-500">({{ $s }})</span>
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2 border-b">
+                                    <td class="px-3 py-2 border-b text-center">
                                         @if(function_exists('route') && Route::has('epc.show'))
                                             <a
                                                 href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}"
@@ -271,7 +271,7 @@
                                                 title="View EPC report"
                                                 aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5" aria-hidden="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded" aria-hidden="true">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
                                                 </svg>
                                                 <span class="sr-only">View</span>
@@ -412,10 +412,10 @@
 
                             <div class="mt-4 flex flex-wrap items-center gap-2">
                                 @if($lsoaLink)
-                                    <a href="{{ $lsoaLink }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-lime-700 bg-lime-50 rounded-md hover:bg-lime-100 border border-lime-200">Full details</a>
+                                    <a href="{{ $lsoaLink }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-zinc-700 rounded-md hover:bg-zinc-500 border border-lime-200">Full details</a>
                                 @endif
                                 @if(($depr['lat'] ?? null) && ($depr['long'] ?? null))
-                                    <a href="https://www.google.com/maps?q={{ $depr['lat'] }},{{ $depr['long'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-700 bg-white rounded-md hover:bg-zinc-50 border">View on map</a>
+                                    <a href="https://www.google.com/maps?q={{ $depr['lat'] }},{{ $depr['long'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-700 bg-white rounded-md hover:bg-zinc-100 border">View on map</a>
                                 @endif
                             </div>
 
