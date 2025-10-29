@@ -20,7 +20,7 @@
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
-                    Latest data<datalist></datalist>: <class="">August 2025
+                    Latest data<datalist></datalist>: <class="">September 2025
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
