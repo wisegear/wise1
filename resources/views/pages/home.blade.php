@@ -24,7 +24,7 @@
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
-                    Next update: <class="">31st October 2025
+                    Next update: <class="">30th November 2025
                 </span>
             </div>
         </div>
