@@ -249,7 +249,7 @@
 
         {{-- Footer --}}
         <footer class="bg-white border-t border-zinc-200 p-4 text-center text-sm text-zinc-500">
-             <p>&copy; Lee Wisener - PropertyResearch.uk. Hosted on&nbsp;<a href="https://hetzner.cloud/?ref=rfLEdCP3iIfx" class="text-rose-500">Hetzner Cloud</a></p>
+             <p>&copy; Lee Wisener - PropertyResearch.uk. Built with&nbsp;<a href="https://laravel.com" class="text-rose-500 hover:text-rose-700">Laravel</a>.  Hosted on&nbsp;<a href="https://hetzner.cloud/?ref=rfLEdCP3iIfx" class="text-rose-500 hover:text-rose-700">Hetzner Cloud.</a></p>
         </footer>
     </div>
 
