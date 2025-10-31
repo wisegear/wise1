@@ -11,29 +11,11 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-// Schedule: run monthly (2nd of the month at 02:15)
-Schedule::command('pcl:warm')->monthlyOn(2, '02:15');
-
-// Schedule: run monthly (2nd of the month at 02:30)
-Schedule::command('property:home-warm')->monthlyOn(2, '02:30');
-
-// Schedule: run monthly (2nd of the month at 02:15)
-Schedule::command('upcl:warm')->monthlyOn(2, '02:15');
-
-// Schedule: run monthly (2nd of the month at 02:45)
-Schedule::command('warm:all-county')->monthlyOn(2, '02:45');
-
-// Schedule: run monthly (2nd of the month at 03:00)
-Schedule::command('warm:all-district')->monthlyOn(2, '03:00');
-
-// Schedule: run monthly (2nd of the month at 03:15)
-Schedule::command('warm:all-town')->monthlyOn(2, '03:15');
-
 // Sitemap
 Schedule::command('sitemap:generate')->dailyAt('01:10');
 
 // Spatie Backups
 
-Schedule::command('backup:clean')->dailyAt('01:00');
-Schedule::command('backup:run')->dailyAt('01:10')->withoutOverlapping();
-Schedule::command('backup:monitor')->dailyAt('01:20');
+Schedule::command('backup:clean')->dailyAt('04:00');
+Schedule::command('backup:run')->dailyAt('04:10')->withoutOverlapping();
+Schedule::command('backup:monitor')->dailyAt('04:20');
