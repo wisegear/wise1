@@ -43,7 +43,7 @@
 
     {{-- Search form --}}
     <div class="flex justify-center">
-        <form method="GET" action="{{ route('epc.search') }}" class="mb-10 w-1/2 mx-auto">
+        <form method="GET" action="{{ route('epc.search') }}" class="mb-10 w-1/2 mx-auto border bg-white/80 p-6">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to view EPC certificates.</label>
@@ -63,7 +63,7 @@
 
                 <button
                     type="submit"
-                    class="bg-lime-600 hover:bg-lime-500 text-white font-medium px-4 py-2 rounded-md transition cursor-pointer">
+                    class="bg-zinc-700 hover:bg-zinc-500 text-white font-medium px-4 py-2 rounded-md transition cursor-pointer">
                     Search
                 </button>
             </div>
