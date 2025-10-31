@@ -21,7 +21,7 @@
 
     {{-- Search form --}}
     <div class="flex justify-center">
-        <form method="GET" action="{{ route('property.search') }}" class="w-full lg:w-1/2 mx-auto border p-6 bg-white/80 mb-10">
+        <form method="GET" action="{{ route('property.search') }}" class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995.</label>

@@ -43,7 +43,7 @@
 
     {{-- Search form --}}
     <div class="flex justify-center">
-        <form method="GET" action="{{ route('epc.search') }}" class="mb-10 w-full lg:w-1/2 mx-auto border bg-white/80 p-6">
+        <form method="GET" action="{{ route('epc.search') }}" class="mb-10 w-full lg:w-1/2 mx-auto border bg-white/80 p-6 rounded">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to view EPC certificates.</label>
