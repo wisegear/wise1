@@ -48,10 +48,17 @@
     <div class="rounded border border-amber-200 bg-amber-50 text-amber-800 px-4 py-2 text-sm">{{ session('status') }}</div>
   @endif
   <form method="get" class="flex flex-col items-center justify-center my-6">
-    <div class="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md">
-      <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
-             class="flex-grow rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
-      <button class="rounded bg-zinc-700 text-white px-4 py-1.5 text-sm hover:bg-zinc-500 transition-colors duration-150 whitespace-nowrap">Search</button>
+    <div class="w-full max-w-md border p-6 bg-white rounded">
+      <p class="text-xs flex justify-center sm:text-left text-gray-600 -mt-2 mb-2 w-full">
+        Postcode can be in England, Scotland or Wales.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+        <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
+               class="flex-grow rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
+        <button class="rounded bg-zinc-700 text-white px-4 py-1.5 text-sm hover:bg-zinc-500 transition-colors duration-150 whitespace-nowrap">
+          Search
+        </button>
+      </div>
     </div>
   </form>
 
