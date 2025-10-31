@@ -9,33 +9,33 @@
     <div class="max-w-3xl">
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">
-        Quick view of the most and least deprived areas using <strong>IMD 2019</strong> (England), <strong>SIMD 2020</strong> (Scotland) and <strong>WIMD 2019</strong> (Wales). Use the postcode box to jump straight to a specific place.
+        Quick view of the most and least deprived areas using <strong>IMD 2025</strong> (England), <strong>SIMD 2020</strong> (Scotland) and <strong>WIMD 2019</strong> (Wales). Use the postcode box to jump straight to a specific place.
       </p>
       @php
-        $imdLastWarm  = Cache::get('imd:last_warm');
+        $imd25LastWarm  = Cache::get('imd25:last_warm');
         $simdLastWarm = Cache::get('simd:last_warm');
         $wimdLastWarm = Cache::get('wimd:last_warm');
       @endphp
-      @if($imdLastWarm || $simdLastWarm || $wimdLastWarm)
+      @if($imd25LastWarm || $simdLastWarm || $wimdLastWarm)
         <p class="mt-1 text-xs text-gray-500">
           Cached:
-          @if($imdLastWarm)
-            England {{ \Carbon\Carbon::parse($imdLastWarm)->format('d M Y, H:i') }}
+          @if($imd25LastWarm)
+            England (IMD 2025) {{ \Carbon\Carbon::parse($imd25LastWarm)->format('d M Y, H:i') }}
           @endif
-          @if(($imdLastWarm && $simdLastWarm) || ($imdLastWarm && $wimdLastWarm)) · @endif
+          @if(($imd25LastWarm && $simdLastWarm) || ($imd25LastWarm && $wimdLastWarm)) · @endif
           @if($simdLastWarm)
             Scotland {{ \Carbon\Carbon::parse($simdLastWarm)->format('d M Y, H:i') }}
           @endif
-          @if(($simdLastWarm && $wimdLastWarm) || ($imdLastWarm && $wimdLastWarm && !$simdLastWarm)) · @endif
+          @if(($simdLastWarm && $wimdLastWarm) || ($imd25LastWarm && $wimdLastWarm && !$simdLastWarm)) · @endif
           @if($wimdLastWarm)
             Wales {{ \Carbon\Carbon::parse($wimdLastWarm)->format('d M Y, H:i') }}
           @endif
         </p>
       @endif
       <p class="mt-2 text-xs text-gray-600">
-        Decile colours: <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-100 text-rose-800">1–3</span> higher deprivation ·
-        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-amber-100 text-amber-800">4–7</span> mid ·
-        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-emerald-100 text-emerald-800">8–10</span> lower deprivation.
+        Decile colours: <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-300 text-zinc-900">1–3</span> higher deprivation ·
+        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-orange-300 text-zinc-900">4–7</span> mid ·
+        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-emerald-300 text-zinc-900">8–10</span> lower deprivation.
       </p>
     </div>
     <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
@@ -57,8 +57,8 @@
 
   @php
     // Guard totals to avoid odd cached/DB values (e.g. 999)
-    $totalIMDLocal  = (int) ($totalIMD  ?? 32844);
-    if ($totalIMDLocal < 30000) { $totalIMDLocal = 32844; }
+    $totalIMDLocal  = (int) ($totalIMD  ?? 33755);
+    if ($totalIMDLocal < 30000) { $totalIMDLocal = 33755; }
 
     $totalSIMDLocal = (int) ($totalSIMD ?? 6976);
     if ($totalSIMDLocal < 6000) { $totalSIMDLocal = 6976; }
@@ -72,7 +72,7 @@
 
     {{-- England (IMD) --}}
     <section class="rounded border border-gray-200 bg-white/80 p-6 shadow-sm">
-      <h2 class="text-lg font-semibold text-gray-900">England — IMD 2019</h2>
+      <h2 class="text-lg font-semibold text-gray-900">England — IMD 2025</h2>
       <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {{-- Least deprived (Top 10 by rank desc) --}}
         <div>
@@ -98,18 +98,18 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa_code) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
                     </td>
-                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa21cd }}</td>
+                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -152,18 +152,18 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
-                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa21cd) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
+                      <div class="font-medium text-gray-900"><a href="{{ route('deprivation.show', $r->lsoa_code) }}" class="text-lime-700 hover:text-lime-900 font-medium transition-colors duration-150">{{ $r->lsoa_name }}</a></div>
                     </td>
-                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa21cd }}</td>
+                    <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -182,7 +182,7 @@
           </div>
         </div>
       </div>
-      <p class="mt-3 text-xs text-zinc-500">Source: English Indices of Deprivation (2019). LSOA names &amp; Rural/Urban are 2021 geography.</p>
+      <p class="mt-3 text-xs text-zinc-500">Source: English Indices of Deprivation (2025).</p>
     </section>
 
     {{-- Scotland (SIMD) --}}
@@ -213,10 +213,10 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
@@ -224,7 +224,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -267,10 +267,10 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
@@ -278,7 +278,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -328,10 +328,10 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
@@ -339,7 +339,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -382,10 +382,10 @@
                   @php
                     $d = (int)($r->decile ?? 0);
                     $badge = match(true){
-                      $d >= 8 => 'bg-emerald-100 text-emerald-800',
-                      $d >= 4 => 'bg-amber-100 text-amber-800',
-                      $d >= 1 => 'bg-rose-100 text-rose-800',
-                      default => 'bg-zinc-100 text-zinc-700'};
+                      $d >= 7 => 'bg-emerald-300 text-zinc-900',
+                      $d >= 4 => 'bg-orange-300 text-zinc-900',
+                      $d >= 1 => 'bg-rose-300 text-zinc-900',
+                      default => 'bg-zinc-300 text-zinc-900'};
                   @endphp
                   <tr class="odd:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="px-3 py-2">
@@ -393,7 +393,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>

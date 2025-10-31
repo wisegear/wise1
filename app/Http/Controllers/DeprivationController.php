@@ -105,43 +105,30 @@ class DeprivationController extends Controller
         // Cache helper
         $ttl = now()->addDays(7);
 
-        // England — IMD base query (for top/bottom 10)
-        $imdBase = DB::table('lsoa21_ruc_geo as g')
-            ->leftJoin('lsoa_2011_to_2021 as map', 'map.LSOA21CD', '=', 'g.LSOA21CD')
-            ->leftJoin('imd2019 as imd_dec', function ($j) {
-                $j->on('imd_dec.FeatureCode', '=', 'map.LSOA11CD')
-                  ->where('imd_dec.measurement_norm', '=', 'decile')
-                  ->where('imd_dec.iod_norm', 'like', 'a. index of multiple deprivation%');
-            })
-            ->leftJoin('imd2019 as imd_rank', function ($j) {
-                $j->on('imd_rank.FeatureCode', '=', 'map.LSOA11CD')
-                  ->where('imd_rank.measurement_norm', '=', 'rank')
-                  ->where('imd_rank.iod_norm', 'like', 'a. index of multiple deprivation%');
-            })
-            ->where('g.LSOA21CD', 'like', 'E%')
-            ->whereNotNull('imd_rank.Value')
+        // England — IMD 2025 base query (for top/bottom 10)
+        $imd25Base = DB::table('imd2025')
             ->select([
-                'g.LSOA21CD as lsoa21cd',
-                'g.LSOA21NM as lsoa_name',
-                'imd_dec.Value as decile',
-                'imd_rank.Value as rank',
+                'LSOA_Code_2021 as lsoa_code',
+                'LSOA_Name_2021 as lsoa_name',
+                'Index_of_Multiple_Deprivation_Rank as rank',
+                'Index_of_Multiple_Deprivation_Decile as decile',
             ]);
 
-        $engTop10 = Cache::remember('imd:top10', $ttl, function () use ($imdBase) {
-            $data = (clone $imdBase)
+        $engTop10 = Cache::remember('imd25:top10', $ttl, function () use ($imd25Base) {
+            $data = (clone $imd25Base)
                 ->orderByDesc('rank') // highest rank = least deprived
                 ->limit(10)
                 ->get();
-            Cache::put('imd:last_warm', now()->toDateTimeString());
+            Cache::put('imd25:last_warm', now()->toDateTimeString());
             return $data;
         });
 
-        $engBottom10 = Cache::remember('imd:bottom10', $ttl, function () use ($imdBase) {
-            $data = (clone $imdBase)
+        $engBottom10 = Cache::remember('imd25:bottom10', $ttl, function () use ($imd25Base) {
+            $data = (clone $imd25Base)
                 ->orderBy('rank') // lowest rank = most deprived
                 ->limit(10)
                 ->get();
-            Cache::put('imd:last_warm', now()->toDateTimeString());
+            Cache::put('imd25:last_warm', now()->toDateTimeString());
             return $data;
         });
 
@@ -207,13 +194,10 @@ class DeprivationController extends Controller
             return $data;
         });
 
-        // Total ranks for contextual percentages
-        $totalIMD = Cache::rememberForever('imd.total_rank', function () {
-            $n = (int) (DB::table('imd2019')
-                ->where('measurement_norm', 'rank')
-                ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
-                ->max('Value') ?? 0);
-            return $n ?: 32844;
+        // Total ranks for contextual percentages (IMD 2025)
+        $totalIMD = Cache::rememberForever('imd25.total_rank', function () {
+            $n = (int) (DB::table('imd2025')->max('Index_of_Multiple_Deprivation_Rank') ?? 0);
+            return $n ?: 33755;
         });
 
         $totalSIMD = Cache::rememberForever('simd.total_rank', function () {
@@ -245,93 +229,78 @@ class DeprivationController extends Controller
         ]);
     }
 
-    public function show(string $lsoa21cd)
+    public function show(string $lsoaCode)
     {
         // If a Scottish Data Zone code is passed here, forward to the Scotland page
-        if ((function_exists('str_starts_with') ? str_starts_with($lsoa21cd, 'S010') : substr($lsoa21cd, 0, 4) === 'S010')) {
-            return redirect()->route('deprivation.scot.show', $lsoa21cd);
+        if ((function_exists('str_starts_with') ? str_starts_with($lsoaCode, 'S010') : substr($lsoaCode, 0, 4) === 'S010')) {
+            return redirect()->route('deprivation.scot.show', $lsoaCode);
         }
 
-        // Resolve LSOA21 → LSOA11 (for IMD 2019 joins)
-        $base = DB::table('lsoa21_ruc_geo as g')
-            ->leftJoin('lsoa_2011_to_2021 as map', 'map.LSOA21CD', '=', 'g.LSOA21CD')
+        // IMD 2025 (England)
+        // 1. Fetch geography + deprivation row for this LSOA code
+        $row = DB::table('imd2025 as i')
+            ->leftJoin('lsoa21_ruc_geo as g', 'g.LSOA21CD', '=', 'i.LSOA_Code_2021')
             ->select([
-                'g.LSOA21CD','g.LSOA21NM','g.RUC21CD','g.RUC21NM','g.Urban_rura','g.LAT','g.LONG',
-                'map.LSOA11CD',
+                'i.LSOA_Code_2021',
+                'i.LSOA_Name_2021',
+                'i.Index_of_Multiple_Deprivation_Rank as overall_rank',
+                'i.Index_of_Multiple_Deprivation_Decile as overall_decile',
+                'i.Income_Rank',
+                'i.Income_Decile',
+                'i.Employment_Rank',
+                'i.Employment_Decile',
+                'i.Education_Skills_Training_Rank',
+                'i.Education_Skills_Training_Decile',
+                'i.Health_Deprivation_Disability_Rank',
+                'i.Health_Deprivation_Disability_Decile',
+                'i.Crime_Rank',
+                'i.Crime_Decile',
+                'i.Barriers_Housing_Services_Rank',
+                'i.Barriers_Housing_Services_Decile',
+                'i.Living_Environment_Rank',
+                'i.Living_Environment_Decile',
+                'g.RUC21CD',
+                'g.RUC21NM',
+                'g.Urban_rura',
+                'g.LAT',
+                'g.LONG',
             ])
-            ->where('g.LSOA21CD', $lsoa21cd)
+            ->where('i.LSOA_Code_2021', $lsoaCode)
             ->first();
 
-        abort_unless($base, 404);
+        abort_unless($row, 404);
 
-        // Pull all Rank/Decile pairs for this LSOA11 across all domains
-        $rows = DB::table('imd2019')
-            ->select(['iod_norm as domain_label', 'measurement_norm as meas', 'Value'])
-            ->where('FeatureCode', $base->LSOA11CD)
-            ->whereIn('measurement_norm', ['rank','decile'])
-            ->get();
+        // 2. Total LSOAs for England (for % context)
+        $total = Cache::rememberForever('imd25.total_rank', function () {
+            $n = (int) (DB::table('imd2025')->max('Index_of_Multiple_Deprivation_Rank') ?? 0);
+            return $n ?: 33755; // IoD25: 33,755 LSOAs in England
+        });
 
-        // Map rows to canonical IMD domains using tolerant matching
-        $groups = [
-            'overall'   => ['name' => 'Overall IMD',                          'weight' => 100],
-            'income'    => ['name' => 'Income',                               'weight' => 22.5],
-            'employment'=> ['name' => 'Employment',                           'weight' => 22.5],
-            'education' => ['name' => 'Education, Skills & Training',         'weight' => 13.5],
-            'health'    => ['name' => 'Health',                               'weight' => 13.5],
-            'crime'     => ['name' => 'Crime',                                'weight' => 9.3],
-            'barriers'  => ['name' => 'Barriers to Housing & Services',       'weight' => 9.3],
-            'living'    => ['name' => 'Living Environment',                   'weight' => 9.3],
+        $rank = (int) ($row->overall_rank ?? 0); // 1 = most deprived
+        $pct  = $rank
+            ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100)))
+            : null;
+
+        // 3. Build domain breakdown list for the blade (mirrors Scotland/Wales style)
+        $domains = [
+            [ 'label' => 'Income', 'rank' => $row->Income_Rank ?? null, 'decile' => $row->Income_Decile ?? null, 'weight' => '22.5%' ],
+            [ 'label' => 'Employment', 'rank' => $row->Employment_Rank ?? null, 'decile' => $row->Employment_Decile ?? null, 'weight' => '22.5%' ],
+            [ 'label' => 'Education, Skills & Training', 'rank' => $row->Education_Skills_Training_Rank ?? null, 'decile' => $row->Education_Skills_Training_Decile ?? null, 'weight' => '13.5%' ],
+            [ 'label' => 'Health Deprivation & Disability', 'rank' => $row->Health_Deprivation_Disability_Rank ?? null, 'decile' => $row->Health_Deprivation_Disability_Decile ?? null, 'weight' => '13.5%' ],
+            [ 'label' => 'Crime', 'rank' => $row->Crime_Rank ?? null, 'decile' => $row->Crime_Decile ?? null, 'weight' => '9.3%' ],
+            [ 'label' => 'Barriers to Housing & Services', 'rank' => $row->Barriers_Housing_Services_Rank ?? null, 'decile' => $row->Barriers_Housing_Services_Decile ?? null, 'weight' => '9.3%' ],
+            [ 'label' => 'Living Environment', 'rank' => $row->Living_Environment_Rank ?? null, 'decile' => $row->Living_Environment_Decile ?? null, 'weight' => '9.3%' ],
         ];
 
-        $agg = [];
-        foreach (array_keys($groups) as $k) {
-            $agg[$k] = ['rank' => null, 'decile' => null];
-        }
-
-        foreach ($rows as $r) {
-            $label = $r->domain_label;  // already lower+trim
-            $meas  = $r->meas;          // 'rank' or 'decile'
-            $val   = $r->Value;
-
-            $key = null;
-            if (str_starts_with($label, 'a. index of multiple deprivation')) {
-                $key = 'overall';
-            } elseif (str_contains($label, 'income deprivation') && str_contains($label, 'domain')) {
-                $key = 'income';
-            } elseif (str_contains($label, 'employment deprivation') && str_contains($label, 'domain')) {
-                $key = 'employment';
-            } elseif (str_contains($label, 'education, skills') && str_contains($label, 'domain')) {
-                $key = 'education';
-            } elseif (str_contains($label, 'health deprivation') && str_contains($label, 'domain')) {
-                $key = 'health';
-            } elseif (str_contains($label, 'crime') && str_contains($label, 'domain')) {
-                $key = 'crime';
-            } elseif (str_contains($label, 'barriers to housing') && str_contains($label, 'domain')) {
-                $key = 'barriers';
-            } elseif (str_contains($label, 'living environment') && str_contains($label, 'domain')) {
-                $key = 'living';
-            }
-
-            if ($key !== null) {
-                $agg[$key][$meas] = $val;
-            }
-        }
-
-        // Build ordered list for the view
-        $ordered = [];
-        foreach (['overall','income','employment','education','health','crime','barriers','living'] as $k) {
-            $ordered[] = [
-                'key'    => $k,
-                'label'  => $groups[$k]['name'],
-                'weight' => $groups[$k]['weight'],
-                'rank'   => $agg[$k]['rank'],
-                'decile' => $agg[$k]['decile'],
-            ];
-        }
-
         return view('deprivation.show', [
-            'g'       => $base,
-            'ordered' => $ordered,
+            'row'     => $row,
+            'total'   => $total,
+            'pct'     => $pct,
+            'domains' => $domains,
+            'overall' => [
+                'rank' => $row->overall_rank ?? null,
+                'decile' => $row->overall_decile ?? null,
+            ],
         ]);
     }
 

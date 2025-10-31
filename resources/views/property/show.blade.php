@@ -419,7 +419,7 @@
                                 @endif
                             </div>
 
-                            <p class="mt-3 text-xs text-zinc-500">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places. IMD 2019 is the latest full release for England.</p>
+                            <p class="mt-3 text-xs text-zinc-500">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places. IMD 2025 is the latest full release for England.</p>
                         </div>
 
                         <!-- Right: Decile & Rank presentation -->
