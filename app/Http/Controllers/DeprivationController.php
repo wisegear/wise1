@@ -194,6 +194,72 @@ class DeprivationController extends Controller
             return $data;
         });
 
+        // Northern Ireland — total areas so we can calculate deciles
+        $totalNI = Cache::rememberForever('nimdm.total_rank', function () {
+            $n = (int) (DB::table('ni_deprivation')->max('MDM_rank') ?? 0);
+            // NIMDM2017 covers all NI Small Areas (~4,500). If query fails, fall back.
+            return $n ?: 4537;
+        });
+
+        // Northern Ireland — NIMDM Top/Bottom 10 (by overall rank)
+        // We'll calculate decile manually (1 = most deprived, 10 = least deprived)
+        $niBase = DB::table('ni_deprivation')
+            ->select([
+                'SA2011 as sa_code',
+                'SOA2001name as sa_name',
+                'MDM_rank as rank',
+            ]);
+
+        $niTop10 = Cache::remember('nimdm:top10', $ttl, function () use ($niBase, $totalNI) {
+            $data = (clone $niBase)
+                ->orderByDesc('rank') // highest rank = least deprived
+                ->limit(10)
+                ->get();
+
+            // Calculate decile (1 = most deprived, 10 = least deprived)
+            foreach ($data as $row) {
+                if (!is_null($row->rank)) {
+                    $row->decile = max(
+                        1,
+                        min(
+                            10,
+                            (int) floor((($row->rank - 1) / $totalNI) * 10) + 1
+                        )
+                    );
+                } else {
+                    $row->decile = null;
+                }
+            }
+
+            Cache::put('nimdm:last_warm', now()->toDateTimeString());
+            return $data;
+        });
+
+        $niBottom10 = Cache::remember('nimdm:bottom10', $ttl, function () use ($niBase, $totalNI) {
+            $data = (clone $niBase)
+                ->orderBy('rank') // lowest rank = most deprived
+                ->limit(10)
+                ->get();
+
+            // Calculate decile (1 = most deprived, 10 = least deprived)
+            foreach ($data as $row) {
+                if (!is_null($row->rank)) {
+                    $row->decile = max(
+                        1,
+                        min(
+                            10,
+                            (int) floor((($row->rank - 1) / $totalNI) * 10) + 1
+                        )
+                    );
+                } else {
+                    $row->decile = null;
+                }
+            }
+
+            Cache::put('nimdm:last_warm', now()->toDateTimeString());
+            return $data;
+        });
+
         // Total ranks for contextual percentages (IMD 2025)
         $totalIMD = Cache::rememberForever('imd25.total_rank', function () {
             $n = (int) (DB::table('imd2025')->max('Index_of_Multiple_Deprivation_Rank') ?? 0);
@@ -216,11 +282,14 @@ class DeprivationController extends Controller
             'engBottom10' => $engBottom10,
             'scoTop10'    => $scoTop10,
             'scoBottom10' => $scoBottom10,
-            'walTop10'     => $walTop10,
-            'walBottom10'  => $walBottom10,
+            'walTop10'    => $walTop10,
+            'walBottom10' => $walBottom10,
+            'niTop10'     => $niTop10,
+            'niBottom10'  => $niBottom10,
             'totalIMD'    => $totalIMD,
             'totalSIMD'   => $totalSIMD,
             'totalWIMD'   => $totalWIMD,
+            'totalNI'     => $totalNI,
             // keep postcode input working on the page
             'q' => $q,
             'decile' => $decile,
@@ -405,6 +474,45 @@ class DeprivationController extends Controller
             'row'     => $row,
             'total'   => $total,
             'pct'     => $pct,
+            'domains' => $domains,
+        ]);
+    }
+    public function showNorthernIreland(string $sa)
+    {
+        // Fetch deprivation row for this Northern Ireland Small Area (SA2011)
+        $row = DB::table('ni_deprivation')
+            ->where('SA2011', $sa)
+            ->first();
+
+        if (!$row) {
+            abort(404, 'Area not found');
+        }
+
+        // Total number of areas for rank/percentile context
+        $total = Cache::rememberForever('nimdm.total_rank', function () {
+            $n = (int) (DB::table('ni_deprivation')->max('MDM_rank') ?? 0);
+            return $n ?: 4537; // fallback to full NI Small Area count
+        });
+
+        // Build domain list for NI (NIMDM 2017)
+        // Column mapping:
+        // D1_Income_rank, D2_Empl_rank, D3_Health_rank,
+        // P4_Education_rank, P5_Access_rank,
+        // D6_LivEnv_rank, D7_CD_rank
+        $domains = [
+            [ 'label' => 'Income',              'rank' => $row->D1_Income_rank      ?? null ],
+            [ 'label' => 'Employment',          'rank' => $row->D2_Empl_rank        ?? null ],
+            [ 'label' => 'Health',              'rank' => $row->D3_Health_rank      ?? null ],
+            [ 'label' => 'Education',           'rank' => $row->P4_Education_rank   ?? null ],
+            [ 'label' => 'Access to Services',  'rank' => $row->P5_Access_rank      ?? null ],
+            [ 'label' => 'Living Environment',  'rank' => $row->D6_LivEnv_rank      ?? null ],
+            [ 'label' => 'Crime & Disorder',    'rank' => $row->D7_CD_rank          ?? null ],
+        ];
+
+        return view('deprivation.ni_show', [
+            'sa'      => $sa,
+            'row'     => $row,
+            'total'   => $total,
             'domains' => $domains,
         ]);
     }

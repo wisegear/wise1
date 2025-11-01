@@ -65,11 +65,36 @@
           // Create map
           const map = L.map('map').setView([{{ $row->lat }}, {{ $row->long }}], 14);
 
-          // Base layer
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          // Default base layer (OpenStreetMap)
+          const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
+            attribution: '&copy; OpenStreetMap contributors'
           }).addTo(map);
+
+          // Satellite layers (Esri imagery + labels)
+          const satellite = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            {
+              maxZoom: 19,
+              attribution: 'Tiles © Esri'
+            }
+          );
+
+          const labels = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+            {
+              maxZoom: 19,
+              attribution: 'Labels © Esri'
+            }
+          );
+
+          // Layer control button to switch map type
+          const baseMaps = {
+            'Standard Map': osm,
+            'Satellite View': L.layerGroup([satellite, labels])
+          };
+
+          L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
 
           // Marker for reference
           const marker = L.marker([{{ $row->lat }}, {{ $row->long }}]).addTo(map)

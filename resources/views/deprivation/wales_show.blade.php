@@ -38,14 +38,43 @@
       // Create map (we'll fit to polygon bounds later)
       var map = L.map('map');
 
-      // OSM base layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Default base layer (OpenStreetMap)
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Fetch this LSOA / data zone shape (Welsh LSOA codes start W01...)
-      fetch('/geo/lsoa/sliced/{{ $lsoa }}.geojson?v=' + Date.now())
+      // Satellite layers (Esri imagery + labels)
+      const satellite = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+          attribution: 'Tiles © Esri'
+        }
+      );
+
+      const labels = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+          attribution: 'Labels © Esri'
+        }
+      );
+
+      // Layer control button to switch map type
+      const baseMaps = {
+        'Standard Map': osm,
+        'Satellite View': L.layerGroup([satellite, labels])
+      };
+
+      L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
+
+      // Fetch this Welsh LSOA / data zone shape.
+      // Wales uses its own sliced folder because some WIMD zones are not
+      // present in the England+Wales LSOA export (e.g. W01000396 etc.).
+      const boundaryUrl = '/geo/wales/sliced/' + @json($lsoa) + '.geojson?v=' + Date.now();
+      console.log('Fetching boundary from', boundaryUrl);
+      fetch(boundaryUrl)
         .then(function(resp){ return resp.json(); })
         .then(function(geo){
           var layer = L.geoJSON(geo, {
@@ -65,7 +94,7 @@
           setTimeout(function(){ map.invalidateSize(); }, 150);
         })
         .catch(function(err){
-          console.error('Failed to load Wales LSOA shape', err);
+          console.warn('Boundary load failed:', err);
           @if(!is_null($row->lat) && !is_null($row->long))
           // Fallback: just center on lat/long if we have it
           map.setView([{{ (float) $row->lat }}, {{ (float) $row->long }}], 13);

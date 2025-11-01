@@ -60,10 +60,36 @@
     // create leaflet map
     var map = L.map('lsoa-map', { scrollWheelZoom: false }).setView([lat, lon], 13);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Default base layer (OpenStreetMap)
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
+
+    // Satellite layers (Esri imagery + labels)
+    var satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 19,
+        attribution: 'Tiles © Esri'
+      }
+    );
+
+    var labels = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 19,
+        attribution: 'Labels © Esri'
+      }
+    );
+
+    // Layer control button to switch map type
+    var baseMaps = {
+      'Standard Map': osm,
+      'Satellite View': L.layerGroup([satellite, labels])
+    };
+
+    L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
 
     // add marker so we can bring it to front later
     var marker = L.marker([lat, lon])
