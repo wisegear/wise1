@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
+//now includes all regions
+
 class DeprivationController extends Controller
 {
     public function index(Request $req)
