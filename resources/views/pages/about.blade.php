@@ -33,23 +33,28 @@
     {{-- Sources --}}
     <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Data sources</h2>
-        <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
-            <li><span class="font-medium">HM Land Registry (England &amp; Wales)</span> — price paid / sales records.</li>
-            <li><span class="font-medium">Official court stats</span> — possession claims, orders, warrants and repossessions at local‑authority level.</li>
-            <li><span class="font-medium">Bank of England</span> — Bank Rate history and mortgage approvals (lending secured on dwellings).</li>
-            <li><span class="font-medium">Gov.uk</span> — For various datasets.</li>
+        <ul class="mt-3 list-outside list-disc pl-5 text-sm leading-6 text-gray-800">
+            <li><span class="font-medium">HM Land Registry, England &amp; Wales</span> — price paid data for every residential sale back to the mid‑1990s, including price, property type, tenure and new build status.</li>
+            <li><span class="font-medium">Registers of Scotland</span> — Scottish residential sales, handled separately under different licensing.</li>
+            <li><span class="font-medium">ONS Postcode Directory</span> — quarterly postcode lookup that links every UK postcode to local authority, LSOA or Data Zone, region and coordinates. Used to attach geography to sales, EPCs and deprivation.</li>
+            <li><span class="font-medium">Indices of Multiple Deprivation</span> — IMD for England, WIMD for Wales, SIMD for Scotland, NIMDM for Northern Ireland. Used for deprivation maps and top / bottom rankings.</li>
+            <li><span class="font-medium">EPC certificates</span> — Domestic Energy Performance Certificates for England, Wales and Scotland. Used to understand efficiency, heating type and build age by area and property style.</li>
+            <li><span class="font-medium">Official court statistics</span> — possession claims, orders, warrants and repossessions at local authority and county court circuit level.</li>
+            <li><span class="font-medium">Bank of England</span> — Bank Rate history, mortgage approvals and secured lending volumes.</li>
+            <li><span class="font-medium">ONS and central government releases</span> — household counts, population, housing supply and completions, affordability ratios and planning data.</li>
         </ul>
-        <p class="mt-3 text-sm text-gray-600">Scotland uses a separate system and is handled differently; I'll find data on Scotland soon.</p>
+        <p class="mt-3 text-sm text-gray-600">Northern Ireland data appears in deprivation and map views, but postcode level search is limited by licensing, so I cannot publish a full postcode lookup for Northern Ireland.</p>
     </section>
 
     {{-- Method --}}
     <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Method, in short</h2>
-        <ul class="mt-3 list-inside list-disc text-sm leading-6 text-gray-800">
-            <li><span class="font-medium">Normalise names</span> — county labels vary (“UA”, “City of …”). I clean the labels; I prefer official codes.</li>
-            <li><span class="font-medium">Aggregate sensibly</span> — quarterly data can be rolled up to yearly; 2025 is clearly marked as year‑to‑date.</li>
-            <li><span class="font-medium">Minimal transformation</span> — keep imports faithful; document any adjustments.</li>
-            <li><span class="font-medium">Reproducible</span> — built with Laravel 12 + MySQL and Tailwind; queries are plain and auditable.</li>
+        <ul class="mt-3 list-outside list-disc pl-5 text-sm leading-6 text-gray-800">
+            <li><span class="font-medium">Use codes, not guesses</span> — joins are done on official identifiers like local authority codes, LSOA codes, Data Zone codes and EPC property IDs, not just names like “Bristol”. Where names differ, I keep a small alias map and present the cleaned label on screen.</li>
+            <li><span class="font-medium">Keep it faithful</span> — I ingest the raw government CSVs and import them almost as‑is into MySQL. The site shows the real series, not a model or forecast.</li>
+            <li><span class="font-medium">Aggregate clearly</span> — monthly data can be rolled up to quarterly or yearly where that makes trends easier to read. Anything that is year‑to‑date is marked as year‑to‑date.</li>
+            <li><span class="font-medium">Warm and cache heavy work</span> — large queries, for example Land Registry history by postcode district or deprivation lookups, get pre‑computed and cached so pages load fast even on big datasets.</li>
+            <li><span class="font-medium">Reproducible</span> — built with Laravel 11, MySQL and Tailwind. Queries are plain and auditable and can be re‑run locally.</li>
         </ul>
     </section>
 

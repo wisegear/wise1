@@ -6,10 +6,11 @@
 <div class="max-w-7xl mx-auto p-6 space-y-8">
   {{-- Hero / summary card --}}
   <section class="relative overflow-hidden rounded border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
-    <div class="max-w-3xl">
+    <div class="max-w-4xl">
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">
-        Quick view of the most and least deprived areas using <strong>IMD 2025</strong> (England), <strong>SIMD 2020</strong> (Scotland), <strong>WIMD 2019</strong> (Wales) and <strong>NIMDM 2017</strong> (Northern Ireland). Use the postcode box to jump straight to a specific place (England / Scotland / Wales).
+        Quick view of the most and least deprived areas using <strong>IMD 2025</strong> (England), <strong>SIMD 2020</strong> (Scotland), <strong>WIMD 2019</strong> (Wales) and <strong>NIMDM 2017</strong> (Northern Ireland). 
+        Use the postcode box to jump straight to a specific place (England / Scotland / Wales).  Northern Ireland is not available by postcode search due to no free matching file being available.
       </p>
       @php
         $imd25LastWarm  = Cache::get('imd25:last_warm');
@@ -17,27 +18,8 @@
         $wimdLastWarm = Cache::get('wimd:last_warm');
         $nimdmLastWarm = Cache::get('nimdm:last_warm');
       @endphp
-      @if($imd25LastWarm || $simdLastWarm || $wimdLastWarm || $nimdmLastWarm)
-        <p class="mt-1 text-xs text-gray-500">
-          Cached:
-          @if($imd25LastWarm)
-            England (IMD 2025) {{ \Carbon\Carbon::parse($imd25LastWarm)->format('d M Y, H:i') }}
-          @endif
-          @if(($imd25LastWarm && $simdLastWarm) || ($imd25LastWarm && $wimdLastWarm) || ($imd25LastWarm && $nimdmLastWarm && !$simdLastWarm && !$wimdLastWarm)) · @endif
-          @if($simdLastWarm)
-            Scotland {{ \Carbon\Carbon::parse($simdLastWarm)->format('d M Y, H:i') }}
-          @endif
-          @if(($simdLastWarm && $wimdLastWarm) || ($imd25LastWarm && $wimdLastWarm && !$simdLastWarm) || ($simdLastWarm && $nimdmLastWarm && !$wimdLastWarm)) · @endif
-          @if($wimdLastWarm)
-            Wales {{ \Carbon\Carbon::parse($wimdLastWarm)->format('d M Y, H:i') }}
-          @endif
-          @if(($wimdLastWarm && $nimdmLastWarm) || ($imd25LastWarm && $nimdmLastWarm && !$wimdLastWarm && !$simdLastWarm) || ($simdLastWarm && $nimdmLastWarm && !$wimdLastWarm)) · @endif
-          @if($nimdmLastWarm)
-            N. Ireland {{ \Carbon\Carbon::parse($nimdmLastWarm)->format('d M Y, H:i') }}
-          @endif
-        </p>
-      @endif
-      <p class="mt-2 text-xs text-gray-600">
+   
+      <p class="mt-8 text-xs text-gray-600">
         Decile colours: <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-300 text-zinc-900">1–3</span> higher deprivation ·
         <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-orange-300 text-zinc-900">4–7</span> mid ·
         <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-emerald-300 text-zinc-900">8–10</span> lower deprivation.
