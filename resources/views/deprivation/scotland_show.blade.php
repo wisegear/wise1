@@ -61,13 +61,53 @@
       document.addEventListener('DOMContentLoaded', function() {
         function initMap() {
           if (typeof L === 'undefined') { return setTimeout(initMap, 50); }
+
+          // Create map
           const map = L.map('map').setView([{{ $row->lat }}, {{ $row->long }}], 14);
+
+          // Base layer
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
           }).addTo(map);
-          L.marker([{{ $row->lat }}, {{ $row->long }}]).addTo(map)
+
+          // Marker for reference
+          const marker = L.marker([{{ $row->lat }}, {{ $row->long }}]).addTo(map)
             .bindPopup(@json($dz));
+
+          // Attempt to load the SIMD Data Zone boundary polygon.
+          // We assume a sliced GeoJSON per Data Zone at: /geo/scotland/sliced/{DataZone}.geojson
+          const boundaryUrl = '/geo/scotland/sliced/' + @json($dz) + '.geojson';
+
+          fetch(boundaryUrl)
+            .then(function(r){
+              if (!r.ok) throw new Error('no boundary file');
+              return r.json();
+            })
+            .then(function(geojsonData){
+              const boundaryLayer = L.geoJSON(geojsonData, {
+                style: function () {
+                  return {
+                    color: '#1e40af',        // dark blue outline for contrast
+                    weight: 3,
+                    opacity: 1,
+                    fillColor: '#1e40af',    // same hue, light fill
+                    fillOpacity: 0.08
+                  };
+                }
+              }).addTo(map);
+
+              // zoom to boundary nicely
+              map.fitBounds(boundaryLayer.getBounds(), { padding: [20,20] });
+
+              // keep marker visible on top
+              marker.bringToFront();
+            })
+            .catch(function(err){
+              // if we don't have a polygon slice yet, just leave the point/zoom
+              // and slightly bump in so user still sees context
+              map.setView([{{ $row->lat }}, {{ $row->long }}], 14);
+            });
         }
         initMap();
       });

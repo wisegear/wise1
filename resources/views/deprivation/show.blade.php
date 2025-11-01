@@ -83,11 +83,11 @@
         var boundaryLayer = L.geoJSON(geojsonData, {
           style: function () {
             return {
-              color: '#000',      // vivid blue outline for strong contrast
-              weight: 1,             // thicker outline for visibility
+              color: '#2563eb',        // blue border for clarity
+              weight: 3,               // slightly thicker border
               opacity: 1,
-              fillColor: '#635F5F',  // subtle dark fill
-              fillOpacity: 0.3      // semi-transparent to keep map details visible
+              fillColor: 'rgba(37,99,235,0.15)', // translucent blue fill
+              fillOpacity: 0.7
             };
           }
         }).addTo(map);
@@ -128,7 +128,7 @@
               return ['bg' => 'bg-rose-200', 'text' => 'text-zinc-900', 'border' => 'border-gray-200'];
           }
           if ($decile >= 4 && $decile <= 6) {
-              return ['bg' => 'bg-orange-300', 'text' => 'text-zinc-900', 'border' => 'border-gray-200'];
+              return ['bg' => 'bg-amber-200', 'text' => 'text-zinc-900', 'border' => 'border-gray-200'];
           }
           if ($decile >= 7 && $decile <= 10) {
               return ['bg' => 'bg-green-200', 'text' => 'text-zinc-900', 'border' => 'border-gray-200'];
@@ -142,7 +142,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       {{-- Overall IMD card --}}
-      <div class="rounded border p-4">
+      <div class="rounded border border-gray-200 bg-white/80 p-4 shadow-sm">
         <div class="flex items-start justify-between">
           <div class="font-medium text-gray-900">Overall IMD</div>
           <div class="text-xs text-gray-500">&nbsp;</div>
@@ -162,7 +162,7 @@
         @php
           $styles = $decileBadge($d['decile'] ?? null);
         @endphp
-        <div class="rounded border p-4">
+        <div class="rounded border border-gray-200 bg-white/80 p-4 shadow-sm">
           <div class="flex items-start justify-between">
             <div class="font-medium text-gray-900">{{ $d['label'] }}</div>
             <div class="text-xs text-gray-500">{{ $d['weight'] ?? '' }} weight</div>
