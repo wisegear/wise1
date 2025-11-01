@@ -25,3 +25,4 @@ Homestead.yaml
 Thumbs.db
 /public/geo/scotland/simd2020.geojson
 /public/geo/lsoa/lsoa21_ew.geojson
+/public/geo/wales/wimd2019.json

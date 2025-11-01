@@ -45,7 +45,7 @@
       }).addTo(map);
 
       // Fetch this LSOA / data zone shape (Welsh LSOA codes start W01...)
-      fetch('/geo/lsoa/sliced/{{ $lsoa }}.geojson')
+      fetch('/geo/lsoa/sliced/{{ $lsoa }}.geojson?v=' + Date.now())
         .then(function(resp){ return resp.json(); })
         .then(function(geo){
           var layer = L.geoJSON(geo, {
