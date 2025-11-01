@@ -29,17 +29,56 @@
 </script>
 
 {{-- Map --}}
-@if(!is_null($row->lat) && !is_null($row->long))
 <div id="map" class="w-full h-96 md:h-[32rem] rounded-lg mb-8 border border-gray-300" style="height:28rem"></div>
 <script>
-  (function(){
-    function initMap(){
+  (function() {
+    function initMap() {
       if (typeof L === 'undefined') { setTimeout(initMap, 75); return; }
-      var map = L.map('map').setView([{{ (float) $row->lat }}, {{ (float) $row->long }}], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
-      L.marker([{{ (float) $row->lat }}, {{ (float) $row->long }}]).addTo(map).bindPopup('Postcode: {{ $row->postcode ?? 'N/A' }}');
-      setTimeout(function(){ map.invalidateSize(); }, 150);
+
+      // Create map (we'll fit to polygon bounds later)
+      var map = L.map('map');
+
+      // OSM base layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Fetch this LSOA / data zone shape (Welsh LSOA codes start W01...)
+      fetch('/geo/lsoa/sliced/{{ $lsoa }}.geojson')
+        .then(function(resp){ return resp.json(); })
+        .then(function(geo){
+          var layer = L.geoJSON(geo, {
+            style: function() {
+              return {
+                color: '#2563eb',        // blue-600 border
+                weight: 2,
+                opacity: 1,
+                fillColor: '#93c5fd',    // blue-300 fill
+                fillOpacity: 0.45
+              };
+            }
+          }).addTo(map);
+
+          // Zoom map to polygon bounds
+          map.fitBounds(layer.getBounds(), { maxZoom: 15 });
+          setTimeout(function(){ map.invalidateSize(); }, 150);
+        })
+        .catch(function(err){
+          console.error('Failed to load Wales LSOA shape', err);
+          @if(!is_null($row->lat) && !is_null($row->long))
+          // Fallback: just center on lat/long if we have it
+          map.setView([{{ (float) $row->lat }}, {{ (float) $row->long }}], 13);
+          L.marker([{{ (float) $row->lat }}, {{ (float) $row->long }}])
+            .addTo(map)
+            .bindPopup('Postcode: {{ $row->postcode ?? 'N/A' }}');
+          @else
+          // Worst case: center UK-ish
+          map.setView([52.5, -3.5], 7);
+          @endif
+        });
     }
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initMap);
     } else {
@@ -47,7 +86,6 @@
     }
   })();
 </script>
-@endif
 
 {{-- Overall Position Panel --}}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
