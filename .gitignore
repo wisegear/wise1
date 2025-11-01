@@ -26,3 +26,5 @@ Thumbs.db
 /public/geo/scotland/simd2020.geojson
 /public/geo/lsoa/lsoa_2021_bfc.json
 /public/geo/wales/wimd2019.json
+/public/geo/northern_ireland/SA2011_full.json
+public/geo/northern_ireland/SA2011_full.json
