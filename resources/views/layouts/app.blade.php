@@ -15,10 +15,13 @@
 
     <!-- Open Graph Meta -->
     <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="PropertyResearch.uk" />
     <meta property="og:title" content="{{ $page->title }}" />
-    <meta property="og:description" content="{{ $page->pagesummary }}" />
+    <meta property="og:description" content="{{ $page->summary }}" />
     <meta property="og:url" content="{{ url()->current() }}" />
-    <meta property="og:image" content="{{ '/assets/images/uploads/' . 'medium_' . $page->original_image }}" />
+    <meta property="og:image" content="{{ url('assets/images/uploads/' . 'medium_' . $page->original_image) }}" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="300" />
     @endisset
 
     <!-- moved this to the top due to FOUC -->
