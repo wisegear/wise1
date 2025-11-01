@@ -49,19 +49,19 @@
         .then(function(resp){ return resp.json(); })
         .then(function(geo){
           var layer = L.geoJSON(geo, {
-            style: function() {
+            style: function () {
               return {
-                color: '#2563eb',        // blue-600 border
-                weight: 2,
-                opacity: 1,
-                fillColor: '#93c5fd',    // blue-300 fill
-                fillOpacity: 0.45
+                  color: '#1e3a8a',      // deep blue border
+                  weight: 2.5,
+                  opacity: 1,
+                  fillColor: '#60a5fa',  // light blue fill
+                  fillOpacity: 0.4
               };
             }
           }).addTo(map);
 
           // Zoom map to polygon bounds
-          map.fitBounds(layer.getBounds(), { maxZoom: 15 });
+          map.fitBounds(layer.getBounds(), { maxZoom: 14 });
           setTimeout(function(){ map.invalidateSize(); }, 150);
         })
         .catch(function(err){
