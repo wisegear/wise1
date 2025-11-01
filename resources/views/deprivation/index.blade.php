@@ -55,7 +55,7 @@
   <form method="get" class="flex flex-col items-center justify-center my-6">
     <div class="w-full max-w-md border p-6 bg-white rounded">
       <p class="text-xs flex justify-center sm:text-left text-gray-600 -mt-2 mb-2 w-full">
-        Postcode can be in England, Scotland, Northern Ireland or Wales.
+        Postcode can be in England, Scotland or Wales (not NI).
       </p>
       <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
         <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
