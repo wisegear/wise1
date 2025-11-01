@@ -38,7 +38,7 @@
                                     <p class="text-zinc-400 text-sm border-l pl-4">
                                         {{ $post->date->format('F j, Y') }}
                                     </p>
-                                    <div class="flex items-center text-zinc-400 text-xs ml-4">
+                                    <div class="flex items-center text-zinc-400 text-sm ml-4">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4 mr-1">
                                             <path d="M12 3c-4.97 0-9 3.582-9 8 0 2.104 1.003 4.005 2.652 5.402-.177.94-.712 2.303-2.043 3.61a.75.75 0 0 0 .69 1.268c2.152-.37 3.76-1.274 4.77-2.02A11.97 11.97 0 0 0 12 19c4.97 0 9-3.582 9-8s-4.03-8-9-8z" />
                                         </svg>
