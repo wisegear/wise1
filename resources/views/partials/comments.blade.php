@@ -4,7 +4,7 @@
     <!-- Display the Comments -->
     @foreach($comments as $comment)
         <div class="comment my-6 text-sm border border-slate-200 rounded-lg p-5 shadow-lg bg-slate-50">
-            {{ $comment->created_at->diffForHumans() }} <strong><a href="/profile/{{ $comment->user->name_slug }}">{{ $comment->user->name }}</a></strong> said:
+            {{ $comment->created_at->diffForHumans() }} <a class="underline text-lime-700 hover:text-lime-500" href="/profile/{{ $comment->user->name_slug }}">{{ $comment->user->name }}</a> said:
             <p class="my-4">{{ $comment->comment_text }}</p>
         </div>
     @endforeach
