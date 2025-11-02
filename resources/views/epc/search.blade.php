@@ -205,7 +205,7 @@
                                             title="View report"
                                             aria-label="View EPC report for {{ $row->address }}, {{ $row->postcode }}"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-8 w-8 border p-2 bg-zinc-800 text-white" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
                                             </svg>
                                             <span class="sr-only">View</span>
