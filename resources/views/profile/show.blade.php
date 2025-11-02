@@ -83,7 +83,7 @@
                     @foreach ($userComments as $c)
                         <li class="border-l-2 pl-3 text-lime-700">
                             @if($c['post_slug'])
-                                <a href="/blog/{{ $c['post_slug'] }}" class="text-zinc-800 underline decoration-zinc-400 hover:decoration-lime-600 font-medium">
+                                <a href="/blog/{{ $c['post_slug'] }}" class="text-zinc-800 underline decoration-zinc-400 hover:decoration-lime-600 hover:text-lime-600 font-medium">
                                     {{ $c['post_title'] }}
                                 </a>
                             @else
