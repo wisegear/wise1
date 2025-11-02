@@ -115,7 +115,7 @@
                         <dt class="text-zinc-600">Website</dt>
                         <dd class="text-zinc-900 truncate">
                             @if($user->website)
-                                <a class="underline decoration-zinc-400 hover:decoration-lime-600" href="https://{{ $user->website }}">{{ $user->website }}</a>
+                                <a class="underline decoration-zinc-400 hover:text-lime-600  hover:decoration-lime-600" href="https://{{ $user->website }}">{{ $user->website }}</a>
                             @else
                                 —
                             @endif
@@ -150,19 +150,19 @@
                     @if($user->x)
                         <li class="flex items-center justify-between gap-3">
                             <span class="text-zinc-600">X</span>
-                            <a href="https://x.com/{{ $user->x }}" class="underline decoration-zinc-400 hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
+                            <a href="https://x.com/{{ $user->x }}" class="underline decoration-zinc-400 hover:text-lime-600  hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
                         </li>
                     @endif
                     @if($user->facebook)
                         <li class="flex items-center justify-between gap-3">
                             <span class="text-zinc-600">Facebook</span>
-                            <a href="https://www.facebook.com/{{ $user->facebook }}" class="underline decoration-zinc-400 hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
+                            <a href="https://www.facebook.com/{{ $user->facebook }}" class="underline decoration-zinc-400 hover:text-lime-600  hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
                         </li>
                     @endif
                     @if($user->linkedin)
                         <li class="flex items-center justify-between gap-3">
                             <span class="text-zinc-600">LinkedIn</span>
-                            <a href="https://www.linkedin.com/in/{{ $user->linkedin }}" class="underline decoration-zinc-400 hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
+                            <a href="https://www.linkedin.com/in/{{ $user->linkedin }}" class="underline decoration-zinc-400 hover:text-lime-600  hover:decoration-lime-600" target="_blank" rel="noopener">Visit</a>
                         </li>
                     @endif
                 </ul>
