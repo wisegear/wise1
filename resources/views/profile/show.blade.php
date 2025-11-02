@@ -14,7 +14,7 @@
                 <div class="mt-1 text-sm text-zinc-600">
                     {{-- Email visibility follows existing logic --}}
                     @if($user->email_visible === 0)
-                        Not shared
+                        Email Not shared
                     @else
                         {{ $user->email }}
                     @endif
