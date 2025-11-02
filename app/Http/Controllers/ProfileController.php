@@ -8,6 +8,7 @@ use App\Models\UserRoles;
 use App\Models\BlogPosts;
 use App\Models\BlogCategories;
 use App\Models\BlogTags;
+use App\Models\Comment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
@@ -47,11 +48,43 @@ class ProfileController extends Controller
      */
     public function show(string $name_slug)
     {
-  
+        // Get the profile owner
+        $user = User::where('name_slug', $name_slug)->firstOrFail();
 
-        $user = User::where('name_slug', $name_slug)->first();
+        // Get any blog posts created by this user
+        // We'll grab the basic info needed to show on the profile page
+        $userPosts = BlogPosts::where('user_id', $user->id)
+            ->select('id', 'title', 'slug', 'created_at')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
 
-        return view('profile.show', compact('user'));
+        // Get this user's comments on blog posts only
+        // We only want comments where the commentable is a BlogPosts model
+        $userComments = Comment::where('user_id', $user->id)
+            ->where('commentable_type', BlogPosts::class)
+            ->with([
+                'commentable' => function ($q) {
+                    $q->select('id', 'title', 'slug');
+                }
+            ])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'post_title' => optional($c->commentable)->title,
+                    'post_slug' => optional($c->commentable)->slug,
+                    'comment_body' => $c->comment_text,
+                    'comment_created_at' => $c->created_at,
+                ];
+            });
+
+        return view('profile.show', [
+            'user' => $user,
+            'userPosts' => $userPosts,
+            'userComments' => $userComments,
+        ]);
     }
 
     /**
