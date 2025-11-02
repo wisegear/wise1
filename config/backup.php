@@ -307,7 +307,7 @@ return [
              * of that day will be kept. Older backups within the same day will be removed.
              * If you create backups only once a day, no backups will be removed yet.
              */
-            'keep_daily_backups_for_days' => 7,
+            'keep_daily_backups_for_days' => 5,
 
             /*
              * After the "keep_daily_backups_for_days" period is over, the most recent backup
@@ -333,7 +333,7 @@ return [
              * this amount of megabytes has been reached.
              * Set null for unlimited size.
              */
-            'delete_oldest_backups_when_using_more_megabytes_than' => 1000000,
+            'delete_oldest_backups_when_using_more_megabytes_than' => null,
         ],
 
         /*
