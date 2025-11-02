@@ -28,13 +28,13 @@
                 @if(count($page->getBodyHeadings('h2')) > 2)
                     <div class="toc my-10">
                         <p id="toc-title" class=" mb-2 border-b border-gray-300 font-bold cursor-pointer">
-                            <i class="fa-solid fa-arrow-down-short-wide text-teal-700"></i> 
+                            <i class="fa-solid fa-arrow-down-short-wide text-lime-700"></i> 
                                 Table of contents
                             <span id="toc-arrow" class="ml-2 transform transition-transform duration-200"></span>
                         </p>
                         <ul id="toc-list" class="hidden">
                             @foreach($page->getBodyHeadings('h2') as $heading)
-                                <li class="list-none mb-0"><a href="#{{ Str::slug($heading) }}" class="hover:text-teal-700">{{ $heading }}</a></li>
+                                <li class="list-none mb-0 text-sm"><a href="#{{ Str::slug($heading) }}" class="hover:text-lime-500">{{ $heading }}</a></li>
                             @endforeach
                         </ul>
                     </div>

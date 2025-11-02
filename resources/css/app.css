@@ -49,11 +49,11 @@
 }
 
 .wise1text blockquote {
-  @apply border-l-4 border-l-teal-500 my-6 px-4 ml-6;
+  @apply border-l-4 border-l-lime-700 my-6 px-4 ml-6;
 }
 
 .wise1text blockquote > p {
-  @apply text-teal-500;
+  @apply text-lime-600;
 }
 
 .wise1text img {
@@ -100,10 +100,10 @@
 .wise1text u {
   text-decoration: none;
   border-bottom: 2px solid;
-  @apply border-b-teal-700;
+  @apply border-b-lime-700;
 }
 
-.wise1text a:link, .wise1text a:visited { @apply text-teal-700; @apply hover:text-teal-500; }
+.wise1text a:link, .wise1text a:visited { @apply text-lime-700; @apply hover:text-lime-500; }
 
 /* Force the anchor tags within wise1text to not be red */
 
@@ -119,7 +119,7 @@
   margin-left: 20px; 
 }
 
-.wise1text ol li::marker { @apply text-teal-500; }
+.wise1text ol li::marker { @apply text-lime-700; }
 
 .wise1text ul {
   @apply my-4;
@@ -129,7 +129,7 @@
   margin-left: 20px; 
 }
 
-.wise1text ul li::marker { @apply text-teal-500;}
+.wise1text ul li::marker { @apply text-lime-700;}
 
 .wise1text li { @apply pb-2; }
 
