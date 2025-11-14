@@ -208,4 +208,38 @@ class RepossessionsController extends Controller
             ],
         ]);
     }
+    /**
+     * Economic Indicators: Repossessions Overview
+     */
+    public function overview()
+    {
+        // Load full series grouped by year (sum of cases per year)
+        $yearly = Repo::query()
+            ->selectRaw('year, SUM(value) AS total')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+
+        // Latest year
+        $latest = $yearly->last();
+        $previous = $yearly->count() > 1 ? $yearly[$yearly->count() - 2] : null;
+
+        $yoy = null;
+        if ($latest && $previous) {
+            $yoy = (int)$latest->total - (int)$previous->total;
+        }
+
+        // Prepare chart arrays
+        $labels = $yearly->pluck('year')->values()->toJson();
+        $values = $yearly->pluck('total')->values()->toJson();
+
+        return view('repossessions.overview', [
+            'yearly'  => $yearly,
+            'latest'  => $latest,
+            'previous'=> $previous,
+            'yoy'     => $yoy,
+            'labels'  => $labels,
+            'values'  => $values,
+        ]);
+    }
 }

@@ -97,6 +97,28 @@
 
     </section>
 
+    {{-- Economic Dashboard Overview --}}
+    <section class="mt-6">
+        <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 class="text-xl font-semibold text-zinc-900 mb-2">Economic Indicators Dashboard</h2>
+            <p class="text-sm text-zinc-700 leading-6">
+                Our new Economic Indicators Dashboard brings together seven key measures that influence the property market:
+                interest rates, inflation, wage growth, unemployment, mortgage approvals, repossessions and the UK House Price Index.
+                Each indicator is tracked quarterly using a consistent early‑warning system to show when conditions are improving,
+                stable or deteriorating.
+            </p>
+            <p class="mt-3 text-sm text-zinc-700 leading-6">
+                One difficult quarter may simply signal noise, but consecutive adverse quarters create meaningful trends. The dashboard
+                colours and stress score help highlight when the combined picture is moving into riskier territory. Explore the summary
+                or dive into each indicator for deeper charts and context.
+            </p>
+            <a href="{{ route('economic.dashboard') }}"
+               class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 hover:underline">
+                Open Economic Dashboard
+            </a>
+        </div>
+    </section>
+
     <!-- Blog posts -->
     <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
         @foreach ($posts as $post)

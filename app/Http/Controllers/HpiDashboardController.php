@@ -98,4 +98,62 @@ class HpiDashboardController extends Controller
             'typePriceSeries' => $typePriceSeries,
         ]);
     }
+
+    public function overview()
+    {
+        // Lightweight national HPI overview for Economic Indicators
+        $ttl = now()->addDays(45);
+
+        // Fetch UK monthly series (AreaCode K02000001) with caching
+        $ukRows = Cache::remember('hpi:uk:overview_series', $ttl, function () {
+            return HpiMonthly::query()
+                ->select([
+                    'Date',
+                    'AveragePrice',
+                    DB::raw('`12m%Change` as twelve_m_change'),
+                ])
+                ->where('AreaCode', 'K02000001') // United Kingdom
+                ->orderBy('Date')
+                ->get();
+        });
+
+        if ($ukRows->isEmpty()) {
+            return view('hpi.overview', [
+                'latest' => null,
+                'previous' => null,
+                'labels' => [],
+                'prices' => [],
+                'changes' => [],
+            ]);
+        }
+
+        // Latest and previous rows
+        $latest = $ukRows->last();
+        $previous = $ukRows->count() > 1 ? $ukRows[$ukRows->count() - 2] : null;
+
+        // Build simple time series for charting
+        $labels = $ukRows->map(function ($row) {
+            try {
+                return \Carbon\Carbon::parse($row->Date)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return (string) $row->Date;
+            }
+        })->values();
+
+        $prices = $ukRows->map(function ($row) {
+            return (float) ($row->AveragePrice ?? 0);
+        })->values();
+
+        $changes = $ukRows->map(function ($row) {
+            return is_null($row->twelve_m_change) ? null : (float) $row->twelve_m_change;
+        })->values();
+
+        return view('hpi.overview', [
+            'latest' => $latest,
+            'previous' => $previous,
+            'labels' => $labels,
+            'prices' => $prices,
+            'changes' => $changes,
+        ]);
+    }
 }

@@ -243,6 +243,43 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Economic Indicators dropdown toggle functionality (desktop)
+document.addEventListener('DOMContentLoaded', () => {
+  const ecoBtn  = document.getElementById('economicsMenuButton');
+  const ecoMenu = document.getElementById('economicsDropdown');
+
+  if (!ecoBtn || !ecoMenu) return;
+
+  window._registerDropdownPair(ecoBtn, ecoMenu);
+
+  const openMenu = () => {
+    window._closeAllDropdownsExcept(ecoMenu);
+    window._animateOpen(ecoMenu);
+    ecoBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeMenu = () => {
+    window._animateClose(ecoMenu, () => {});
+    ecoBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  ecoBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = ecoMenu.classList.contains('hidden');
+    isHidden ? openMenu() : closeMenu();
+  });
+
+  document.addEventListener('click', (e) => {
+    const open = !ecoMenu.classList.contains('hidden');
+    if (!open) return;
+    if (!ecoMenu.contains(e.target) && !ecoBtn.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+});
 
 // Mobile navigation toggles
 document.addEventListener('DOMContentLoaded', () => {
@@ -311,6 +348,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (willOpen) { window._closeAllDropdownsExcept(calcMobileMenu); window._animateOpen(calcMobileMenu); }
       else { window._animateClose(calcMobileMenu); }
       calcMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+  }
+
+  // Mobile Economic Indicators submenu toggle
+  const ecoMobileBtn = document.getElementById('mobileIndicatorsBtn');
+  const ecoMobileMenu = document.getElementById('mobileIndicatorsMenu');
+
+  if (ecoMobileBtn && ecoMobileMenu) {
+    window._registerDropdownPair(ecoMobileBtn, ecoMobileMenu);
+    ecoMobileBtn.addEventListener('click', () => {
+      const willOpen = ecoMobileMenu.classList.contains('hidden');
+      if (willOpen) { window._closeAllDropdownsExcept(ecoMobileMenu); window._animateOpen(ecoMobileMenu); }
+      else { window._animateClose(ecoMobileMenu); }
+      ecoMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 });

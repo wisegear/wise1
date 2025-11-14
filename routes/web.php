@@ -8,6 +8,7 @@ use App\Http\Controllers\UltraLondonController;
 use App\Http\Controllers\RepossessionsController;
 use App\Http\Controllers\InterestRateController;
 use App\Http\Controllers\MortgageApprovalController;
+use App\Http\Controllers\UnemploymentController;
 use App\Http\Controllers\MortgageCalcController;
 use App\Http\Controllers\StampDutyController;
 use App\Http\Controllers\EpcController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\AffordabilityController;
 use App\Http\Controllers\DeprivationController;
+
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +70,13 @@ Route::post('/stamp-duty/calc', [StampDutyController::class, 'calculate']);
 
 
 Route::get('/interest-rates', [InterestRateController::class, 'home'])->name('interest.home');
+Route::get('/unemployment', [UnemploymentController::class, 'index'])->name('unemployment.home');
+Route::get('/inflation', [\App\Http\Controllers\InflationController::class, 'index'])->name('inflation.home');
+Route::get('/wage-growth', [\App\Http\Controllers\WageGrowthController::class, 'index'])->name('wagegrowth.home');
+Route::get('/hpi-overview', [HpiDashboardController::class, 'overview'])->name('hpi.overview');
+Route::get('/economic-dashboard', [\App\Http\Controllers\EconomicDashboardController::class, 'index'])->name('economic.dashboard');
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
+Route::get('/repossessions/overview', [RepossessionsController::class, 'overview'])->name('repossessions.overview');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
 
 // Deprivation Routes
