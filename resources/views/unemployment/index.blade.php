@@ -51,7 +51,7 @@
             @endif
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/jobs.svg') }}" alt="Unemployment" class="w-32 h-auto">
+            <img src="{{ asset('assets/images/site/jobs.svg') }}" alt="Unemployment" class="w-24 h-auto">
         </div>
     </section>
 
