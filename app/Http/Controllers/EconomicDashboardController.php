@@ -216,16 +216,57 @@ class EconomicDashboardController extends Controller
             }
         );
 
-        // Mortgage Approvals: last 24 periods (keep monthly for sparkline)
-        $approvalsSeries = DB::table('mortgage_approvals')
+        // Mortgage Approvals: build quarterly sparkline from monthly data
+        $approvalsRaw = DB::table('mortgage_approvals')
             ->orderBy('period', 'desc')
-            ->limit(24)
+            ->limit(36)
             ->get()
             ->reverse()
             ->values();
+
+        $quarterBuckets = [];
+
+        foreach ($approvalsRaw as $row) {
+            if (!$row->period) {
+                continue;
+            }
+            try {
+                $dt = \Carbon\Carbon::parse($row->period);
+            } catch (\Throwable $e) {
+                continue;
+            }
+
+            $year = $dt->year;
+            $q = (int) ceil($dt->month / 3);
+            $key = $year . '-Q' . $q;
+
+            if (!isset($quarterBuckets[$key])) {
+                $quarterBuckets[$key] = ['sum' => 0.0, 'count' => 0, 'year' => $year, 'q' => $q];
+            }
+            $quarterBuckets[$key]['sum'] += (float) $row->value;
+            $quarterBuckets[$key]['count']++;
+        }
+
+        // Sort chronologically
+        usort($quarterBuckets, function ($a, $b) {
+            if ($a['year'] === $b['year']) {
+                return $a['q'] <=> $b['q'];
+            }
+            return $a['year'] <=> $b['year'];
+        });
+
+        $approvalsValues = [];
+        $approvalsLabels = [];
+        foreach ($quarterBuckets as $bucket) {
+            if ($bucket['count'] > 0) {
+                $approvalsValues[] = $bucket['sum'] / $bucket['count'];
+                $approvalsLabels[] = $bucket['year'] . ' Q' . $bucket['q'];
+            }
+        }
+
         $sparklines['approvals'] = [
-            'values' => $approvalsSeries->map(fn ($r) => (float) $r->value)->values()->all(),
-            'labels' => $approvalsSeries->map(fn ($r) => \Carbon\Carbon::parse($r->period)->format('Y-m'))->values()->all(),
+            'values' => $approvalsValues,
+            'labels' => $approvalsLabels,
         ];
 
         // Repossessions: last 16 quarters, summed nationally

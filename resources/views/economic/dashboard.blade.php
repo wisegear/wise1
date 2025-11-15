@@ -9,10 +9,10 @@
         $scaled = max(0, min(100, round(($total / 28) * 100)));
         $stressScore = $scaled;
 
-        if ($stressScore >= 80) {
+        if ($stressScore >= 70) {
             $stressLabel = 'High stress';
             $stressClass = 'bg-rose-50 text-rose-800 border-rose-200';
-        } elseif ($stressScore >= 50) {
+        } elseif ($stressScore >= 40) {
             $stressLabel = 'Elevated risk';
             $stressClass = 'bg-amber-50 text-amber-800 border-amber-200';
         } else {
@@ -72,7 +72,7 @@
             </div>
             <p class="mt-6 text-xs text-gray-500">
                 Higher scores mean more stress and risk; lower scores mean a calmer backdrop for the property market.
-                Roughly: below 50 = low stress, 50–79 = elevated risk, 80+ = high stress.
+                Roughly: below 40 = low stress, 40–69 = elevated risk, 70+ = high stress.
             </p>
         @endif
     </section>
@@ -109,7 +109,7 @@
                 </ul>
                 <p class="mt-2 text-xs text-amber-900">
                     The Property Stress Index above combines all seven indicators into a 0–100 score.
-                    Roughly: 80–100 = high stress, 50–79 = elevated risk, below 50 = low stress.
+                    Roughly: 70–100 = high stress, 40–69 = elevated risk, below 40 = low stress.
                     It is a guide only – the individual charts and numbers always matter more than any single number.
                 </p>
             </div>
@@ -122,69 +122,43 @@
         {{-- INTEREST RATES --}}
         @php
             // Quarter-based early warning system for interest rates
-            // Up is bad: consecutive quarters of rising averages increase stress level.
+            // We treat the interest sparkline as already-quarterly values and
+            // count consecutive rising quarters from the latest backwards.
+            // Up is bad here:
+            // 0  -> green (no worsening this quarter)
+            // 1  -> amber (first worsening quarter)
+            // 2-3 -> red (sustained rise over several quarters)
+            // 4+ -> deep (prolonged period of rising rates)
             $interestLevel = 'na';
             $intVals = $sparklines['interest']['values'] ?? [];
 
-            if (is_array($intVals) && count($intVals) >= 6) {
+            if (is_array($intVals) && count($intVals) >= 2) {
                 $n = count($intVals);
+                $badStreak = 0;
 
-                $makeQuarterInt = function (int $endIndex) use ($intVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($intVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$intVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
-
-                // Latest three (or four) quarters: Q0 (oldest) ... Q3 (latest)
-                $latestQ = $makeQuarterInt($n - 1);   // Q3
-                $prevQ   = $makeQuarterInt($n - 4);   // Q2
-                $prev2Q  = $makeQuarterInt($n - 7);   // Q1
-                $prev3Q  = $makeQuarterInt($n - 10);  // Q0
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    // Determine how many consecutive quarters have moved in the bad direction (up)
-                    $badStreak = 0;
-
-                    if ($latestQ > $prevQ) {
-                        $badStreak = 1;
-
-                        if ($prev2Q !== null && $prevQ > $prev2Q) {
-                            $badStreak = 2;
-
-                            if ($prev3Q !== null && $prev2Q > $prev3Q) {
-                                $badStreak = 3;
-                            }
-                        }
-                    }
-
-                    if ($badStreak === 0) {
-                        // Latest quarter is flat or better than previous: supportive/normal
-                        $interestLevel = 'green';
-                    } elseif ($badStreak === 1) {
-                        // One bad quarter in a row
-                        $interestLevel = 'amber';
-                    } elseif ($badStreak === 2) {
-                        // Two consecutive bad quarters
-                        $interestLevel = 'red';
+                for ($i = $n - 1; $i >= 1; $i--) {
+                    $cur = (float) $intVals[$i];
+                    $prev = (float) $intVals[$i - 1];
+                    if ($cur > $prev) {
+                        $badStreak++;
                     } else {
-                        // Three or more consecutive bad quarters – very elevated stress
-                        $interestLevel = 'deep';
+                        break; // streak broken
                     }
+                }
+
+                if ($badStreak === 0) {
+                    $interestLevel = 'green';
+                } elseif ($badStreak === 1) {
+                    $interestLevel = 'amber';
+                } elseif ($badStreak === 2 || $badStreak === 3) {
+                    $interestLevel = 'red';
+                } else {
+                    // 4 or more consecutive rising quarters
+                    $interestLevel = 'deep';
                 }
             }
 
-            // Fallback if we couldn't compute a quarter signal but we still have a latest rate
+            // Fallback if we couldn't compute a streak signal but we still have a latest rate
             if ($interestLevel === 'na' && $interest) {
                 $r = (float) $interest->rate;
                 if ($r >= 7.0) {
@@ -237,40 +211,36 @@
             $inflationLevel = 'na';
             $inflVals = $sparklines['inflation']['values'] ?? [];
 
-            if (is_array($inflVals) && count($inflVals) >= 6) {
+            // Treat inflation sparkline as already-quarterly values.
+            // We count how many consecutive quarters (from the latest backwards)
+            // have risen. This is our early-warning streak:
+            // 0  -> green (no worsening this quarter)
+            // 1  -> amber (first worsening quarter)
+            // 2-3 -> red (three quarters of rising inflation)
+            // 4+ -> deep red (four or more rising quarters in a row)
+            if (is_array($inflVals) && count($inflVals) >= 2) {
                 $n = count($inflVals);
+                $badStreak = 0;
 
-                $makeQuarter = function (int $endIndex) use ($inflVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($inflVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$inflVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
-
-                $latestQ = $makeQuarter($n - 1);
-                $prevQ   = $makeQuarter($n - 4);
-                $prev2Q  = $makeQuarter($n - 7);
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    if ($latestQ <= $prevQ) {
-                        $inflationLevel = 'green';
+                for ($i = $n - 1; $i >= 1; $i--) {
+                    $cur = (float) $inflVals[$i];
+                    $prev = (float) $inflVals[$i - 1];
+                    if ($cur > $prev) {
+                        $badStreak++;
                     } else {
-                        if ($prev2Q !== null && $prevQ > $prev2Q) {
-                            $inflationLevel = 'red';
-                        } else {
-                            $inflationLevel = 'amber';
-                        }
+                        break; // streak broken
                     }
+                }
+
+                if ($badStreak === 0) {
+                    $inflationLevel = 'green';
+                } elseif ($badStreak === 1) {
+                    $inflationLevel = 'amber';
+                } elseif ($badStreak === 2 || $badStreak === 3) {
+                    $inflationLevel = 'red';
+                } else {
+                    // 4 or more consecutive rising quarters
+                    $inflationLevel = 'deep';
                 }
             }
 
@@ -278,6 +248,7 @@
                 'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
             ][$inflationLevel] ?? 'border-gray-200 bg-white';
         @endphp
@@ -329,13 +300,17 @@
 
         {{-- WAGE GROWTH --}}
         @php
-            // QUARTER-based signal for REAL wage growth (wage minus inflation)
+            // Signal for REAL wage growth (wage minus inflation)
+            // Green  = latest real wage growth >= 0
+            // Amber  = latest < 0 (one negative period)
+            // Red    = latest < 0 and 2 consecutive negative periods
+            // Deep   = latest < 0 and 3+ consecutive negative periods
             $wageLevel = 'na';
 
             $wageVals = $sparklines['wages']['values'] ?? [];
             $inflVals = $sparklines['inflation']['values'] ?? [];
 
-            // Build a real-wage series (wage - inflation)
+            // Build a real-wage series (wage - inflation) aligned to the sparkline
             $realVals = [];
             if (is_array($wageVals) && is_array($inflVals) && count($wageVals) === count($inflVals)) {
                 for ($i = 0; $i < count($wageVals); $i++) {
@@ -343,48 +318,40 @@
                 }
             }
 
-            if (count($realVals) >= 6) {
+            if (!empty($realVals)) {
                 $n = count($realVals);
+                $latestReal = (float) $realVals[$n - 1];
 
-                $makeQuarterReal = function (int $endIndex) use ($realVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($realVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$realVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
-
-                $latestQ = $makeQuarterReal($n - 1);
-                $prevQ   = $makeQuarterReal($n - 4);
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    if ($latestQ >= 0) {
-                        // Real wages positive or zero this quarter – supportive
-                        $wageLevel = 'white';
-                    } else {
-                        // Real wages negative this quarter
-                        if ($prevQ < 0) {
-                            $wageLevel = 'red'; // two negative quarters
+                if ($latestReal >= 0) {
+                    // Latest period real wages are positive or flat – supportive
+                    $wageLevel = 'green';
+                } else {
+                    // Latest period real wages are negative – measure how persistent
+                    $badStreak = 1; // we know the latest is negative
+                    for ($i = $n - 2; $i >= 0; $i--) {
+                        if ((float)$realVals[$i] < 0) {
+                            $badStreak++;
                         } else {
-                            $wageLevel = 'amber'; // first negative quarter
+                            break;
                         }
+                    }
+
+                    if ($badStreak === 1) {
+                        $wageLevel = 'amber';
+                    } elseif ($badStreak === 2) {
+                        $wageLevel = 'red';
+                    } else {
+                        // 3 or more consecutive negative periods
+                        $wageLevel = 'deep';
                     }
                 }
             }
 
             $wageClasses = [
-                'white' => 'border-emerald-200 bg-emerald-50',
+                'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
             ][$wageLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
@@ -445,43 +412,40 @@
 
         {{-- UNEMPLOYMENT --}}
         @php
+            // Quarter-based early warning for unemployment
+            // Treat the unemployment sparkline as already-quarterly values.
+            // We count how many consecutive quarters (from the latest backwards)
+            // have risen. Up is bad here:
+            // 0   -> green (no worsening this quarter)
+            // 1   -> amber (first worsening quarter)
+            // 2-3 -> red (sustained rise over several quarters)
+            // 4+  -> deep (prolonged period of rising unemployment)
             $unempLevel = 'na';
             $unempVals = $sparklines['unemployment']['values'] ?? [];
 
-            if (is_array($unempVals) && count($unempVals) >= 6) {
+            if (is_array($unempVals) && count($unempVals) >= 2) {
                 $n = count($unempVals);
+                $badStreak = 0;
 
-                $makeQuarterUnemp = function (int $endIndex) use ($unempVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($unempVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$unempVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
-
-                $latestQ = $makeQuarterUnemp($n - 1);
-                $prevQ   = $makeQuarterUnemp($n - 4);
-                $prev2Q  = $makeQuarterUnemp($n - 7);
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    if ($latestQ <= $prevQ) {
-                        $unempLevel = 'green';
+                for ($i = $n - 1; $i >= 1; $i--) {
+                    $cur = (float) $unempVals[$i];
+                    $prev = (float) $unempVals[$i - 1];
+                    if ($cur > $prev) {
+                        $badStreak++;
                     } else {
-                        if ($prev2Q !== null && $prevQ > $prev2Q) {
-                            $unempLevel = 'red';
-                        } else {
-                            $unempLevel = 'amber';
-                        }
+                        break; // streak broken
                     }
+                }
+
+                if ($badStreak === 0) {
+                    $unempLevel = 'green';
+                } elseif ($badStreak === 1) {
+                    $unempLevel = 'amber';
+                } elseif ($badStreak === 2 || $badStreak === 3) {
+                    $unempLevel = 'red';
+                } else {
+                    // 4 or more consecutive rising quarters
+                    $unempLevel = 'deep';
                 }
             }
 
@@ -489,6 +453,7 @@
                 'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
             ][$unempLevel] ?? 'border-gray-200 bg-white';
         @endphp
@@ -541,57 +506,56 @@
 
         {{-- MORTGAGE APPROVALS --}}
         @php
-            // Mortgage approvals: QUARTER-based direction
-            // Green = latest quarter approvals >= previous quarter
-            // Amber = latest quarter < previous quarter
-            // Red   = two worsening quarters in a row
+            // Mortgage approvals: quarter-based early warning using already-quarterly sparkline.
+            // Down is bad, up or flat is supportive.
+            // 0 bad quarters -> green
+            // 1 -> amber
+            // 2-3 -> red
+            // 4+ -> deep red
             $approvalsLevel = 'na';
-
             $appVals = $sparklines['approvals']['values'] ?? [];
 
-            if (is_array($appVals) && count($appVals) >= 6) {
+            if (is_array($appVals) && count($appVals) >= 2) {
                 $n = count($appVals);
+                $badStreak = 0;
 
-                $makeQuarterApp = function (int $endIndex) use ($appVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($appVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$appVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
+                for ($i = $n - 1; $i >= 1; $i--) {
+                    $cur  = (float) $appVals[$i];
+                    $prev = (float) $appVals[$i - 1];
 
-                $latestQ = $makeQuarterApp($n - 1);
-                $prevQ   = $makeQuarterApp($n - 4);
-                $prev2Q  = $makeQuarterApp($n - 7);
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    if ($latestQ >= $prevQ) {
-                        $approvalsLevel = 'green';
+                    if ($cur < $prev) {
+                        // approvals fell vs previous quarter
+                        $badStreak++;
                     } else {
-                        if ($prev2Q !== null && $prevQ < $prev2Q) {
-                            $approvalsLevel = 'red';
-                        } else {
-                            $approvalsLevel = 'amber';
-                        }
+                        // flat or rising breaks the bad streak
+                        break;
                     }
                 }
+
+                if ($badStreak === 0) {
+                    $approvalsLevel = 'green';
+                } elseif ($badStreak === 1) {
+                    $approvalsLevel = 'amber';
+                } elseif ($badStreak === 2 || $badStreak === 3) {
+                    $approvalsLevel = 'red';
+                } else {
+                    // 4+ consecutive falling quarters
+                    $approvalsLevel = 'deep';
+                }
+            }
+
+            // If we have data but didn't classify (e.g. only one quarter), default to green
+            if ($approvalsLevel === 'na' && is_array($appVals) && count($appVals) > 0) {
+                $approvalsLevel = 'green';
             }
 
             $approvalsClasses = [
                 'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
-            ][$approvalsLevel] ?? 'border-gray-200 bg-white';
+            ][$approvalsLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $approvalsClasses }}" title="{{ $trendTexts['approvals'] ?? '' }}">
             <div class="flex items-start justify-between mb-1">
@@ -685,52 +649,56 @@
 
         {{-- HPI --}}
         @php
+            // House Price Index: quarter-based early warning using already-quarterly sparkline.
+            // Down is bad (falling prices), up or flat is supportive/normal.
+            // 0 bad quarters -> green
+            // 1 -> amber
+            // 2-3 -> red
+            // 4+ -> deep red
             $hpiLevel = 'na';
             $hpiVals = $sparklines['hpi']['values'] ?? [];
 
-            if (is_array($hpiVals) && count($hpiVals) >= 6) {
+            if (is_array($hpiVals) && count($hpiVals) >= 2) {
                 $n = count($hpiVals);
+                $badStreak = 0;
 
-                $makeQuarterHpi = function (int $endIndex) use ($hpiVals) {
-                    $start = $endIndex - 2;
-                    if ($start < 0) {
-                        return null;
-                    }
-                    $sum = 0.0;
-                    $count = 0;
-                    for ($i = $start; $i <= $endIndex; $i++) {
-                        if (!isset($hpiVals[$i])) {
-                            return null;
-                        }
-                        $sum += (float)$hpiVals[$i];
-                        $count++;
-                    }
-                    return $count > 0 ? $sum / $count : null;
-                };
+                for ($i = $n - 1; $i >= 1; $i--) {
+                    $cur  = (float) $hpiVals[$i];
+                    $prev = (float) $hpiVals[$i - 1];
 
-                $latestQ = $makeQuarterHpi($n - 1);
-                $prevQ   = $makeQuarterHpi($n - 4);
-                $prev2Q  = $makeQuarterHpi($n - 7);
-
-                if ($latestQ !== null && $prevQ !== null) {
-                    if ($latestQ >= $prevQ) {
-                        $hpiLevel = 'green';
+                    if ($cur < $prev) {
+                        // HPI fell vs previous quarter
+                        $badStreak++;
                     } else {
-                        if ($prev2Q !== null && $prevQ < $prev2Q) {
-                            $hpiLevel = 'red';
-                        } else {
-                            $hpiLevel = 'amber';
-                        }
+                        // flat or rising breaks the bad streak
+                        break;
                     }
                 }
+
+                if ($badStreak === 0) {
+                    $hpiLevel = 'green';
+                } elseif ($badStreak === 1) {
+                    $hpiLevel = 'amber';
+                } elseif ($badStreak === 2 || $badStreak === 3) {
+                    $hpiLevel = 'red';
+                } else {
+                    // 4+ consecutive falling quarters
+                    $hpiLevel = 'deep';
+                }
+            }
+
+            // If we have data but didn't classify (e.g. only one quarter), default to green
+            if ($hpiLevel === 'na' && is_array($hpiVals) && count($hpiVals) > 0) {
+                $hpiLevel = 'green';
             }
 
             $hpiClasses = [
                 'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
-            ][$hpiLevel] ?? 'border-gray-200 bg-white';
+            ][$hpiLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $hpiClasses }}" title="{{ $trendTexts['hpi'] ?? '' }}">
             <div class="flex items-start justify-between mb-1">
