@@ -21,60 +21,21 @@
         }
     @endphp
 
-    {{-- TOP-LEVEL STRESS INDEX SUMMARY --}}
-    <section class="mb-10 rounded-lg border border-gray-200 bg-white/80 p-6 shadow-sm">
-        <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Market Stress Dashboard</h1>
-        <p class="text-sm text-gray-700">
+    {{-- HERO SECTION --}}
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Market Stress Dashboard</h1>
+        <p class="text-sm text-gray-700 mt-2">
             Overview of key UK economic indicators that influence the housing market: borrowing costs, affordability,
             labour market strength, credit supply and distress. When several indicators move into the red at the same
             time, the property market historically weakens.
         </p>
-        @if(!is_null($stressScore))
-            <div class="mt-4 flex flex-wrap items-baseline gap-4">
-                <div class="rounded-full border px-3 py-1 text-xs font-medium {{ $stressClass }}">
-                    {{ $stressLabel }}
-                </div>
-                @php
-                    // Headline trend arrow: compare last 2 points in sparkline for composite score
-                    $trendArrow = '';
-                    if (isset($sparklines['interest']['values'])) {
-                        // Build a simple combined direction signal:
-                        // Sum last direction of each indicator's sparkline
-                        $dir = 0;
-                        foreach ($sparklines as $series) {
-                            $vals = $series['values'] ?? [];
-                            if (is_array($vals) && count($vals) >= 2) {
-                                $last = end($vals);
-                                $prev = prev($vals);
-                                if ($last > $prev) $dir++;
-                                elseif ($last < $prev) $dir--;
-                            }
-                        }
-                        if ($dir > 1) {
-                            $trendArrow = '▲';
-                        } elseif ($dir < -1) {
-                            $trendArrow = '▼';
-                        } else {
-                            $trendArrow = '▶';
-                        }
-                    }
-                @endphp
-                <div class="text-3xl font-semibold text-gray-900 flex items-center gap-2">
-                    {{ $stressScore }}
-                    <span class="text-xl {{ $trendArrow === '▲' ? 'text-rose-600' : ($trendArrow === '▼' ? 'text-emerald-600' : 'text-gray-500') }}">
-                        {{ $trendArrow }}
-                    </span>
-                    <span class="text-base font-normal text-gray-600">/ 100</span>
-                </div>
-                <p class="mt-1 text-[11px] text-gray-500">
-                    Raw score: {{ $totalStress }} / 28
-                </p>
-            </div>
-            <p class="mt-6 text-xs text-gray-500">
-                Higher scores mean more stress and risk; lower scores mean a calmer backdrop for the property market.
-                Roughly: below 40 = low stress, 40–69 = elevated risk, 70+ = high stress.
-            </p>
-        @endif
+
+        </div>
+
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/stress.svg') }}" alt="Inflation" class="w-64 h-auto">
+        </div>
     </section>
 
     {{-- EXPLANATION PANEL --}}
@@ -102,12 +63,13 @@
                     <li><span class="font-medium">Weak HPI</span> often reflects reduced demand or affordability pressure.</li>
                 </ul>
                 <p class="mt-3 font-semibold">How the colours and score work:</p>
-                <ul class="list-disc pl-5 mt-1 text-xs space-y-1 text-amber-900">
+                <ul class="list-disc pl-5 mt-1 text-xs space-y-1">
                     <li><span class="font-medium text-emerald-800">Green</span> – conditions are broadly supportive or normal for that indicator.</li>
                     <li><span class="font-medium text-amber-800">Amber</span> – starting to move into a more challenging zone.</li>
-                    <li><span class="font-medium text-rose-800">Red</span> – historically associated with stress for the housing market.</li>
+                    <li><span class="font-medium text-rose-600">Red</span> – historically associated with stress for the housing market.</li>
+                    <li><span class="font-medium text-rose-900">Dark Red</span> – Possible suggestion that the market has turned and may be heading for a level of turmoil.</li>
                 </ul>
-                <p class="mt-2 text-xs text-amber-900">
+                <p class="mt-2 text-xs">
                     The Property Stress Index above combines all seven indicators into a 0–100 score.
                     Roughly: 70–100 = high stress, 40–69 = elevated risk, below 40 = low stress.
                     It is a guide only – the individual charts and numbers always matter more than any single number.
@@ -115,6 +77,44 @@
             </div>
         </details>
     </section>
+
+    @if(!is_null($stressScore))
+        @php
+            $stressBarClass = $stressScore >= 70
+                ? 'bg-rose-200'
+                : ($stressScore >= 40 ? 'bg-amber-200' : 'bg-emerald-200');
+        @endphp
+        <section class="mb-8 rounded-xl border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-sm font-semibold tracking-wide text-gray-700 uppercase">Overall Property Stress Index</h2>
+                    <p class="mt-1 text-xs text-gray-700 max-w-xl">
+                        A single 0–100 score that combines all seven indicators. Higher scores mean more stress and risk;
+                        lower scores mean a calmer backdrop for the property market.
+                    </p>
+                </div>
+                <div class="flex items-baseline gap-3">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl md:text-5xl font-semibold text-gray-900">{{ $stressScore }}</span>
+                        <span class="text-sm text-gray-600">/ 100</span>
+                    </div>
+                    <span class="ml-2 rounded-full border px-3 py-1 text-[11px] font-medium {{ $stressClass }} whitespace-nowrap">
+                        {{ $stressLabel }}
+                    </span>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+                <div class="relative h-2 w-full flex-1 rounded-full bg-white/70 border border-zinc-200 overflow-hidden">
+                    <div class="h-full {{ $stressBarClass }} rounded-full" style="width: {{ max(0, min(100, $stressScore)) }}%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-gray-600 md:w-auto md:justify-start md:gap-4 mt-1 md:mt-0">
+                    <span>Raw score: {{ $totalStress }} / 28</span>
+                    <span class="hidden md:inline-block text-gray-400">•</span>
+                    <span>Below 40 = low, 40–69 = elevated, 70+ = high stress</span>
+                </div>
+            </div>
+        </section>
+    @endif
 
     {{-- INDICATOR GRID --}}
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
