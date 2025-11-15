@@ -6,7 +6,7 @@
     {{-- HERO SECTION --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Wage Growth – Total Pay (YoY %)</h1>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Wage Growth</h1>
 
             @if($latest)
                 <p class="mt-2 text-sm leading-6 text-gray-700">
@@ -47,7 +47,7 @@
         </div>
 
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/interest.svg') }}" alt="Wage Growth" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/wages.svg') }}" alt="Wage Growth" class="w-64 h-auto">
         </div>
     </section>
 

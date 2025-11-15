@@ -12,10 +12,10 @@
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Unemployment (millions)</h1>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Unemployment</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 @if($latestRow)
-                    Latest estimate: <span class="font-semibold">{{ number_format((float)$latestRow->rate, 1) }} million</span>
+                    Latest estimate: <span class="font-semibold">{{ number_format((float)$latestRow->rate, 1) }}%</span>
                     <span class="text-gray-600">for</span>
                     <span class="font-medium">{{ optional($latestRow->date)->format('M Y') }}</span>.
                 @else
@@ -30,35 +30,35 @@
 
             @if(!is_null($yearOnYearDelta) && $previousYear)
                 <p class="mt-2 text-sm leading-6">
-                    <span class="text-gray-700">Change versus the same month a year earlier (millions):</span>
+                    <span class="text-gray-700">Change versus the same month a year earlier (percentage points):</span>
                     @php
                         $yoyUp = $yearOnYearDelta > 0;
                         $yoyDown = $yearOnYearDelta < 0;
                     @endphp
                     <span class="font-semibold {{ $yoyUp ? 'text-red-600' : ($yoyDown ? 'text-emerald-700' : 'text-zinc-900') }}">
                         @if($yoyUp)
-                            +{{ number_format(abs($yearOnYearDelta), 1) }} million
+                            +{{ number_format(abs($yearOnYearDelta), 1) }} pp
                         @elseif($yoyDown)
-                            -{{ number_format(abs($yearOnYearDelta), 1) }} million
+                            -{{ number_format(abs($yearOnYearDelta), 1) }} pp
                         @else
                             No change
                         @endif
                     </span>
                     <span class="text-gray-600">
-                        ({{ optional($previousYear->date)->format('M Y') }}: {{ number_format((float)$previousYear->rate, 1) }} million).
+                        ({{ optional($previousYear->date)->format('M Y') }}: {{ number_format((float)$previousYear->rate, 1) }}%).
                     </span>
                 </p>
             @endif
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/interest.svg') }}" alt="Unemployment" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/jobs.svg') }}" alt="Unemployment" class="w-32 h-auto">
         </div>
     </section>
 
     {{-- Chart --}}
     <section class="mb-6">
         <div class="border p-4 bg-white rounded-lg shadow">
-            <div class="mb-2 text-sm font-medium text-gray-700">Unemployment (millions) over time (hover for details)</div>
+            <div class="mb-2 text-sm font-medium text-gray-700">Unemployment (%) over time (hover for details)</div>
             @if($sorted->isEmpty())
                 <p class="text-sm text-gray-500">No data available yet.</p>
             @else
@@ -79,7 +79,7 @@
             </summary>
             <div class="px-5 pb-5 pt-3 text-sm text-zinc-800">
                 <p>
-                    This series shows the estimated number of people <span class="font-semibold">unemployed in the UK (millions)</span>,
+                    This series shows the estimated number of people <span class="font-semibold">unemployed in the UK (%)</span>,
                     based on the Labour Force Survey. Big swings in unemployment usually line up with major economic shocks
                     or long periods of weak growth.
                 </p>
@@ -136,7 +136,7 @@
             <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
                 <div class="text-xs uppercase tracking-wide text-gray-500">Highest recorded</div>
                 <div class="mt-1 text-2xl font-semibold">
-                    {{ number_format((float) $maxRate, 1) }} million
+                    {{ number_format((float) $maxRate, 1) }}%
                 </div>
                 @if($maxRow)
                     <div class="text-sm text-gray-600">
@@ -148,7 +148,7 @@
             <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
                 <div class="text-xs uppercase tracking-wide text-gray-500">Lowest recorded</div>
                 <div class="mt-1 text-2xl font-semibold">
-                    {{ number_format((float) $minRate, 1) }} million
+                    {{ number_format((float) $minRate, 1) }}%
                 </div>
                 @if($minRow)
                     <div class="text-sm text-gray-600">
@@ -160,7 +160,7 @@
             <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
                 <div class="text-xs uppercase tracking-wide text-gray-500">Last 12 months (average)</div>
                 @if(!is_null($last12Avg) && $lastDate)
-                    <div class="mt-1 text-2xl font-semibold">{{ number_format((float)$last12Avg, 1) }} million</div>
+                    <div class="mt-1 text-2xl font-semibold">{{ number_format((float)$last12Avg, 1) }}%</div>
                     <div class="text-sm text-gray-600">
                         {{ $last12Start->format('M Y') }} – {{ $lastDate->format('M Y') }}
                     </div>
@@ -178,7 +178,7 @@
                 <thead class="bg-gray-50 text-left text-gray-600">
                     <tr>
                         <th class="border-b border-gray-200 px-4 py-2">Month</th>
-                        <th class="border-b border-gray-200 px-4 py-2">Unemployed (millions)</th>
+                        <th class="border-b border-gray-200 px-4 py-2">Unemployed (%)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,7 +188,7 @@
                                 {{ optional($row->date)->format('M Y') }}
                             </td>
                             <td class="border-b border-gray-100 px-4 py-2 font-medium">
-                                {{ number_format((float)$row->rate, 1) }}
+                                {{ number_format((float)$row->rate, 1) }}%
                             </td>
                         </tr>
                     @empty
@@ -226,7 +226,7 @@
         data: {
             labels: yearLabels,
             datasets: [{
-                label: 'Unemployed (millions)',
+                label: 'Unemployed (%)',
                 data: data,
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.15)',
@@ -257,7 +257,7 @@
                         },
                         label: function(ctx) {
                             const v = (ctx.parsed.y ?? 0).toFixed(1);
-                            return ` ${v} million`;
+                            return ` ${v}%`;
                         }
                     }
                 }

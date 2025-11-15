@@ -80,7 +80,7 @@
         </div>
 
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/interest.svg') }}" alt="House Price Index" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/hpi2.svg') }}" alt="House Price Index" class="w-64 h-auto">
         </div>
     </section>
 
