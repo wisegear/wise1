@@ -90,17 +90,6 @@
                     </div>
 
 
-                    <div class="relative">
-                        <button id="mortgagesMenuButton" aria-haspopup="true" aria-controls="mortgagesDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
-                            Mortgages
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div id="mortgagesDropdown" role="menu" aria-labelledby="mortgagesMenuButton" class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/repossessions') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Repossessions</a>
-                        </div>
-                    </div>
 
                     <div class="relative">
                         <button id="calculatorsMenuButton" aria-haspopup="true" aria-controls="calculatorsDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -115,6 +104,7 @@
                             <a href="{{ url('/stamp-duty') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Stamp Duty Calculator</a>
                         </div>
                     </div>
+                    <a href="{{ url('/repossessions') }}" class="px-3 py-2 rounded {{ request()->is('repossessions') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Repossessions</a>
 
                     <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
                     <div class="relative">
@@ -215,17 +205,6 @@
             </div>
 
 
-            <div class="">
-                <button id="mobileMortgagesBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
-                    Mortgages
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <div id="mobileMortgagesMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
-                    <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
-                </div>
-            </div>
 
             <div class="">
                 <button id="mobileCalculatorsBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
@@ -240,7 +219,7 @@
                     <a href="{{ url('/stamp-duty') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Stamp Duty Calculator</a>
                 </div>
             </div>
-
+            <a href="{{ url('/repossessions') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
             <a href="{{ url('/deprivation') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Deprivation</a>
             <div class="">
                 <button id="mobileIndicatorsBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
