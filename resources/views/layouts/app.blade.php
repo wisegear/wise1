@@ -119,13 +119,13 @@
                     <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
                     <div class="relative">
                         <button id="economicsMenuButton" aria-haspopup="true" aria-controls="economicsDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
-                            Economic Indicators
+                            Market Stress Indicators
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                         <div id="economicsDropdown" role="menu" aria-labelledby="economicsMenuButton" class="absolute left-0 mt-4 w-64 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/economic-dashboard') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 font-semibold hover:bg-zinc-100 text-zinc-800">Economic Dashboard</a>
+                            <a href="{{ url('/economic-dashboard') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 font-semibold hover:bg-zinc-100 text-zinc-800">Market Stress Dashboard</a>
                             <div class="border-t border-zinc-100 my-1"></div>
                             <a href="{{ url('/interest-rates') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Interest Rates</a>
                             <a href="{{ url('/inflation') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Inflation (CPIH)</a>
@@ -244,13 +244,13 @@
             <a href="{{ url('/deprivation') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Deprivation</a>
             <div class="">
                 <button id="mobileIndicatorsBtn" class="w-full flex justify-between items-center px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 focus:outline-none">
-                    Economic Indicators
+                    Market Stress Indicators
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
                 <div id="mobileIndicatorsMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
-                    <a href="{{ url('/economic-dashboard') }}" class="block px-3 py-2 rounded font-semibold text-zinc-800 hover:bg-zinc-100">Economic Dashboard</a>
+                    <a href="{{ url('/economic-dashboard') }}" class="block px-3 py-2 rounded font-semibold text-zinc-800 hover:bg-zinc-100">Market Stress Dashboard</a>
                     <div class="border-t border-zinc-100 my-1"></div>
                     <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>
                     <a href="{{ url('/inflation') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Inflation (CPIH)</a>

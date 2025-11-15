@@ -23,7 +23,7 @@
 
     {{-- TOP-LEVEL STRESS INDEX SUMMARY --}}
     <section class="mb-10 rounded-lg border border-gray-200 bg-white/80 p-6 shadow-sm">
-        <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Property Stress Dashboard</h1>
+        <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Market Stress Dashboard</h1>
         <p class="text-sm text-gray-700">
             Overview of key UK economic indicators that influence the housing market: borrowing costs, affordability,
             labour market strength, credit supply and distress. When several indicators move into the red at the same
