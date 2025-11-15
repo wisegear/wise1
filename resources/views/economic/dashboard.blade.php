@@ -205,8 +205,18 @@
             ][$interestLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $interestClasses }}" title="{{ $trendTexts['interest'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Interest Rates</div>
-            <p class="text-[11px] text-gray-600 mb-1">Lower is supportive; rising rates increase stress.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Interest Rates</div>
+                    <p class="text-[11px] text-gray-600">Lower is supportive; rising rates increase stress.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 15l4-4 3 3 5-7"></path>
+                    </svg>
+                </div>
+            </div>
             @if($interest)
                 <div class="text-2xl font-semibold">{{ number_format($interest->rate, 2) }}%</div>
                 <div class="text-sm text-gray-600 mt-1">
@@ -272,8 +282,19 @@
             ][$inflationLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $inflationClasses }}" title="{{ $trendTexts['inflation'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Inflation (CPIH)</div>
-            <p class="text-[11px] text-gray-600 mb-1">Lower is supportive; persistent rises are negative unless wages keep up.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Inflation (CPIH)</div>
+                    <p class="text-[11px] text-gray-600">Lower is supportive; persistent rises are negative unless wages keep up.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 19h14"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2-4 2 4 2-8"></path>
+                        <circle cx="8" cy="6" r="1"></circle>
+                    </svg>
+                </div>
+            </div>
             @if($inflation)
                 @php
                     $cpihValue = null;
@@ -368,8 +389,20 @@
             ][$wageLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $wageClasses }}" title="{{ $trendTexts['wages'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Wage Growth</div>
-            <p class="text-[11px] text-gray-600 mb-1">Higher real wage growth is positive; negative real wages are a drag.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Wage Growth</div>
+                    <p class="text-[11px] text-gray-600">Higher real wage growth is positive; negative real wages are a drag.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-4a2 2 0 0 1 2-2h2"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 19v-6a2 2 0 0 1 2-2h2"></path>
+                        <circle cx="8" cy="7" r="2"></circle>
+                        <circle cx="15" cy="6" r="2"></circle>
+                    </svg>
+                </div>
+            </div>
             @if($wages)
                 @php
                     $wageValue = null;
@@ -460,8 +493,20 @@
             ][$unempLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $unempClasses }}" title="{{ $trendTexts['unemployment'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Unemployment</div>
-            <p class="text-[11px] text-gray-600 mb-1">Lower is positive; rising unemployment is a warning sign.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Unemployment</div>
+                    <p class="text-[11px] text-gray-600">Lower is positive; rising unemployment is a warning sign.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 20v-3a3 3 0 0 1 3-3h8"></path>
+                        <circle cx="9" cy="8" r="2.5"></circle>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9v6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 15h4"></path>
+                    </svg>
+                </div>
+            </div>
             @if($unemp)
                 @php
                     $unempValue = null;
@@ -476,7 +521,7 @@
                 @endphp
                 <div class="text-2xl font-semibold">
                     @if(!is_null($unempValue))
-                        {{ number_format((float) $unempValue, 2) }} million
+                        {{ number_format((float) $unempValue, 1) }}%
                     @else
                         <span class="text-gray-500 text-base">n/a</span>
                     @endif
@@ -549,8 +594,19 @@
             ][$approvalsLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $approvalsClasses }}" title="{{ $trendTexts['approvals'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Mortgage Approvals</div>
-            <p class="text-[11px] text-gray-600 mb-1">Higher approvals are supportive; persistent declines signal tightening credit.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Mortgage Approvals</div>
+                    <p class="text-[11px] text-gray-600">Higher approvals are supportive; persistent declines signal tightening credit.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 10v9h5v-5h2v5h5v-9"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16"></path>
+                    </svg>
+                </div>
+            </div>
             @if($approvals)
                 <div class="text-2xl font-semibold">
                     {{ number_format((float) $approvals->value) }}
@@ -595,8 +651,21 @@
             ][$repossLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $repossClasses }}" title="{{ $trendTexts['repossessions'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">Repossessions</div>
-            <p class="text-[11px] text-gray-600 mb-1">Lower is positive; rising repossessions indicate distress.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Repossessions</div>
+                    <p class="text-[11px] text-gray-600">Lower is positive; rising repossessions indicate distress.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 21v-5"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 21v-3"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 15l10-6"></path>
+                    </svg>
+                </div>
+            </div>
             @if($reposs)
                 <div class="text-2xl font-semibold">
                     {{ number_format((float) $reposs->total) }}
@@ -664,8 +733,19 @@
             ][$hpiLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $hpiClasses }}" title="{{ $trendTexts['hpi'] ?? '' }}">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">House Price Index (UK)</div>
-            <p class="text-[11px] text-gray-600 mb-1">Modest growth or stability is normal; persistent falls can signal stress.</p>
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">House Price Index (UK)</div>
+                    <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls can signal stress.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12l7-7 7 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 11v8h10v-8"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h3"></path>
+                    </svg>
+                </div>
+            </div>
             @if($hpi)
                 <div class="text-2xl font-semibold">£{{ number_format($hpi->AveragePrice, 0) }}</div>
                 <div class="text-sm text-gray-600 mt-1">
