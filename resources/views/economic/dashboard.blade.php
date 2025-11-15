@@ -60,6 +60,7 @@
                     <li><span class="font-medium">Rising unemployment</span> increases forced sales risk.</li>
                     <li><span class="font-medium">Falling mortgage approvals</span> signal tightening credit conditions.</li>
                     <li><span class="font-medium">Rising repossessions</span> indicate financial distress.</li>
+                    <li><span class="font-medium">Increasing mortgage arrears</span> show more borrowers falling behind on payments and often precede possessions.</li>
                     <li><span class="font-medium">Weak HPI</span> often reflects reduced demand or affordability pressure.</li>
                 </ul>
                 <p class="mt-3 font-semibold">How the colours and score work:</p>
