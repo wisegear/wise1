@@ -24,12 +24,13 @@
     {{-- HERO SECTION --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Market Stress Dashboard</h1>
-        <p class="text-sm text-gray-700 mt-2">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900">Market Stress Dashboard</h1>
+        <p class="text-sm text-zinc-700 mt-2">
             Overview of key UK economic indicators that influence the housing market: borrowing costs, affordability,
             labour market strength, credit supply and distress. When several indicators move into the red at the same
             time, the property market historically weakens.
         </p>
+        <p class="text-sm mt-2 text-zinc-700">More information on calculations here:  <a class="text-lime-700 text-sm hover:text-lime-500" href="/blog/introducing-the-property-market-economic-indicators-dashboard"> Blog Post</a></p>
 
         </div>
 
