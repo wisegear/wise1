@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\AffordabilityController;
 use App\Http\Controllers\DeprivationController;
+use App\Http\Controllers\MlarArrearsController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -78,6 +79,7 @@ Route::get('/economic-dashboard', [\App\Http\Controllers\EconomicDashboardContro
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
 Route::get('/repossessions/overview', [RepossessionsController::class, 'overview'])->name('repossessions.overview');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
+Route::get('/arrears', [MlarArrearsController::class, 'index'])->name('arrears.index');
 
 // Deprivation Routes
 Route::get('/deprivation', [DeprivationController::class, 'index'])->name('deprivation.index');

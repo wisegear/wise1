@@ -105,7 +105,6 @@
                         </div>
                     </div>
                     <a href="{{ url('/repossessions') }}" class="px-3 py-2 rounded {{ request()->is('repossessions') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Repossessions</a>
-
                     <a href="{{ url('/deprivation') }}" class="px-3 py-2 rounded {{ request()->is('deprivation') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Deprivation</a>
                     <div class="relative">
                         <button id="economicsMenuButton" aria-haspopup="true" aria-controls="economicsDropdown" aria-expanded="false" class="px-3 py-2 rounded flex items-center gap-1 text-zinc-700 hover:text-lime-600 focus:outline-none cursor-pointer">
@@ -114,16 +113,27 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        <div id="economicsDropdown" role="menu" aria-labelledby="economicsMenuButton" class="absolute left-0 mt-4 w-64 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/economic-dashboard') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 font-semibold hover:bg-zinc-100 text-zinc-800">Market Stress Dashboard</a>
-                            <div class="border-t border-zinc-100 my-1"></div>
-                            <a href="{{ url('/interest-rates') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Interest Rates</a>
-                            <a href="{{ url('/inflation') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Inflation (CPIH)</a>
-                            <a href="{{ url('/wage-growth') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Wage Growth</a>
-                            <a href="{{ url('/hpi-overview') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">House Price Index (HPI)</a>
-                            <a href="{{ url('/unemployment') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Unemployment</a>
-                            <a href="{{ url('/approvals') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Approvals</a>
-                            <a href="{{ url('/repossessions/overview') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Repossessions</a>
+                        <div id="economicsDropdown" role="menu" aria-labelledby="economicsMenuButton" class="absolute left-0 mt-4 w-[32rem] bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
+                            <div class="flex">
+                                <!-- Left column -->
+                                <div class="py-2 flex-1">
+                                    <a href="{{ url('/economic-dashboard') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 font-semibold hover:bg-zinc-100 text-zinc-800">Market Stress Dashboard</a>
+                                    <a href="{{ url('/interest-rates') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Interest Rates</a>
+                                    <a href="{{ url('/inflation') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Inflation (CPIH)</a>
+                                    <a href="{{ url('/wage-growth') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Wage Growth</a>
+                                </div>
+
+                                <!-- Vertical divider -->
+                                <div class="w-px bg-zinc-200 my-2"></div>
+
+                                <!-- Right column -->
+                                <div class="py-2 flex-1">
+                                    <a href="{{ url('/hpi-overview') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">House Price Index (HPI)</a>
+                                    <a href="{{ url('/unemployment') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Unemployment</a>
+                                    <a href="{{ url('/approvals') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Approvals</a>
+                                    <a href="{{ url('/arrears') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Mortgage Arrears (MLAR)</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
@@ -237,7 +247,7 @@
                     <a href="{{ url('/hpi-overview') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">House Price Index (HPI)</a>
                     <a href="{{ url('/unemployment') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Unemployment</a>
                     <a href="{{ url('/approvals') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Approvals</a>
-                    <a href="{{ url('/repossessions/overview') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Repossessions</a>
+                    <a href="{{ url('/arrears') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Arrears (MLAR)</a>
                 </div>
             </div>
             <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>

@@ -5,8 +5,8 @@
     @php
         // Use hybrid stress score from controller
         $total = $totalStress ?? 0;
-        // Convert to 0–100 scale (max possible is 28: 7 indicators * 4 max points)
-        $scaled = max(0, min(100, round(($total / 28) * 100)));
+        // Convert to 0–100 scale (max possible is 31: seven 4-point indicators plus arrears (0–3))
+        $scaled = max(0, min(100, round(($total / 31) * 100)));
         $stressScore = $scaled;
 
         if ($stressScore >= 70) {
@@ -70,7 +70,7 @@
                     <li><span class="font-medium text-rose-900">Dark Red</span> – Possible suggestion that the market has turned and may be heading for a level of turmoil.</li>
                 </ul>
                 <p class="mt-2 text-xs">
-                    The Property Stress Index above combines all seven indicators into a 0–100 score.
+                    The Property Stress Index above combines all eight indicators into a 0–100 score.
                     Roughly: 70–100 = high stress, 40–69 = elevated risk, below 40 = low stress.
                     It is a guide only – the individual charts and numbers always matter more than any single number.
                 </p>
@@ -89,7 +89,7 @@
                 <div>
                     <h2 class="text-sm font-semibold tracking-wide text-gray-700 uppercase">Overall Property Stress Index</h2>
                     <p class="mt-1 text-xs text-gray-700 max-w-xl">
-                        A single 0–100 score that combines all seven indicators. Higher scores mean more stress and risk;
+                        A single 0–100 score that combines all eight indicators. Higher scores mean more stress and risk;
                         lower scores mean a calmer backdrop for the property market.
                     </p>
                 </div>
@@ -108,7 +108,7 @@
                     <div class="h-full {{ $stressBarClass }} rounded-full" style="width: {{ max(0, min(100, $stressScore)) }}%;"></div>
                 </div>
                 <div class="flex items-center justify-between text-[11px] text-gray-600 md:w-auto md:justify-start md:gap-4 mt-1 md:mt-0">
-                    <span>Raw score: {{ $totalStress }} / 28</span>
+                    <span>Raw score: {{ $totalStress }} / 31</span>
                     <span class="hidden md:inline-block text-gray-400">•</span>
                     <span>Below 40 = low, 40–69 = elevated, 70+ = high stress</span>
                 </div>
@@ -597,28 +597,33 @@
         {{-- REPOSSESSIONS --}}
         @php
             $repossLevel = 'na';
-            if ($reposs && isset($reposs->total)) {
-                $rv = (float) $reposs->total;
-                if ($rv >= 10000) {
-                    $repossLevel = 'red';
-                } elseif ($rv >= 5000) {
-                    $repossLevel = 'amber';
-                } else {
+
+            if (isset($repossDirection)) {
+                if ($repossDirection === 0) {
                     $repossLevel = 'green';
+                } elseif ($repossDirection === 1) {
+                    $repossLevel = 'amber';
+                } elseif ($repossDirection === 2) {
+                    $repossLevel = 'red';
+                } else {
+                    // 3 or more worsening quarters
+                    $repossLevel = 'deep';
                 }
             }
+
             $repossClasses = [
                 'green' => 'border-emerald-200 bg-emerald-50',
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
                 'na'    => 'border-gray-200 bg-white',
             ][$repossLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $repossClasses }}" title="{{ $trendTexts['repossessions'] ?? '' }}">
             <div class="flex items-start justify-between mb-1">
                 <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500">Repossessions</div>
-                    <p class="text-[11px] text-gray-600">Lower is positive; rising repossessions indicate distress.</p>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Repossessions (MLAR)</div>
+                    <p class="text-[11px] text-gray-600">Share of regulated mortgages in possession. Lower is positive; rising possessions indicate distress.</p>
                 </div>
                 <div class="ml-3 text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
@@ -632,13 +637,69 @@
             </div>
             @if($reposs)
                 <div class="text-2xl font-semibold">
-                    {{ number_format((float) $reposs->total) }}
+                    {{ number_format((float) $reposs->total, 3) }}%
                 </div>
                 <div class="text-sm text-gray-600 mt-1">
                     {{ $reposs->year }} {{ $reposs->quarter }}
                     @if(!empty($sparklines['repossessions']['values'] ?? []))
                         <div class="h-28 pt-8">
                             <canvas id="spark-repossessions"></canvas>
+                        </div>
+                    @endif
+                </div>
+            @else
+                <div class="text-gray-500 text-sm">No data</div>
+            @endif
+        </div>
+
+        {{-- MORTGAGE ARREARS (MLAR) --}}
+        @php
+            $arrearsLevel = 'na';
+
+            if (!empty($arrearsPanel)) {
+                $dir = $arrearsPanel['direction'] ?? 0; // 0–3 from controller
+                if ($dir === 0) {
+                    $arrearsLevel = 'green';
+                } elseif ($dir === 1) {
+                    $arrearsLevel = 'amber';
+                } elseif ($dir === 2) {
+                    $arrearsLevel = 'red';
+                } else {
+                    // 3 or more worsening quarters
+                    $arrearsLevel = 'deep';
+                }
+            }
+
+            $arrearsClasses = [
+                'green' => 'border-emerald-200 bg-emerald-50',
+                'amber' => 'border-amber-200 bg-amber-50',
+                'red'   => 'border-rose-200 bg-rose-50',
+                'deep'  => 'border-rose-400 bg-rose-100',
+                'na'    => 'border-gray-200 bg-white',
+            ][$arrearsLevel] ?? 'border-gray-200 bg-white';
+        @endphp
+        <div class="rounded-lg border p-5 shadow-sm {{ $arrearsClasses }}" title="Headline and sparkline show total arrears across all bands from 2.5%+ of balance (excluding the 1.5–2.5% band).">
+            <div class="flex items-start justify-between mb-1">
+                <div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">Mortgage Arrears (MLAR)</div>
+                    <p class="text-[11px] text-gray-600">Headline and sparkline show total arrears 2.5%+ of balance (excluding the 1.5–2.5% band). Higher is worse.</p>
+                </div>
+                <div class="ml-3 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 15l4-4 3 3 5-7"></path>
+                    </svg>
+                </div>
+            </div>
+            @if(!empty($arrearsPanel))
+                <div class="text-2xl font-semibold">
+                    {{ number_format((float) $arrearsPanel['value'], 3) }}%
+                </div>
+                <div class="text-sm text-gray-600 mt-1">
+                    {{ $arrearsPanel['year'] }} {{ $arrearsPanel['quarter'] }}
+                    @if(!empty($sparklines['arrears']['values'] ?? []))
+                        <div class="h-28 pt-8">
+                            <canvas id="spark-arrears"></canvas>
                         </div>
                     @endif
                 </div>
@@ -727,17 +788,6 @@
             @else
                 <div class="text-gray-500 text-sm">No data</div>
             @endif
-        </div>
-
-        <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="text-xs uppercase tracking-wide text-gray-500 mb-1">How the Index Interprets Movement</div>
-            <p class="text-xs text-gray-600 leading-5">
-                The index looks at how each indicator has behaved over recent quarters rather than a single month.
-                Interest rates, inflation and unemployment add stress when they keep rising; wage growth adds stress
-                when it fails to keep up with inflation; mortgage approvals and house prices add stress when they fall.
-                Repossessions add stress when they rise. One difficult quarter nudges the score higher, while longer
-                runs of adverse quarters and extreme levels push it further into the amber and red zones.
-            </p>
         </div>
 
     </section>
@@ -834,6 +884,7 @@
     makeSpark('spark-inflation', 'inflation', 'up');
     makeSpark('spark-unemployment', 'unemployment', 'up');
     makeSpark('spark-repossessions', 'repossessions', 'up');
+    makeSpark('spark-arrears', 'arrears', 'up');
 
     // Lower is worse
     makeSpark('spark-wages', 'wages', 'down');

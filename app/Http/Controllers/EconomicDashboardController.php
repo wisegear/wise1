@@ -68,29 +68,23 @@ class EconomicDashboardController extends Controller
                 ->first();
         });
 
-        // 6. Repossessions (latest national total by year+quarter)
+        // 6. Repossessions (latest) – use MLAR possessions series directly
         $reposs = Cache::remember('eco:last_reposs_v2', $ttl, function () {
-            // Get the most recent year + quarter present in the table
-            $latest = DB::table('repo_la_quarterlies')
-                ->select('year', 'quarter')
+            $latest = DB::table('mlar_arrears')
+                ->where('description', 'In possession')
                 ->orderBy('year', 'desc')
-                ->orderBy('quarter', 'desc')
+                ->orderByRaw("FIELD(quarter, 'Q4','Q3','Q2','Q1')")
                 ->first();
 
             if (! $latest) {
                 return null;
             }
 
-            // Sum all local-authority values for that year + quarter
-            $total = DB::table('repo_la_quarterlies')
-                ->where('year', $latest->year)
-                ->where('quarter', $latest->quarter)
-                ->sum('value');
-
             return (object) [
                 'year'    => $latest->year,
                 'quarter' => $latest->quarter,
-                'total'   => $total,
+                // MLAR value is already "% of loans" in the possessions series
+                'total'   => (float) $latest->value,
             ];
         });
 
@@ -269,20 +263,36 @@ class EconomicDashboardController extends Controller
             'labels' => $approvalsLabels,
         ];
 
-        // Repossessions: last 16 quarters, summed nationally
-        $repossSeries = DB::table('repo_la_quarterlies')
-            ->select('year', 'quarter', DB::raw('SUM(value) as total'))
-            ->groupBy('year', 'quarter')
+        // Repossessions: last 16 quarters of MLAR possessions series
+        $repossSeries = DB::table('mlar_arrears')
+            ->where('description', 'In possession')
             ->orderBy('year', 'desc')
-            ->orderBy('quarter', 'desc')
+            ->orderByRaw("FIELD(quarter, 'Q4','Q3','Q2','Q1')")
             ->limit(16)
             ->get()
             ->reverse()
             ->values();
         $sparklines['repossessions'] = [
-            'values' => $repossSeries->map(fn ($r) => (float)$r->total)->values()->all(),
-            'labels' => $repossSeries->map(fn ($r) => $r->year.' Q'.$r->quarter)->values()->all(),
+            'values' => $repossSeries->map(fn ($r) => (float)$r->value)->values()->all(),
+            'labels' => $repossSeries->map(fn ($r) => $r->year.' '.$r->quarter)->values()->all(),
         ];
+
+        // Mortgage arrears (MLAR)
+        // Sparkline: total arrears across all bands except the lowest (1.5–2.5%),
+        // which mainly captures minor/one-off missed payments.
+        $arrearsSeries = DB::table('mlar_arrears')
+            ->select('year', 'quarter', DB::raw('SUM(value) as total'))
+            ->where('band', '!=', '1.5_2.5')
+            ->groupBy('year', 'quarter')
+            ->orderBy('year')
+            ->orderByRaw("FIELD(quarter, 'Q1','Q2','Q3','Q4')")
+            ->get();
+
+        $sparklines['arrears'] = [
+            'values' => $arrearsSeries->map(fn ($r) => (float)$r->total)->values()->all(),
+            'labels' => $arrearsSeries->map(fn ($r) => $r->year.' '.$r->quarter)->values()->all(),
+        ];
+
 
         // HPI: last 60 months, UK only
         $hpiSeries = DB::table('hpi_monthly')
@@ -298,6 +308,9 @@ class EconomicDashboardController extends Controller
             fn ($r) => $r->AveragePrice
         );
 
+        $arrearsPanel = null;
+        $repossDirection = null;
+
         // ------------------------------------------------------------
         // HYBRID PROPERTY STRESS INDEX (Level + Direction)
         // ------------------------------------------------------------
@@ -310,6 +323,7 @@ class EconomicDashboardController extends Controller
             'approvals' => 0,
             'reposs'    => 0,
             'hpi'       => 0,
+            'arrears'   => 0,
         ];
 
         // Helper for direction scoring on a QUARTERLY basis
@@ -403,6 +417,41 @@ class EconomicDashboardController extends Controller
             }
         };
 
+        // Arrears direction score (quarterly series, higher = worse)
+        // 0 = green (not rising vs previous quarter)
+        // 1 = amber (one worsening quarter)
+        // 2 = red (two consecutive worsening quarters)
+        // 3 = dark red (three consecutive worsening quarters)
+        $arrearsDirectionScore = function (array $vals) {
+            $n = count($vals);
+            if ($n < 2) {
+                return 0;
+            }
+
+            $latest = (float) $vals[$n - 1];
+            $prev1  = (float) $vals[$n - 2];
+            $prev2  = $n >= 3 ? (float) $vals[$n - 3] : null;
+            $prev3  = $n >= 4 ? (float) $vals[$n - 4] : null;
+
+            // If latest is not higher than previous, treat as green
+            if ($latest <= $prev1) {
+                return 0;
+            }
+
+            $hasTwoWorsening = $prev2 !== null && $prev1 > $prev2;
+            $hasThreeWorsening = $prev3 !== null && $prev2 !== null && $prev2 > $prev3;
+
+            if ($hasTwoWorsening && $hasThreeWorsening) {
+                return 3; // dark red: three consecutive worsening quarters
+            }
+
+            if ($hasTwoWorsening) {
+                return 2; // red: two consecutive worsening quarters
+            }
+
+            return 1; // amber: one worsening quarter
+        };
+
         // 1. Interest rate level
         if ($interest && $interest->rate >= 4.5) {
             $stress['interest'] += 2;
@@ -451,11 +500,15 @@ class EconomicDashboardController extends Controller
         }
         $stress['approvals'] += $quarterDirectionScore($sparklines['approvals']['values'] ?? [], true, false);
 
-        // 6. Repossessions level + direction
+        // 6. Repossessions level + direction (MLAR possessions % of loans)
         $rVal = $reposs ? (float)$reposs->total : null;
         if (!is_null($rVal)) {
-            if ($rVal >= 10000) $stress['reposs'] += 2;
-            elseif ($rVal >= 6000) $stress['reposs'] += 1;
+            // Thresholds now in percentage points of loans in 10%+ arrears
+            if ($rVal >= 1.0) {
+                $stress['reposs'] += 2; // red: 1% or more of loans in severe arrears
+            } elseif ($rVal >= 0.5) {
+                $stress['reposs'] += 1; // amber: 0.5%–0.99%
+            }
         }
         $stress['reposs'] += $quarterDirectionScore($sparklines['repossessions']['values'] ?? [], false, true);
 
@@ -472,20 +525,67 @@ class EconomicDashboardController extends Controller
         }
         $stress['hpi'] += $quarterDirectionScore($sparklines['hpi']['values'] ?? [], true, true);
 
+        // 8. Arrears direction only (total arrears 2.5%+ of balance)
+        // We treat higher arrears as worse; scoring uses the custom arrearsDirectionScore
+        // with 0 (green) to 3 (dark red) based on consecutive worsening quarters.
+        if (!empty($sparklines['arrears']['values'] ?? [])) {
+            $stress['arrears'] += $arrearsDirectionScore($sparklines['arrears']['values']);
+        }
+
+        // Repossessions direction score (reuse arrearsDirectionScore: 0–3)
+        if (!empty($sparklines['repossessions']['values'] ?? [])) {
+            $repossDirection = $arrearsDirectionScore($sparklines['repossessions']['values']);
+        }
+
+        // Build arrears panel
+        // Both direction and headline value use the total arrears across all bands
+        // excluding the lowest (1.5–2.5%) band, taken directly from the sparkline
+        // so the panel value always matches the last point on the chart.
+        if (!empty($sparklines['arrears']['values'] ?? [])) {
+            $arrearsValues = $sparklines['arrears']['values'];
+            $arrearsLabels = $sparklines['arrears']['labels'] ?? [];
+
+            $arrearsDir = $arrearsDirectionScore($arrearsValues);
+
+            $lastValue = (float) end($arrearsValues);
+            $lastLabel = end($arrearsLabels) ?: null;
+
+            $year = null;
+            $quarter = null;
+            if ($lastLabel && is_string($lastLabel)) {
+                $parts = explode(' ', $lastLabel);
+                if (count($parts) === 2) {
+                    $year = (int) $parts[0];
+                    $quarter = $parts[1];
+                }
+            }
+
+            if (!is_null($year) && !is_null($quarter)) {
+                $arrearsPanel = [
+                    'year'      => $year,
+                    'quarter'   => $quarter,
+                    'value'     => $lastValue,
+                    'direction' => $arrearsDir,
+                ];
+            }
+        }
+
         // Total score
         $totalStress = array_sum($stress);
 
         return view('economic.dashboard', [
-            'interest'   => $interest,
-            'inflation'  => $inflation,
-            'wages'      => $wages,
-            'unemp'      => $unemp,
-            'approvals'  => $approvals,
-            'reposs'     => $reposs,
-            'hpi'        => $hpi,
-            'sparklines' => $sparklines,
-            'stress'     => $stress,
-            'totalStress'=> $totalStress,
+            'interest'        => $interest,
+            'inflation'       => $inflation,
+            'wages'           => $wages,
+            'unemp'           => $unemp,
+            'approvals'       => $approvals,
+            'reposs'          => $reposs,
+            'repossDirection' => $repossDirection,
+            'hpi'             => $hpi,
+            'sparklines'      => $sparklines,
+            'stress'          => $stress,
+            'totalStress'     => $totalStress,
+            'arrearsPanel'    => $arrearsPanel,
         ]);
     }
 }
