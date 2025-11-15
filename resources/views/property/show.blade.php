@@ -74,7 +74,7 @@
     @endif
     
 
-    <!-- Links: Google Maps & Zoopla -->
+    <!-- Links: Google Maps & Zoopla & Rightmove -->
     @php
         $postcode = trim(optional($results->first())->Postcode ?? '');
         $town = trim(optional($results->first())->TownCity ?? '');
@@ -92,12 +92,22 @@
             : "/for-sale/property/"; // fallback to generic search path
 
         $zooplaUrl = "https://www.zoopla.co.uk{$zooplaPath}?q=" . urlencode($postcode) . "&search_source=home";
+
+        // Rightmove URL (by outcode, e.g. G46 -> https://www.rightmove.co.uk/property-for-sale/G46.html)
+        $rightmoveUrl = null;
+        if ($postcode !== '') {
+            $pcParts = preg_split('/\s+/', $postcode);
+            $outcode = $pcParts[0] ?? '';
+            if ($outcode !== '') {
+                $rightmoveUrl = "https://www.rightmove.co.uk/property-for-sale/{$outcode}.html";
+            }
+        }
     @endphp
     <div class="mb-6 flex flex-wrap items-center justify-end gap-2 text-sm">
         <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 shadow-sm transition">
+           class="inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2a7 7 0 00-7 7c0 5.25 7 12 7 12s7-6.75 7-12a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
             </svg>
@@ -106,18 +116,34 @@
         <a href="https://www.google.com/search?q={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-4 py-2 shadow-sm transition">
+           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
             <span>Google search address</span>
         </a>
 
+        @if($rightmoveUrl)
+        <a href="{{ $rightmoveUrl }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 rounded-md text-white px-3 py-1.5 shadow-sm transition"
+           style="background-color:#00AEEF;"
+           onmouseover="this.style.backgroundColor='#0099d6';"
+           onmouseout="this.style.backgroundColor='#00AEEF';"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M4.5 4.5h15a1 1 0 011 1v9a1 1 0 01-1 1H8.414L4.5 19.914V5.5a1 1 0 011-1z"/>
+            </svg>
+            <span>For sale on Rightmove</span>
+        </a>
+        @endif
+
         @if($postcode !== '')
         <a href="{{ $zooplaUrl }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 shadow-sm transition">
+           class="inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
