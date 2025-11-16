@@ -30,19 +30,32 @@
         </div>
     </section>
 
-    <div class="mb-6 flex items-center justify-center gap-3">
-        <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
-        <select id="districtFilter" class="border border-zinc-300 bg-white rounded px-3 py-2 text-sm">
-            <option class="bg-white text-zinc-800" value="">All sections</option>
+    <div class="mb-6 flex flex-col items-center gap-3">
+        <span class="text-sm text-neutral-700 font-bold">Filter:</span>
+        <div id="districtFilterGroup" class="flex flex-wrap justify-center gap-2">
+
             @if(($districts ?? collect())->contains('ALL'))
-                <option class="bg-white text-zinc-800" value="ALL">All Prime Central (aggregate)</option>
+                <button
+                    type="button"
+                    class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                    data-district-filter="ALL"
+                >
+                    All Prime Central (aggregate)
+                </button>
             @endif
+
             @foreach($districts as $d)
                 @if($d !== 'ALL')
-                    <option class="bg-white text-zinc-800" value="{{ $d }}">{{ $d }}</option>
+                    <button
+                        type="button"
+                        class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                        data-district-filter="{{ $d }}"
+                    >
+                        {{ $d }}
+                    </button>
                 @endif
             @endforeach
-        </select>
+        </div>
     </div>
 
     @if(($districts ?? collect())->isEmpty())
@@ -63,35 +76,35 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-4 md:grid md:grid-cols-2">
                     <!-- Property Types (stacked bar) -->
-                    <div class="rounded-lg border p-4 bg-white">
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
-                        <canvas id="pt_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                        <canvas id="pt_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Average Price (line) -->
-                    <div class="rounded-lg border p-4 bg-white">
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Average Price of property in {{ $__label }}</h3>
-                        <canvas id="ap_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                        <canvas id="ap_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Number of Sales (line) -->
-                    <div class="rounded-lg border p-4 bg-white">
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
-                        <canvas id="sc_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-lg border p-4 bg-white">
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Top Sale Marker in {{ $__label }}</h3>
-                        <canvas id="ts_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                        <canvas id="ts_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Average + Prime Indicators (line) -->
-                    <div class="rounded-lg border p-4 bg-white col-span-2">
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72 col-span-2">
                         <h3 class="font-semibold mb-2">Average & Prime Indicators in {{ $__label }}</h3>
-                        <canvas id="api_{{ $district }}" class="w-full h-[220px] md:h-[260px]"></canvas>
+                        <canvas id="api_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
                     <!-- YoY % Change Charts -->
                     <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
@@ -114,8 +127,16 @@
             </section>
         @endforeach
     @endif
-</div>
+    </div>
 @endsection
+
+<style>
+    .prime-filter-btn-active {
+        background-color: #18181b;
+        color: #ffffff;
+        border-color: #18181b;
+    }
+</style>
 
 <script>
 (function(){
@@ -233,83 +254,194 @@
             // Average Price (only avgPrice line)
             const apCtx = document.getElementById(`ap_${district}`);
             if (apCtx) {
-                apCtx.style.display = 'block';
-                apCtx.width = apCtx.clientWidth; apCtx.height = apCtx.clientHeight;
-                const apId = `ap_${district}`; if (window.__upclCharts[apId]) { window.__upclCharts[apId].destroy(); }
+                const apId = `ap_${district}`;
+                if (window.__upclCharts[apId]) {
+                    window.__upclCharts[apId].destroy();
+                }
+
                 const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
                 const apData = years.map(y => apByYear.get(y) ?? null);
 
-                new Chart(apCtx, { 
+                window.__upclCharts[apId] = new Chart(apCtx, {
                     type: 'line',
                     plugins: [whiteBgPlugin],
-                    data: { 
-                        labels: years, 
+                    data: {
+                        labels: years,
                         datasets: [
-                            { label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 }
+                            {
+                                label: 'Average Price (£)',
+                                data: apData,
+                                pointRadius: 3,
+                                tension: 0.2
+                            }
                         ]
-                    }, 
-                    options: { 
-                        animation: false, 
-                        responsiveAnimationDuration: 0, 
-                        responsive: false, 
-                        maintainAspectRatio: false, 
-                        plugins: { 
-                            legend: { display: true }, 
-                            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } 
-                        }, 
-                        scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } 
-                    } 
+                    },
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 12,
+                                right: 12,
+                                bottom: 24,
+                                left: 8
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) =>
+                                        `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (v) => fmtGBP(v)
+                                }
+                            }
+                        }
+                    }
                 });
-                window.__upclCharts[apId] = Chart.getChart(apCtx);
+
                 apCtx.style.backgroundColor = '#ffffff';
             }
 
             // Sales Count
             const scCtx = document.getElementById(`sc_${district}`);
             if (scCtx) {
-                scCtx.style.display = 'block';
-                scCtx.width = scCtx.clientWidth; scCtx.height = scCtx.clientHeight;
-                const scId = `sc_${district}`; if (window.__upclCharts[scId]) { window.__upclCharts[scId].destroy(); }
+                const scId = `sc_${district}`;
+                if (window.__upclCharts[scId]) {
+                    window.__upclCharts[scId].destroy();
+                }
+
                 const scByYear = new Map(sales.map(r => [r.year, r.sales]));
                 const scData = years.map(y => scByYear.get(y) ?? 0);
-                new Chart(scCtx, { 
+
+                window.__upclCharts[scId] = new Chart(scCtx, {
                     type: 'line',
                     plugins: [whiteBgPlugin],
-                    data: { labels: years, datasets: [{ label: 'Sales Count', data: scData, pointRadius: 3, tension: 0.2 }]},
-                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => fmtNum(v) } } } }
+                    data: {
+                        labels: years,
+                        datasets: [
+                            {
+                                label: 'Sales Count',
+                                data: scData,
+                                pointRadius: 3,
+                                tension: 0.2
+                            }
+                        ]
+                    },
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 12,
+                                right: 12,
+                                bottom: 24,
+                                left: 8
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) =>
+                                        `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (v) => fmtNum(v)
+                                }
+                            }
+                        }
+                    }
                 });
-                window.__upclCharts[scId] = Chart.getChart(scCtx);
+
                 scCtx.style.backgroundColor = '#ffffff';
             }
 
             // Property Types (stacked)
             const ptCtx = document.getElementById(`pt_${district}`);
             if (ptCtx) {
-                ptCtx.style.display = 'block';
-                ptCtx.width = ptCtx.clientWidth; ptCtx.height = ptCtx.clientHeight;
-                const ptId = `pt_${district}`; if (window.__upclCharts[ptId]) { window.__upclCharts[ptId].destroy(); }
+                const ptId = `pt_${district}`;
+                if (window.__upclCharts[ptId]) {
+                    window.__upclCharts[ptId].destroy();
+                }
+
                 const yearTypeMap = new Map();
-                propertyTypes.forEach(r => { if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map()); const m = yearTypeMap.get(r.year); m.set(r.type, (m.get(r.type) || 0) + r.count); });
-                const allTypes = ['D','S','T','F','O'].filter(t => propertyTypes.some(r => r.type === t));
-                const datasets = allTypes.map((t, i) => ({ label: TYPE_LABELS[t] || t, data: years.map(y => (yearTypeMap.get(y)?.get(t)) || 0), backgroundColor: baseColors[i % baseColors.length], borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)' }));
-                new Chart(ptCtx, { 
+                propertyTypes.forEach(r => {
+                    if (!yearTypeMap.has(r.year)) yearTypeMap.set(r.year, new Map());
+                    const m = yearTypeMap.get(r.year);
+                    m.set(r.type, (m.get(r.type) || 0) + r.count);
+                });
+
+                const allTypes = ['D','S','T','F','O'].filter(t =>
+                    propertyTypes.some(r => r.type === t)
+                );
+
+                const datasets = allTypes.map((t, i) => ({
+                    label: TYPE_LABELS[t] || t,
+                    data: years.map(y => (yearTypeMap.get(y)?.get(t)) || 0),
+                    backgroundColor: baseColors[i % baseColors.length],
+                    borderWidth: 1,
+                    borderColor: 'rgba(0,0,0,0.1)'
+                }));
+
+                window.__upclCharts[ptId] = new Chart(ptCtx, {
                     type: 'bar',
                     plugins: [whiteBgPlugin],
                     data: { labels: years, datasets },
-                    options: { animation: false, responsiveAnimationDuration: 0, responsive: false, maintainAspectRatio: false, plugins: { legend: { display: true }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => fmtNum(v) } } } }
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 12,
+                                right: 12,
+                                bottom: 24,
+                                left: 8
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) =>
+                                        `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { stacked: true },
+                            y: {
+                                stacked: true,
+                                ticks: { callback: (v) => fmtNum(v) }
+                            }
+                        }
+                    }
                 });
-                window.__upclCharts[ptId] = Chart.getChart(ptCtx);
+
                 ptCtx.style.backgroundColor = '#ffffff';
             }
 
             // Top Sale Marker (scatter)
             const tsCtx = document.getElementById(`ts_${district}`);
             if (tsCtx) {
-                tsCtx.style.display = 'block';
-                tsCtx.width = tsCtx.clientWidth; tsCtx.height = tsCtx.clientHeight;
-                const tsId = `ts_${district}`; if (window.__upclCharts[tsId]) { window.__upclCharts[tsId].destroy(); }
+                const tsId = `ts_${district}`;
+                if (window.__upclCharts[tsId]) {
+                    window.__upclCharts[tsId].destroy();
+                }
 
-                // Build top3Index: Map from year -> array of top 3 sales (sorted by rn)
                 const top3Index = new Map();
                 for (const r of top3PerYear) {
                     if (!top3Index.has(r.year)) top3Index.set(r.year, []);
@@ -319,7 +451,7 @@
                 const tsByYear = new Map(topSalePerYear.map(r => [r.year, r.top_sale]));
                 const tsData = Array.from(tsByYear, ([year, value]) => ({ x: year, y: value }));
 
-                new Chart(tsCtx, {
+                window.__upclCharts[tsId] = new Chart(tsCtx, {
                     type: 'scatter',
                     plugins: [whiteBgPlugin],
                     data: {
@@ -334,9 +466,16 @@
                     },
                     options: {
                         animation: false,
-                        responsiveAnimationDuration: 0,
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 12,
+                                right: 12,
+                                bottom: 24,
+                                left: 8
+                            }
+                        },
                         parsing: false,
                         plugins: {
                             legend: { display: true },
@@ -344,62 +483,116 @@
                                 callbacks: {
                                     label: (ctx) => {
                                         const year = ctx.raw.x;
-                                        const rows = (top3Index.get(year) || []).slice().sort((a,b) => a.rn - b.rn);
-                                        if (!rows.length) return `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                        const rows = (top3Index.get(year) || [])
+                                            .slice()
+                                            .sort((a, b) => a.rn - b.rn);
+                                        if (!rows.length) {
+                                            return `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
+                                        }
                                         const header = `Year ${year}: ${fmtGBP(ctx.raw.y)}`;
-                                        const lines = rows.map(r => `#${r.rn} ${fmtGBP(r.Price)} – ${r.Postcode} (${new Date(r.Date).toLocaleDateString('en-GB')})`);
+                                        const lines = rows.map(r =>
+                                            `#${r.rn} ${fmtGBP(r.Price)} – ${r.Postcode} (${new Date(r.Date).toLocaleDateString('en-GB')})`
+                                        );
                                         return [header, ...lines];
                                     }
                                 }
                             }
                         },
                         scales: {
-                            x: { type: 'linear', ticks: { stepSize: 1 }, title: { display: true, text: 'Year' } },
-                            y: { ticks: { callback: (v) => fmtGBP(v) } }
+                            x: {
+                                type: 'linear',
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: (value) => value.toString()
+                                },
+                                title: { display: false }
+                            },
+                            y: {
+                                ticks: { callback: (v) => fmtGBP(v) }
+                            }
                         }
                     }
                 });
-                window.__upclCharts[tsId] = Chart.getChart(tsCtx);
+
                 tsCtx.style.backgroundColor = '#ffffff';
             }
 
             // Average + Prime Indicators (line)
             const apiCtx = document.getElementById(`api_${district}`);
             if (apiCtx) {
-                apiCtx.style.display = 'block';
-                apiCtx.width = apiCtx.clientWidth; apiCtx.height = apiCtx.clientHeight;
-                const apiId = `api_${district}`; if (window.__upclCharts[apiId]) { window.__upclCharts[apiId].destroy(); }
+                const apiId = `api_${district}`;
+                if (window.__upclCharts[apiId]) {
+                    window.__upclCharts[apiId].destroy();
+                }
+
                 const apByYear = new Map(avgPrice.map(r => [r.year, r.avg_price]));
                 const apData = years.map(y => apByYear.get(y) ?? null);
+
                 const p90ByYear = new Map(p90.map(r => [r.year, r.p90]));
                 const p90Data = years.map(y => p90ByYear.get(y) ?? null);
+
                 const top5ByYear = new Map(top5.map(r => [r.year, r.top5_avg]));
                 const top5Data = years.map(y => top5ByYear.get(y) ?? null);
 
-                new Chart(apiCtx, { 
+                window.__upclCharts[apiId] = new Chart(apiCtx, {
                     type: 'line',
                     plugins: [whiteBgPlugin],
-                    data: { 
-                        labels: years, 
+                    data: {
+                        labels: years,
                         datasets: [
-                            { label: 'Average Price (£)', data: apData, pointRadius: 3, tension: 0.2 },
-                            { label: '90th Percentile (£)', data: p90Data, pointRadius: 0, borderDash: [6,4], tension: 0.1 },
-                            { label: 'Top 5% Average (£)', data: top5Data, pointRadius: 2, borderWidth: 1, tension: 0.15 }
+                            {
+                                label: 'Average Price (£)',
+                                data: apData,
+                                pointRadius: 3,
+                                tension: 0.2
+                            },
+                            {
+                                label: '90th Percentile (£)',
+                                data: p90Data,
+                                pointRadius: 0,
+                                borderDash: [6, 4],
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Top 5% Average (£)',
+                                data: top5Data,
+                                pointRadius: 2,
+                                borderWidth: 1,
+                                tension: 0.15
+                            }
                         ]
-                    }, 
-                    options: { 
-                        animation: false, 
-                        responsiveAnimationDuration: 0, 
-                        responsive: false, 
-                        maintainAspectRatio: false, 
-                        plugins: { 
-                            legend: { display: true }, 
-                            tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}` } } 
-                        }, 
-                        scales: { y: { ticks: { callback: (v) => fmtGBP(v) } } } 
-                    } 
+                    },
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 12,
+                                right: 12,
+                                bottom: 24,
+                                left: 8
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) =>
+                                        `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: (v) => fmtGBP(v)
+                                }
+                            }
+                        }
+                    }
                 });
-                window.__upclCharts[apiId] = Chart.getChart(apiCtx);
+
                 apiCtx.style.backgroundColor = '#ffffff';
             }
 
@@ -590,16 +783,24 @@
             window.__renderedDistricts.add(district);
         }
 
-        // Initial render based on current select value
-        const filterEl = document.getElementById('districtFilter');
-        // Default to aggregated view if present
-        if ([...filterEl.options].some(o => o.value === 'ALL')) {
-            filterEl.value = 'ALL';
+        // Initial render based on button group
+        const filterButtons = document.querySelectorAll('[data-district-filter]');
+        let currentFilter = '';
+
+        function setActiveButton(val) {
+            filterButtons.forEach(btn => {
+                const btnVal = btn.getAttribute('data-district-filter') || '';
+                if (btnVal === val) {
+                    btn.classList.add('prime-filter-btn-active');
+                } else {
+                    btn.classList.remove('prime-filter-btn-active');
+                }
+            });
         }
-        function applyFilter() {
-            const val = filterEl.value;
+
+        function applyFilter(val) {
             const sections = document.querySelectorAll('.district-section');
-            if (val === '') {
+            if (!val) {
                 sections.forEach(sec => sec.style.display = 'block');
                 Object.keys(charts).forEach(d => renderDistrict(d));
             } else {
@@ -609,11 +810,26 @@
                 });
                 renderDistrict(val);
             }
+            currentFilter = val;
+            setActiveButton(val);
         }
 
-        // Render on load and on change
-        applyFilter();
-        filterEl.addEventListener('change', applyFilter);
+        // Choose default filter: aggregated "ALL" if present, else all sections
+        let defaultFilter = '';
+        if ([...filterButtons].some(btn => (btn.getAttribute('data-district-filter') || '') === 'ALL')) {
+            defaultFilter = 'ALL';
+        }
+
+        // Attach click handlers
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-district-filter') || '';
+                applyFilter(val);
+            });
+        });
+
+        // Initial render
+        applyFilter(defaultFilter);
     }
 
     function boot() {

@@ -44,7 +44,7 @@
 <body class="bg-zinc-50">
     <div class="min-h-screen flex flex-col">
         {{-- Desktop Nav --}}
-        <nav class="hidden md:block bg-white border-b border-zinc-200 p-4">
+        <nav class="hidden xl:block bg-white border-b border-zinc-200 p-4">
             <div class="max-w-7xl mx-auto flex items-center">
                 <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
                 <button id="navToggle" aria-controls="primaryNav" aria-expanded="false" class="md:hidden ml-auto inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none" type="button">
@@ -174,8 +174,8 @@
             </div>
         </nav>
     {{-- Mobile Nav --}}
-    <nav class="bg-white border-b border-zinc-200 p-4 md:hidden">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <nav class="bg-white border-b border-zinc-200 p-4 xl:hidden">
+        <div class="w-full flex items-center justify-between">
             <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
             <button id="mobileNavToggle" aria-controls="mobileNav" aria-expanded="false"
                 class="inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none"
@@ -189,7 +189,7 @@
         </div>
 
         {{-- Collapsible menu --}}
-        <div id="mobileNav" class="hidden flex-col mt-3 space-y-1">
+        <div id="mobileNav" class="hidden flex-col mt-3 space-y-1 w-full text-sm">
             <a href="{{ url('/') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Home</a>
             <a href="{{ url('/blog') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Blog</a>
 
@@ -202,7 +202,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-                <div id="mobilePropertyMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                <div id="mobilePropertyMenu" class="hidden flex-col pl-2 space-y-1 mt-1">
                     <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
                     <a href="{{ url('/property/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Property Search</a>
                     <a href="{{ url('/property/outer-prime-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Outer Prime London</a>
@@ -223,7 +223,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-                <div id="mobileCalculatorsMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                <div id="mobileCalculatorsMenu" class="hidden flex-col pl-2 space-y-1 mt-1">
                     <a href="{{ url('/affordability') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Affordability Calculator</a>
                     <a href="{{ url('/mortgage-calculator') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Mortgage Calculator</a>
                     <a href="{{ url('/stamp-duty') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Stamp Duty Calculator</a>
@@ -238,7 +238,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
-                <div id="mobileIndicatorsMenu" class="hidden flex-col pl-4 space-y-1 mt-1">
+                <div id="mobileIndicatorsMenu" class="hidden flex-col pl-2 space-y-1 mt-1">
                     <a href="{{ url('/economic-dashboard') }}" class="block px-3 py-2 rounded font-semibold text-zinc-800 hover:bg-zinc-100">Market Stress Dashboard</a>
                     <div class="border-t border-zinc-100 my-1"></div>
                     <a href="{{ url('/interest-rates') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Interest Rates</a>

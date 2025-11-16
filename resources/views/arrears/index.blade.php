@@ -82,79 +82,97 @@
                             </p>
                         @endif
                     </div>
-                    <div class="h-80">
-                        <canvas id="arrearsChart" class="w-full h-full"></canvas>
+                    <div class="overflow-x-auto">
+                        <div class="min-w-[640px] h-72 sm:h-80">
+                            <canvas id="arrearsChart" class="w-full h-full"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Full history --}}
-        <div class="border border-zinc-200 rounded-lg bg-white p-4 space-y-4">
-            <div class="flex items-center justify-between gap-4">
-                <h2 class="text-base font-semibold text-zinc-800">
-                    Arrears history by band
-                </h2>
-                @if($periods && $periods->count())
-                    <p class="text-xs text-zinc-500">
-                        Coverage: {{ $periods->first() }} – {{ $periods->last() }}
+        <div class="border border-zinc-200 rounded-lg bg-white p-4">
+            <button
+                type="button"
+                class="w-full flex items-center justify-between text-left gap-4"
+                onclick="document.getElementById('arrearsHistoryPanel').classList.toggle('hidden'); this.querySelector('[data-chevron-history]').classList.toggle('rotate-180');"
+            >
+                <div>
+                    <h2 class="text-base font-semibold text-zinc-800">
+                        Arrears history by band
+                    </h2>
+                    <p class="mt-1 text-sm text-zinc-600">
+                        Expand to see the full quarterly time series for each arrears band.
                     </p>
-                @endif
-            </div>
-
-            <p class="text-sm text-zinc-600">
-                The tables below show the full time series for each arrears band. Values are quarterly and expressed as
-                a percentage of all regulated mortgage accounts.
-            </p>
-
-            <div class="space-y-6">
-                @foreach($seriesByBand as $bandKey => $series)
-                    @php
-                        /** @var \Illuminate\Support\Collection $series */
-                        $bandDescription = $bands[$bandKey]->description ?? $bandKey;
-                        $isRepossession = \Illuminate\Support\Str::contains(strtolower($bandDescription), 'repossess');
-                    @endphp
-
-                    @if($isRepossession)
-                        @continue
+                </div>
+                <div class="flex items-center gap-3">
+                    @if($periods && $periods->count())
+                        <p class="text-xs text-zinc-500">
+                            Coverage: {{ $periods->first() }} – {{ $periods->last() }}
+                        </p>
                     @endif
+                    <svg data-chevron-history xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-zinc-500 transition-transform duration-150 rotate-180">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.186l3.71-3.955a.75.75 0 111.08 1.04l-4.25 4.53a.75.75 0 01-1.08 0l-4.25-4.53a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </button>
 
-                    <div class="border border-zinc-200 rounded-lg bg-zinc-50 overflow-hidden">
-                        <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
-                            <h3 class="text-sm font-semibold text-zinc-800">
-                                {{ $bandDescription }}
-                            </h3>
-                            <p class="text-xs text-zinc-500">
-                                {{ $series->first()->year }} {{ $series->first()->quarter }}
-                                –
-                                {{ $series->last()->year }} {{ $series->last()->quarter }}
-                            </p>
-                        </div>
+            <div id="arrearsHistoryPanel" class="mt-4 space-y-4 hidden">
+                <p class="text-sm text-zinc-600">
+                    The tables below show the full time series for each arrears band. Values are quarterly and expressed as
+                    a percentage of all regulated mortgage accounts.
+                </p>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-left text-xs">
-                                <thead class="bg-zinc-50 border-b border-zinc-100">
-                                    <tr>
-                                        <th class="px-4 py-2 font-medium text-zinc-600">Period</th>
-                                        <th class="px-4 py-2 font-medium text-zinc-600">Arrears (% of loans)</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-zinc-100">
-                                    @foreach($series as $row)
+                <div class="space-y-6">
+                    @foreach($seriesByBand as $bandKey => $series)
+                        @php
+                            /** @var \Illuminate\Support\Collection $series */
+                            $bandDescription = $bands[$bandKey]->description ?? $bandKey;
+                            $isRepossession = \Illuminate\Support\Str::contains(strtolower($bandDescription), 'repossess');
+                        @endphp
+
+                        @if($isRepossession)
+                            @continue
+                        @endif
+
+                        <div class="border border-zinc-200 rounded-lg bg-zinc-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-zinc-100 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-zinc-800">
+                                    {{ $bandDescription }}
+                                </h3>
+                                <p class="text-xs text-zinc-500">
+                                    {{ $series->first()->year }} {{ $series->first()->quarter }}
+                                    –
+                                    {{ $series->last()->year }} {{ $series->last()->quarter }}
+                                </p>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-left text-xs">
+                                    <thead class="bg-zinc-50 border-b border-zinc-100">
                                         <tr>
-                                            <td class="px-4 py-2 whitespace-nowrap text-zinc-700">
-                                                {{ $row->year }} {{ $row->quarter }}
-                                            </td>
-                                            <td class="px-4 py-2 whitespace-nowrap text-zinc-900">
-                                                {{ number_format($row->value, 3) }}%
-                                            </td>
+                                            <th class="px-4 py-2 font-medium text-zinc-600">Period</th>
+                                            <th class="px-4 py-2 font-medium text-zinc-600">Arrears (% of loans)</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="divide-y divide-zinc-100">
+                                        @foreach($series as $row)
+                                            <tr>
+                                                <td class="px-4 py-2 whitespace-nowrap text-zinc-700">
+                                                    {{ $row->year }} {{ $row->quarter }}
+                                                </td>
+                                                <td class="px-4 py-2 whitespace-nowrap text-zinc-900">
+                                                    {{ number_format($row->value, 3) }}%
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         </div>
 

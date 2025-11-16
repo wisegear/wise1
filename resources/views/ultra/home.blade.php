@@ -30,19 +30,32 @@
         </div>
     </section>
 
-    <div class="mb-6 flex items-center justify-center gap-3">
-        <label for="districtFilter" class="text-sm text-neutral-700">Filter:</label>
-        <select id="districtFilter" class="border border-gray-300 bg-white rounded px-3 py-2 text-sm">
-            <option class="bg-white text-zinc-800" value="">All sections</option>
+    <div class="mb-6 flex flex-col items-center gap-3">
+        <span class="text-sm text-neutral-700 font-bold">Filter:</span>
+        <div id="districtFilterGroup" class="flex flex-wrap justify-center gap-2">
+
             @if(($districts ?? collect())->contains('ALL'))
-                <option class="bg-white text-zinc-800" value="ALL">All Ultra Prime (aggregate)</option>
+                <button
+                    type="button"
+                    class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                    data-district-filter="ALL"
+                >
+                    All Ultra Prime (aggregate)
+                </button>
             @endif
+
             @foreach($districts as $d)
                 @if($d !== 'ALL')
-                    <option class="bg-white text-zinc-800" value="{{ $d }}">{{ $d }}</option>
+                    <button
+                        type="button"
+                        class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                        data-district-filter="{{ $d }}"
+                    >
+                        {{ $d }}
+                    </button>
                 @endif
             @endforeach
-        </select>
+        </div>
     </div>
 
     @if(($districts ?? collect())->isEmpty())
@@ -63,7 +76,7 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                <div class="flex flex-col gap-3 sm:gap-4 md:grid md:grid-cols-2">
                     <!-- Property Types (stacked bar) -->
                     <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
@@ -118,6 +131,14 @@
 </div>
 @endsection
 
+<style>
+    .prime-filter-btn-active {
+        background-color: #18181b;
+        color: #ffffff;
+        border-color: #18181b;
+    }
+</style>
+
 <script>
 (function(){
     if (window.__upclInit) return; // prevent duplicate init (HMR/Turbo/etc.)
@@ -129,12 +150,6 @@
 
     function renderCharts() {
         const charts = chartsPayload || {};
-
-        // Default filter to ALL if available
-        const filterEl = document.getElementById('districtFilter');
-        if (filterEl && [...filterEl.options].some(o => o.value === 'ALL')) {
-            filterEl.value = 'ALL';
-        }
 
         // Plugin to ensure the whole canvas is white (no transparency)
         const whiteBgPlugin = {
@@ -370,8 +385,17 @@
                             } }
                         },
                         scales: {
-                            x: { type: 'linear', ticks: { stepSize: 1 }, title: { display: true, text: 'Year' } },
-                            y: { ticks: { callback: (v) => fmtGBP(v) } }
+                            x: {
+                                type: 'linear',
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: (value) => value.toString()
+                                },
+                                title: { display: false }
+                            },
+                            y: {
+                                ticks: { callback: (v) => fmtGBP(v) }
+                            }
                         }
                     }
                 });
@@ -436,11 +460,24 @@
             window.__renderedDistricts.add(district);
         }
 
-        // Initial render based on current select value
-        function applyFilter() {
-            const val = filterEl.value;
+        // Button-based filter logic
+        const filterButtons = document.querySelectorAll('[data-district-filter]');
+        let currentFilter = '';
+
+        function setActiveButton(val) {
+            filterButtons.forEach(btn => {
+                const btnVal = btn.getAttribute('data-district-filter') || '';
+                if (btnVal === val) {
+                    btn.classList.add('prime-filter-btn-active');
+                } else {
+                    btn.classList.remove('prime-filter-btn-active');
+                }
+            });
+        }
+
+        function applyFilter(val) {
             const sections = document.querySelectorAll('.district-section');
-            if (val === '') {
+            if (!val) {
                 sections.forEach(sec => sec.style.display = 'block');
                 Object.keys(charts).forEach(d => renderDistrict(d));
             } else {
@@ -450,11 +487,26 @@
                 });
                 renderDistrict(val);
             }
+            currentFilter = val;
+            setActiveButton(val);
         }
 
-        // Render on load and on change
-        applyFilter();
-        filterEl.addEventListener('change', applyFilter);
+        // Choose default filter: aggregated "ALL" if present, else all sections
+        let defaultFilter = '';
+        if ([...filterButtons].some(btn => (btn.getAttribute('data-district-filter') || '') === 'ALL')) {
+            defaultFilter = 'ALL';
+        }
+
+        // Attach click handlers
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-district-filter') || '';
+                applyFilter(val);
+            });
+        });
+
+        // Initial render
+        applyFilter(defaultFilter);
     }
 
     function boot() {
