@@ -7,8 +7,7 @@
 
         <title>{{ config('app.name', 'Blog') }}</title>
 
-        <!-- TinyMCE -->
-        <script src="https://cdn.tiny.cloud/1/a1rn9rzvnlulpzdgoe14w7kqi1qpfsx7cx9am2kbgg226dqz/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
         
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,6 +18,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- TinyMCE (open CDN for now) -->
+        <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+        
     </head>
 
     <body class="font-sans antialiased">
@@ -46,6 +49,7 @@
             </footer>
 
         </div>
+            @stack('scripts')
     </body>
 
 </html>

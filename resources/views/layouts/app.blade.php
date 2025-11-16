@@ -29,6 +29,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('/assets/images/site/favicon.ico') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- FontAwesome -->
     <script async src="https://kit.fontawesome.com/0ff5084395.js" crossorigin="anonymous"></script>
 
@@ -40,6 +41,11 @@
     <link rel="stylesheet" href="{{ asset('assets/css/venobox.min.css') }}" type="text/css" media="screen" />
     <script type="text/javascript" src="{{ asset('assets/js/venobox.min.js') }}"></script>
     -->
+
+    <!-- TinyMCE -->
+<!-- TinyMCE (open CDN for now) -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+
 </head>
 <body class="bg-zinc-50">
     <div class="min-h-screen flex flex-col">
@@ -154,6 +160,7 @@
                             <div id="userDropdown" class="absolute right-0 mt-4 w-30 bg-white border border-slate-200 translate-x-4 rounded-xl shadow-lg z-50 hidden">
                                 <div class="">
                                     <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-4 py-2 hover:bg-zinc-100">Profile</a>
+                                    <a href="/support" class="block px-4 py-2 hover:bg-zinc-100">Support</a>
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf
                                             <button type="submit" class="w-full text-left px-4 py-2 hover:bg-zinc-100 hover:text-teal-500 cursor-pointer">Logout</button>
@@ -255,6 +262,7 @@
             {{-- Auth links --}}
             @auth
                 <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Profile</a>
+                <a href="/support" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Support</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-left px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Logout</button>

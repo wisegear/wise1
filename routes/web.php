@@ -20,6 +20,7 @@ use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\AffordabilityController;
 use App\Http\Controllers\DeprivationController;
 use App\Http\Controllers\MlarArrearsController;
+use App\Http\Controllers\SupportController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminBlogController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPostCodesController;
+use App\Http\Controllers\AdminSupportController;
 
 // Base Pages
 
@@ -97,6 +99,7 @@ Route::middleware('auth')->group(function () {
     // Standard Routes that require login to access
     Route::resource('/profile', ProfileController::class);
     Route::post('/comments', [CommentsController::class, 'store'])->name('comments.store');
+    Route::resource('support', SupportController::class);
 
     // Protect the Dashboard routes behind both Auth and Can
     Route::prefix('admin')
@@ -107,6 +110,7 @@ Route::middleware('auth')->group(function () {
             Route::resource('users', AdminUserController::class);
             Route::resource('blog', AdminBlogController::class);
             Route::resource('postcodes', AdminPostCodesController::class);
+            Route::resource('/support', AdminSupportController::class);
         });
 
 // Logout route to clear session.
