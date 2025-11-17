@@ -35,7 +35,7 @@
 
     {{-- Explore panels --}}
     <section class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <a href="{{ Route::has('property.search') ? route('property.search') : url('/property') }}"
+        <a href="{{ Route::has('property.home') ? route('property.home') : url('/property') }}"
            class="group block rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-zinc-900">Property Sales</h2>
