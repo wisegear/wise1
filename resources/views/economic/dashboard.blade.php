@@ -84,7 +84,7 @@
         @php
             $stressBarClass = $stressScore >= 70
                 ? 'bg-rose-200'
-                : ($stressScore >= 40 ? 'bg-amber-200' : 'bg-emerald-200');
+                : ($stressScore >= 40 ? 'bg-amber-200' : 'bg-emerald-100');
         @endphp
         <section class="mb-8 rounded-xl border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -177,7 +177,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$interestLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $interestClasses }}" title="{{ $trendTexts['interest'] ?? '' }}">
@@ -251,7 +251,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$inflationLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $inflationClasses }}" title="{{ $trendTexts['inflation'] ?? '' }}">
@@ -354,7 +354,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$wageLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $wageClasses }}" title="{{ $trendTexts['wages'] ?? '' }}">
@@ -456,7 +456,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$unempLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $unempClasses }}" title="{{ $trendTexts['unemployment'] ?? '' }}">
@@ -556,7 +556,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$approvalsLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $approvalsClasses }}" title="{{ $trendTexts['approvals'] ?? '' }}">
@@ -618,7 +618,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$repossLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $repossClasses }}" title="{{ $trendTexts['repossessions'] ?? '' }}">
@@ -677,7 +677,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$arrearsLevel] ?? 'border-gray-200 bg-white';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $arrearsClasses }}" title="Headline and sparkline show total arrears across all bands from 2.5%+ of balance (excluding the 1.5–2.5% band).">
@@ -760,7 +760,7 @@
                 'amber' => 'border-amber-200 bg-amber-50',
                 'red'   => 'border-rose-200 bg-rose-50',
                 'deep'  => 'border-rose-400 bg-rose-100',
-                'na'    => 'border-gray-200 bg-white',
+                'na'    => 'border-emerald-200 bg-emerald-50',
             ][$hpiLevel] ?? 'border-emerald-200 bg-emerald-50';
         @endphp
         <div class="rounded-lg border p-5 shadow-sm {{ $hpiClasses }}" title="{{ $trendTexts['hpi'] ?? '' }}">
