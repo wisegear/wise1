@@ -21,7 +21,7 @@ use App\Http\Controllers\AffordabilityController;
 use App\Http\Controllers\DeprivationController;
 use App\Http\Controllers\MlarArrearsController;
 use App\Http\Controllers\SupportController;
-
+use App\Http\Controllers\Admin\DataUpdateController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
             Route::resource('blog', AdminBlogController::class);
             Route::resource('postcodes', AdminPostCodesController::class);
             Route::resource('/support', AdminSupportController::class);
+            Route::resource('updates', DataUpdateController::class)->except(['show']);
         });
 
 // Logout route to clear session.

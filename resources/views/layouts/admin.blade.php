@@ -36,6 +36,7 @@
                         <a href="/admin/blog" class="hover:text-lime-600">Blog</a>
                         <a href="/admin/articles" class="hover:text-lime-600">Articles</a>
                         <a href="/admin/support" class="hover:text-lime-600">Support</a>
+                        <a href="/admin/updates" class="hover:text-lime-600">Updates</a>
                     </nav>
                 </div>
             </header>
