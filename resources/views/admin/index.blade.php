@@ -83,6 +83,42 @@
                 </a>
             </div>
         </div>
+
+        {{-- Support Tickets Card --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-800">Support Tickets</h2>
+                <span class="inline-flex items-center rounded-md bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                    {{ $tickets_total }} total
+                </span>
+            </div>
+
+            <div class="mt-5 grid grid-cols-2 gap-4 text-sm text-zinc-600">
+                <div class="rounded-lg border border-zinc-200 p-3">
+                    <p class="text-zinc-500">Open</p>
+                    <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_open }}</p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 p-3">
+                    <p class="text-zinc-500">Pending</p>
+                    <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_pending }}</p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 p-3">
+                    <p class="text-zinc-500">Closed</p>
+                    <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_closed }}</p>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <a href="{{ url('/admin/support') }}" class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50">
+                    {{-- icon --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75h.008v.008H9.75V9.75zm0 3h.008v.008H9.75V12.75zm0 3h.008v.008H9.75V15.75zM12 9.75h.008v.008H12V9.75zm0 3h.008v.008H12V12.75zm0 3h.008v.008H12V15.75zM14.25 9.75h.008v.008h-.008V9.75zm0 3h.008v.008h-.008V12.75zm0 3h.008v.008h-.008V15.75z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6a3 3 0 013-3h10.5a3 3 0 013 3v12a3 3 0 01-3 3H6.75a3 3 0 01-3-3V6z" />
+                    </svg>
+                    View tickets
+                </a>
+            </div>
+        </div>
     </section>
 
     {{-- Quick Links --}}

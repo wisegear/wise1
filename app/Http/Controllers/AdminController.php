@@ -26,6 +26,12 @@ class AdminController extends Controller
         $users_active = UserRolesPivot::all()->where('role_id', '===', 3)->count();
         $users_admin = UserRolesPivot::all()->where('role_id', '===', 4)->count();
 
+        // Support tickets info
+        $tickets = Support::all();
+        $tickets_total = $tickets->count();
+        $tickets_open = $tickets->where('status', 'open')->count();
+        $tickets_pending = $tickets->where('status', 'pending')->count();
+        $tickets_closed = $tickets->where('status', 'closed')->count();
         //Blog info
         $blogposts = BlogPosts::all();
         $blogunpublished = BlogPosts::where('published', false)->get();
@@ -39,6 +45,10 @@ class AdminController extends Controller
             'users_admin' => $users_admin,
             'blogposts' => $blogposts,
             'blogunpublished' => $blogunpublished,
+            'tickets_total' => $tickets_total,
+            'tickets_open' => $tickets_open,
+            'tickets_pending' => $tickets_pending,
+            'tickets_closed' => $tickets_closed,
         );
 
         return view ('admin.index')->with($data);
