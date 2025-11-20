@@ -109,6 +109,23 @@ class EpcController extends Controller
                 ->get();
         });
 
+        // 6) Tenure by year: owner‑occupied, rented (private), rented (social)
+        $tenureLabels = ($nation === 'scotland')
+            ? ['owner-occupied','rented (private)','rented (social)']
+            : ['owner-occupied','rental (private)','rental (social)'];
+
+        $tenureByYear = Cache::remember($ck('tenureByYear'), $ttl, function () use ($cfg, $tenureLabels) {
+            return DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, tenure, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn('tenure', $tenureLabels)
+                ->groupBy('yr','tenure')
+                ->orderBy('yr','asc')
+                ->orderByRaw("FIELD(tenure, '" . implode("','", $tenureLabels) . "')")
+                ->get();
+        });
+
         // 5) Distribution of current ratings (optional for Scotland too)
         $ratingDist = Cache::remember($ck('ratingDist'), $ttl, function () use ($cfg, $ratings) {
             return DB::table($cfg['table'])
@@ -130,6 +147,7 @@ class EpcController extends Controller
             'byYear'           => $byYear,
             'ratingByYear'     => $ratingByYear,
             'potentialByYear'  => $potentialByYear,
+            'tenureByYear'     => $tenureByYear,
             'ratingDist'       => $ratingDist ?? collect(),
             'nation'           => $nation,
         ]);

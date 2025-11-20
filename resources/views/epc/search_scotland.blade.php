@@ -42,6 +42,36 @@
         </div>
     </section>
 
+    @isset($byYear)
+        <section class="mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {{-- Certificates issued by year --}}
+                <div class="rounded-lg border border-gray-200 bg-white/80 p-4 md:p-6 shadow-sm">
+                    <h2 class="text-base md:text-lg font-semibold text-gray-900 mb-1">Certificates issued by year</h2>
+                    <p class="text-xs md:text-sm text-gray-600 mb-3">
+                        Number of EPC certificates lodged each year in Scotland.
+                    </p>
+                    <div class="relative h-64">
+                        <canvas id="epcCertificatesByYearScotland"></canvas>
+                    </div>
+                </div>
+
+                {{-- Tenure by year --}}
+                @isset($tenureByYear)
+                    <div class="rounded-lg border border-gray-200 bg-white/80 p-4 md:p-6 shadow-sm">
+                        <h2 class="text-base md:text-lg font-semibold text-gray-900 mb-1">Tenure by year</h2>
+                        <p class="text-xs md:text-sm text-gray-600 mb-3">
+                            Split of EPCs by tenure (owner-occupied, private rented, social rented) each year.
+                        </p>
+                        <div class="relative h-64">
+                            <canvas id="epcTenureByYearScotland"></canvas>
+                        </div>
+                    </div>
+                @endisset
+            </div>
+        </section>
+    @endisset
+
     {{-- Search form --}}
     <div class="flex justify-center">
         <form method="GET" action="{{ route('epc.search_scotland') }}" class="mb-10 w-full lg:w-1/2 mx-auto p-6 border bg-white/80 rounded">
@@ -223,5 +253,95 @@
         @endif
     @endisset
 
+    @isset($byYear)
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Certificates issued by year (Scotland)
+                const byYearRawScot = @json($byYear ?? []);
+                if (byYearRawScot.length && document.getElementById('epcCertificatesByYearScotland')) {
+                    const labelsScot = byYearRawScot.map(r => r.yr);
+                    const dataScot = byYearRawScot.map(r => r.cnt);
+
+                    const ctxCertScot = document.getElementById('epcCertificatesByYearScotland').getContext('2d');
+                    new Chart(ctxCertScot, {
+                        type: 'bar',
+                        data: {
+                            labels: labelsScot,
+                            datasets: [{
+                                label: 'Certificates',
+                                data: dataScot,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (value) {
+                                            return value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Tenure by year (Scotland)
+                @isset($tenureByYear)
+                    const tenureRawScot = @json($tenureByYear ?? []);
+                    if (tenureRawScot.length && document.getElementById('epcTenureByYearScotland')) {
+                        const tenureCategories = ['owner-occupied', 'rented (private)', 'rented (social)'];
+                        const tenureYears = [...new Set(tenureRawScot.map(r => r.yr))].sort();
+
+                        const tenureDatasets = tenureCategories.map((cat, idx) => {
+                            return {
+                                label: cat,
+                                data: tenureYears.map(y => {
+                                    const match = tenureRawScot.find(r => r.yr === y && r.tenure === cat);
+                                    return match ? match.cnt : 0;
+                                }),
+                                borderWidth: 1
+                            };
+                        });
+
+                        const ctxTenureScot = document.getElementById('epcTenureByYearScotland').getContext('2d');
+                        new Chart(ctxTenureScot, {
+                            type: 'line',
+                            data: {
+                                labels: tenureYears,
+                                datasets: tenureDatasets
+                            },
+                            options: {
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function (value) {
+                                                return value.toLocaleString();
+                                            }
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                @endisset
+            });
+        </script>
+    @endisset
 </div>
 @endsection

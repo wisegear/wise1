@@ -79,42 +79,125 @@
         </div>
     </div>
 
-    {{-- EPCs by Year --}}
-    <div class="mb-8 border rounded-lg bg-white p-4 shadow">
-        <h2 class="text-lg font-semibold mb-2">Certificates issued by year</h2>
-        <div class="w-full h-72">
-          <canvas id="certificatesByYearChart" class="w-full h-full"></canvas>
+    {{-- EPCs by Year & Tenure --}}
+    <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Certificates issued by year --}}
+        <div class="border rounded-lg bg-white p-4 shadow">
+            <h2 class="text-lg font-semibold mb-2">Certificates issued by year</h2>
+            <p class="mb-2 text-sm text-gray-600">
+                Number of EPC certificates lodged each year for the selected nation.
+            </p>
+            <div class="w-full h-72">
+                <canvas id="certificatesByYearChart" class="w-full h-full"></canvas>
+            </div>
+        </div>
+
+        {{-- Tenure by year --}}
+        <div class="border rounded-lg bg-white p-4 shadow">
+            <h2 class="text-lg font-semibold mb-2">Tenure by year</h2>
+            <p class="mb-2 text-sm text-gray-600">
+                Split of EPCs by tenure (owner-occupied, private rented, social rented) each year.
+            </p>
+            <div class="w-full h-72">
+                <canvas id="tenureByYearChart" class="w-full h-full"></canvas>
+            </div>
         </div>
     </div>
+
+    @php
+        $tenureCategoriesJs = (($nation ?? 'ew') === 'scotland')
+            ? ['owner-occupied','rented (private)','rented (social)']
+            : ['owner-occupied','rental (private)','rental (social)'];
+    @endphp
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function() {
-        const ctx = document.getElementById('certificatesByYearChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: @json($byYear->pluck('yr')),
-            datasets: [{
-              label: 'Certificates',
-              data: @json($byYear->pluck('cnt')),
-              borderColor: 'rgba(75, 192, 192, 1)',
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              fill: true,
-              tension: 0.3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+        // Certificates issued by year
+        const certCanvas = document.getElementById('certificatesByYearChart');
+        if (certCanvas) {
+          const ctx = certCanvas.getContext('2d');
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: @json($byYear->pluck('yr')),
+              datasets: [{
+                label: 'Certificates',
+                data: @json($byYear->pluck('cnt')),
+                borderWidth: 1,
+                fill: false
+              }]
             },
-            scales: {
-              x: { title: { display: true, text: 'Year' } },
-              y: { title: { display: true, text: 'Count' }, beginAtZero: true }
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: { title: { display: false } },
+                y: {
+                  title: { display: true, text: 'Count' },
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function (value) {
+                      return value.toLocaleString();
+                    }
+                  }
+                }
+              }
             }
-          }
-        });
+          });
+        }
+
+        // Tenure by year
+        const tenureCanvas = document.getElementById('tenureByYearChart');
+        const tenureRaw = @json($tenureByYear ?? []);
+        if (tenureCanvas && Array.isArray(tenureRaw) && tenureRaw.length) {
+          const ctxTenure = tenureCanvas.getContext('2d');
+          const tenureCategories = @json($tenureCategoriesJs);
+          const tenureYears = [...new Set(tenureRaw.map(r => r.yr))].sort();
+
+          const tenureDatasets = tenureCategories.map((cat) => ({
+            label: cat,
+            data: tenureYears.map(y => {
+              const match = tenureRaw.find(r => r.yr === y && r.tenure === cat);
+              return match ? match.cnt : 0;
+            }),
+            borderWidth: 1
+          }));
+
+          new Chart(ctxTenure, {
+            type: 'line',
+            data: {
+              labels: tenureYears,
+              datasets: tenureDatasets
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom'
+                }
+              },
+              scales: {
+                x: {
+                  title: { display: true, text: 'Year' }
+                },
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Certificates' },
+                  ticks: {
+                    callback: function (value) {
+                      return value.toLocaleString();
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
       });
     </script>
 

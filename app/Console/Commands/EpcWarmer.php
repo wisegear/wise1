@@ -123,6 +123,23 @@ class EpcWarmer extends Command
             Cache::put($ck($nation, 'potentialByYear'), $potentialByYear, $ttl);
             $this->line("✔ {$nation}: potentialByYear cached");
 
+            $tenureLabels = ($nation === 'scotland')
+                ? ['owner-occupied','rented (private)','rented (social)']
+                : ['owner-occupied','rental (private)','rental (social)'];
+
+            // 3c) Tenure by year: owner-occupied, rented (private), rented (social)
+            $tenureByYear = DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, tenure, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereIn('tenure', $tenureLabels)
+                ->groupBy('yr', 'tenure')
+                ->orderBy('yr', 'asc')
+                ->orderByRaw("FIELD(tenure, '" . implode("','", $tenureLabels) . "')")
+                ->get();
+            Cache::put($ck($nation, 'tenureByYear'), $tenureByYear, $ttl);
+            $this->line("✔ {$nation}: tenureByYear cached");
+
             // 4) Distribution of current ratings (A–G, Other, Unknown)
             $ratingDist = DB::table($cfg['table'])
                 ->selectRaw("
