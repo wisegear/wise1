@@ -90,7 +90,7 @@
         <h3 class="text-base font-semibold text-zinc-800">Quick links</h3>
         <div class="mt-4 flex flex-wrap gap-3">
             <a href="{{ url('/admin/users') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Users</a>
-            <a href="{{ url('/admin/blogposts') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Blog</a>
+            <a href="{{ url('/admin/blog') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Blog</a>
             <a href="{{ url('/admin/articles') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Articles</a>
             <a href="{{ url('/admin/support') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Support</a>
         </div>
