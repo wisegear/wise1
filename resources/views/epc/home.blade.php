@@ -105,9 +105,8 @@
     </div>
 
     @php
-        $tenureCategoriesJs = (($nation ?? 'ew') === 'scotland')
-            ? ['owner-occupied','rented (private)','rented (social)']
-            : ['owner-occupied','rental (private)','rental (social)'];
+        // Normalised tenure labels consistent with controller and warmer
+        $tenureCategoriesJs = ['Owner-occupied','Rented (private)','Rented (social)'];
     @endphp
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

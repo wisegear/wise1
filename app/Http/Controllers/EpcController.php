@@ -110,9 +110,7 @@ class EpcController extends Controller
         });
 
         // 6) Tenure by year: owner‑occupied, rented (private), rented (social)
-        $tenureLabels = ($nation === 'scotland')
-            ? ['owner-occupied','rented (private)','rented (social)']
-            : ['owner-occupied','rental (private)','rental (social)'];
+        $tenureLabels = ['Owner-occupied','Rented (private)','Rented (social)'];
 
         $tenureByYear = Cache::remember($ck('tenureByYear'), $ttl, function () use ($cfg, $tenureLabels) {
             return DB::table($cfg['table'])

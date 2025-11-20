@@ -95,6 +95,7 @@ class EpcWarmer extends Command
                 ->orderBy('yr', 'asc')
                 ->get();
             Cache::put($ck($nation, 'byYear'), $byYear, $ttl);
+
             $this->line("✔ {$nation}: byYear cached");
 
             // 3) Current energy ratings by year (A–G)
@@ -123,20 +124,34 @@ class EpcWarmer extends Command
             Cache::put($ck($nation, 'potentialByYear'), $potentialByYear, $ttl);
             $this->line("✔ {$nation}: potentialByYear cached");
 
-            $tenureLabels = ($nation === 'scotland')
-                ? ['owner-occupied','rented (private)','rented (social)']
-                : ['owner-occupied','rental (private)','rental (social)'];
+            // Normalise tenure values for both nations
+            $tenureLabels    = ['Owner-occupied','Rented (private)','Rented (social)'];
+            $tenureRawValues = [
+                'Owner-occupied','owner-occupied',
+                'Rented (private)','rental (private)',
+                'Rented (social)','rental (social)',
+            ];
 
-            // 3c) Tenure by year: owner-occupied, rented (private), rented (social)
+            // 3c) Tenure by year (normalised)
             $tenureByYear = DB::table($cfg['table'])
-                ->selectRaw("{$cfg['yearExpr']} as yr, tenure, COUNT(*) as cnt")
+                ->selectRaw("
+                    {$cfg['yearExpr']} as yr,
+                    CASE
+                        WHEN tenure IN ('Owner-occupied','owner-occupied') THEN 'Owner-occupied'
+                        WHEN tenure IN ('Rented (private)','rental (private)') THEN 'Rented (private)'
+                        WHEN tenure IN ('Rented (social)','rental (social)') THEN 'Rented (social)'
+                        ELSE NULL
+                    END as tenure,
+                    COUNT(*) as cnt
+                ")
                 ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
                 ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
-                ->whereIn('tenure', $tenureLabels)
+                ->whereIn('tenure', $tenureRawValues)
                 ->groupBy('yr', 'tenure')
                 ->orderBy('yr', 'asc')
                 ->orderByRaw("FIELD(tenure, '" . implode("','", $tenureLabels) . "')")
                 ->get();
+
             Cache::put($ck($nation, 'tenureByYear'), $tenureByYear, $ttl);
             $this->line("✔ {$nation}: tenureByYear cached");
 
