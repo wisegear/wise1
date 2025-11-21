@@ -21,6 +21,6 @@ class InflationCPIHMonthly extends Model
     // Convenience scopes/helpers if you want them later:
     // public function scopeLatestFirst($query)
     // {
-    //     return $query->orderByDesc('date');
+    //     return $query->orderByDesc('date'); Test
     // }
 }
