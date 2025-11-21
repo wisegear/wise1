@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InflationCpihMonthly extends Model
+class InflationCPIHMonthly extends Model
 {
     protected $table = 'inflation_cpih_monthly';
 
