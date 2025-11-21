@@ -18,6 +18,27 @@
         </div>
     @endif
 
+        {{-- Add new inflation row --}}
+        <form action="{{ route('admin.inflation.add') }}" method="POST" class="mb-6">
+            @csrf
+            <h2 class="text-lg font-semibold mb-3">Add new row</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-sm text-zinc-700 mb-1">Date (YYYY-MM-01)</label>
+                    <input type="date" name="date" class="border rounded p-2 w-full" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-zinc-700 mb-1">Rate (%)</label>
+                    <input type="number" step="0.01" name="rate" class="border rounded p-2 w-full" required>
+                </div>
+                <div>
+                    <button class="mt-1 bg-zinc-800 hover:bg-zinc-900 text-white px-4 py-2 rounded w-full sm:w-auto">
+                        Add Row
+                    </button>
+                </div>
+            </div>
+        </form>
+
     <form action="" method="POST">
         @csrf
 
@@ -40,6 +61,7 @@
                 @foreach($inflation as $i => $row)
                     <tr>
                         <td class="border p-2">
+                            <input type="hidden" name="rows[{{$i}}][id]" value="{{ $row->id }}">
                             <input type="date" name="rows[{{$i}}][date]" value="{{ $row->date->format('Y-m-d') }}"
                                    class="border rounded p-1 w-full">
                         </td>
@@ -58,19 +80,6 @@
                         </td>
                     </tr>
                 @endforeach
-
-                {{-- Blank new row --}}
-                <tr class="bg-yellow-50">
-                    <td class="border p-2">
-                        <input type="date" name="rows[new][date]" class="border rounded p-1 w-full">
-                    </td>
-                    <td class="border p-2">
-                        <input type="number" step="0.01" name="rows[new][rate]" class="border rounded p-1 w-full">
-                    </td>
-                    <td class="border text-center text-gray-400">
-                        New row
-                    </td>
-                </tr>
 
             </tbody>
         </table>

@@ -41,6 +41,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPostCodesController;
 use App\Http\Controllers\AdminSupportController;
 use App\Http\Controllers\AdminInflationController;
+use App\Http\Controllers\AdminUnemploymentController;
 
 // Base Pages
 
@@ -115,8 +116,14 @@ Route::middleware('auth')->group(function () {
             Route::resource('updates', DataUpdateController::class)->except(['show']);
             // Inflation (admin)
             Route::get('/inflation', [AdminInflationController::class, 'index'])->name('inflation.index');
+            Route::post('/inflation/add', [AdminInflationController::class, 'add'])->name('inflation.add');
             Route::post('/inflation', [AdminInflationController::class, 'store'])->name('inflation.store');
             Route::delete('/inflation/{id}', [AdminInflationController::class, 'destroy'])->name('inflation.destroy');
+            // Unemployment
+            Route::get('/unemployment', [AdminUnemploymentController::class, 'index'])->name('unemployment.index');
+            Route::post('/unemployment/add', [AdminUnemploymentController::class, 'add'])->name('unemployment.add');
+            Route::post('/unemployment', [AdminUnemploymentController::class, 'store'])->name('unemployment.store');
+            Route::delete('/unemployment/{id}', [AdminUnemploymentController::class, 'destroy'])->name('unemployment.destroy');
         });
 
 // Logout route to clear session.

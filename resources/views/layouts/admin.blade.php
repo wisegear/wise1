@@ -54,6 +54,9 @@
                                 <a href="/admin/inflation" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
                                     Inflation
                                 </a>
+                                <a href="/admin/unemployment" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
+                                    Unemployment
+                                </a>
                                 <!-- Future data items go here -->
                             </div>
                         </div>

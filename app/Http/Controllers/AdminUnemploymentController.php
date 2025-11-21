@@ -3,16 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\InflationCPIHMonthly;
+use App\Models\UnemploymentMonthly;
 
-class AdminInflationController extends Controller
+class AdminUnemploymentController extends Controller
 {
     public function index()
     {
-        $inflation = InflationCPIHMonthly::orderBy('date', 'desc')->get();
-        return view('admin.inflation.index', compact('inflation'));
+        $unemployment = UnemploymentMonthly::orderBy('date', 'desc')->get();
+
+        return view('admin.unemployment.index', compact('unemployment'));
     }
 
+    /**
+     * Handle adding a brand new unemployment row (from the top form).
+     */
     public function add(Request $request)
     {
         $data = $request->validate([
@@ -20,11 +24,14 @@ class AdminInflationController extends Controller
             'rate' => 'required|numeric',
         ]);
 
-        InflationCPIHMonthly::create($data);
+        UnemploymentMonthly::create($data);
 
-        return back()->with('success', 'New inflation row added.');
+        return back()->with('success', 'New unemployment row added.');
     }
 
+    /**
+     * Handle saving edits to existing rows (from the table form).
+     */
     public function store(Request $request)
     {
         $rows = $request->input('rows', []);
@@ -34,28 +41,29 @@ class AdminInflationController extends Controller
             $date = $row['date'] ?? null;
             $rate = $row['rate'] ?? null;
 
-            // Only update existing rows
+            // We only expect existing rows here; if there is no ID, skip.
             if (empty($id)) {
                 continue;
             }
 
-            // Skip blank rows
+            // Optionally skip completely empty edits (both fields blank)
             if (($date === null || $date === '') && ($rate === null || $rate === '')) {
                 continue;
             }
 
-            InflationCPIHMonthly::where('id', $id)->update([
+            UnemploymentMonthly::where('id', $id)->update([
                 'date' => $date,
                 'rate' => $rate,
             ]);
         }
 
-        return back()->with('success', 'Inflation data saved successfully.');
+        return back()->with('success', 'Unemployment data saved successfully.');
     }
 
     public function destroy($id)
     {
-        InflationCPIHMonthly::findOrFail($id)->delete();
+        UnemploymentMonthly::findOrFail($id)->delete();
+
         return back()->with('success', 'Row deleted.');
     }
 }
