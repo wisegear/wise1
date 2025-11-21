@@ -40,6 +40,7 @@ use App\Http\Controllers\AdminBlogController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPostCodesController;
 use App\Http\Controllers\AdminSupportController;
+use App\Http\Controllers\AdminInflationController;
 
 // Base Pages
 
@@ -112,6 +113,10 @@ Route::middleware('auth')->group(function () {
             Route::resource('postcodes', AdminPostCodesController::class);
             Route::resource('/support', AdminSupportController::class);
             Route::resource('updates', DataUpdateController::class)->except(['show']);
+            // Inflation (admin)
+            Route::get('/inflation', [AdminInflationController::class, 'index'])->name('inflation.index');
+            Route::post('/inflation', [AdminInflationController::class, 'store'])->name('inflation.store');
+            Route::delete('/inflation/{id}', [AdminInflationController::class, 'destroy'])->name('inflation.destroy');
         });
 
 // Logout route to clear session.

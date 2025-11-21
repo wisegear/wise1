@@ -35,6 +35,29 @@
                         <a href="/admin/users" class="hover:text-lime-600">Users</a>
                         <a href="/admin/blog" class="hover:text-lime-600">Blog</a>
                         <a href="/admin/support" class="hover:text-lime-600">Support</a>
+
+                        <div class="relative">
+                            <button
+                                type="button"
+                                id="dataDropdownButton"
+                                class="inline-flex items-center gap-1 hover:text-lime-600 focus:outline-none"
+                            >
+                                <span>Data</span>
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div
+                                id="dataDropdownMenu"
+                                class="absolute right-0 mt-2 w-40 bg-white border border-zinc-200 rounded shadow-lg hidden z-20"
+                            >
+                                <a href="/admin/inflation" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
+                                    Inflation
+                                </a>
+                                <!-- Future data items go here -->
+                            </div>
+                        </div>
+
                         <a href="/admin/updates" class="hover:text-lime-600">Updates</a>
                     </nav>
                 </div>
@@ -49,6 +72,27 @@
             </footer>
 
         </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const btn = document.getElementById('dataDropdownButton');
+                    const menu = document.getElementById('dataDropdownMenu');
+            
+                    if (!btn || !menu) return;
+            
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        menu.classList.toggle('hidden');
+                    });
+            
+                    document.addEventListener('click', function (e) {
+                        if (menu.classList.contains('hidden')) return;
+            
+                        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                });
+            </script>
             @stack('scripts')
     </body>
 
