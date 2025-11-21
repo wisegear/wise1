@@ -43,6 +43,7 @@ use App\Http\Controllers\AdminSupportController;
 use App\Http\Controllers\AdminInflationController;
 use App\Http\Controllers\AdminUnemploymentController;
 
+
 // Base Pages
 
 Route::get('/', [PagesController::class, 'home'])->name('home');
@@ -129,6 +130,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/wage-growth/add', [\App\Http\Controllers\AdminWageGrowthController::class, 'add'])->name('wagegrowth.add');
             Route::post('/wage-growth', [\App\Http\Controllers\AdminWageGrowthController::class, 'store'])->name('wagegrowth.store');
             Route::delete('/wage-growth/{id}', [\App\Http\Controllers\AdminWageGrowthController::class, 'destroy'])->name('wagegrowth.destroy');
+            // Interest Rates (admin)
+            Route::get('/interest-rates', [\App\Http\Controllers\AdminInterestRateController::class, 'index'])->name('interestrates.index');
+            Route::post('/interest-rates/add', [\App\Http\Controllers\AdminInterestRateController::class, 'add'])->name('interestrates.add');
+            Route::post('/interest-rates', [\App\Http\Controllers\AdminInterestRateController::class, 'store'])->name('interestrates.store');
+            Route::delete('/interest-rates/{id}', [\App\Http\Controllers\AdminInterestRateController::class, 'destroy'])->name('interestrates.destroy');
         });
 
 // Logout route to clear session.
