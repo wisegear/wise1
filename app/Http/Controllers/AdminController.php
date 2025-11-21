@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserRolesPivot;
 use App\Models\BlogPosts;
 use App\Models\Support;
+use App\Models\DataUpdate;
 
 class AdminController extends Controller
 {
@@ -29,12 +30,33 @@ class AdminController extends Controller
         // Support tickets info
         $tickets = Support::all();
         $tickets_total = $tickets->count();
-        $tickets_open = $tickets->where('status', 'open')->count();
-        $tickets_pending = $tickets->where('status', 'pending')->count();
-        $tickets_closed = $tickets->where('status', 'closed')->count();
+
+        // Match actual stored statuses (Open, Closed, Pending, Awaiting Reply)
+        $tickets_open = $tickets->filter(function ($ticket) {
+            return strcasecmp($ticket->status, 'Open') === 0;
+        })->count();
+
+        $tickets_pending = $tickets->filter(function ($ticket) {
+            return strcasecmp($ticket->status, 'Pending') === 0;
+        })->count();
+
+        $tickets_awaiting = $tickets->filter(function ($ticket) {
+            return strcasecmp($ticket->status, 'Awaiting Reply') === 0;
+        })->count();
+
+        $tickets_closed = $tickets->filter(function ($ticket) {
+            return strcasecmp($ticket->status, 'Closed') === 0;
+        })->count();
         //Blog info
         $blogposts = BlogPosts::all();
         $blogunpublished = BlogPosts::where('published', false)->get();
+
+        // Upcoming data updates (next 3 by next_update_due_at from today onwards)
+        $upcoming_updates = DataUpdate::whereNotNull('next_update_due_at')
+            ->whereDate('next_update_due_at', '>=', now()->toDateString())
+            ->orderBy('next_update_due_at', 'asc')
+            ->take(3)
+            ->get();
 
         $data = array(
 
@@ -45,9 +67,11 @@ class AdminController extends Controller
             'users_admin' => $users_admin,
             'blogposts' => $blogposts,
             'blogunpublished' => $blogunpublished,
+            'upcoming_updates' => $upcoming_updates,
             'tickets_total' => $tickets_total,
             'tickets_open' => $tickets_open,
             'tickets_pending' => $tickets_pending,
+            'tickets_awaiting' => $tickets_awaiting,
             'tickets_closed' => $tickets_closed,
         );
 

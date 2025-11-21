@@ -34,7 +34,6 @@
                         <a href="/admin" class="hover:text-lime-600">Dashboard</a>
                         <a href="/admin/users" class="hover:text-lime-600">Users</a>
                         <a href="/admin/blog" class="hover:text-lime-600">Blog</a>
-                        <a href="/admin/articles" class="hover:text-lime-600">Articles</a>
                         <a href="/admin/support" class="hover:text-lime-600">Support</a>
                         <a href="/admin/updates" class="hover:text-lime-600">Updates</a>
                     </nav>

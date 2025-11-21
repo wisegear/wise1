@@ -93,7 +93,7 @@
                 </span>
             </div>
 
-            <div class="mt-5 grid grid-cols-2 gap-4 text-sm text-zinc-600">
+            <div class="mt-5 grid grid-cols-2 md:grid-cols-2 gap-4 text-sm text-zinc-600">
                 <div class="rounded-lg border border-zinc-200 p-3">
                     <p class="text-zinc-500">Open</p>
                     <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_open }}</p>
@@ -101,6 +101,10 @@
                 <div class="rounded-lg border border-zinc-200 p-3">
                     <p class="text-zinc-500">Pending</p>
                     <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_pending }}</p>
+                </div>
+                <div class="rounded-lg border border-zinc-200 p-3">
+                    <p class="text-zinc-500">Awaiting reply</p>
+                    <p class="mt-1 text-2xl font-semibold text-zinc-900">{{ $tickets_awaiting }}</p>
                 </div>
                 <div class="rounded-lg border border-zinc-200 p-3">
                     <p class="text-zinc-500">Closed</p>
@@ -119,6 +123,54 @@
                 </a>
             </div>
         </div>
+
+        {{-- Upcoming Data Updates --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-zinc-800">Upcoming Data Updates</h2>
+
+                @if(isset($upcoming_updates) && $upcoming_updates->count() > 0)
+                    <span class="inline-flex items-center rounded-md bg-lime-50 px-2.5 py-0.5 text-xs font-medium text-lime-700 ring-1 ring-inset ring-lime-600/20">
+                        Next {{ $upcoming_updates->count() }} due
+                    </span>
+                @else
+                    <span class="inline-flex items-center rounded-md bg-zinc-50 px-2.5 py-0.5 text-xs font-medium text-zinc-700 ring-1 ring-inset ring-zinc-300/60">
+                        None scheduled
+                    </span>
+                @endif
+            </div>
+
+            <div class="mt-5 space-y-4 text-sm text-zinc-600">
+                @forelse($upcoming_updates as $update)
+                    <div class="rounded-lg border border-zinc-200 p-3 flex items-start justify-between gap-3">
+                        <div>
+                            <p class="font-medium text-zinc-900">{{ $update->name }}</p>
+                            @if($update->notes)
+                                <p class="mt-1 text-xs text-zinc-500">{{ \Illuminate\Support\Str::limit($update->notes, 80) }}</p>
+                            @endif
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-zinc-500">Next update</p>
+                            <p class="mt-1 text-sm font-semibold text-zinc-900">
+                                {{ optional($update->next_update_due_at)->format('d M Y') }}
+                            </p>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-zinc-600">No upcoming data updates have been set.</p>
+                @endforelse
+            </div>
+
+            <div class="mt-5">
+                <a href="{{ url('/admin/updates') }}" class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+                        <path d="M6.75 3A2.25 2.25 0 004.5 5.25v13.5A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V9.31a2.25 2.25 0 00-.659-1.591l-4.06-4.06A2.25 2.25 0 0013.19 3H6.75z" />
+                        <path d="M9 8.25A.75.75 0 019.75 7.5h2.25a.75.75 0 010 1.5H9.75A.75.75 0 019 8.25zM9 11.25A.75.75 0 019.75 10.5h4.5a.75.75 0 010 1.5h-4.5A.75.75 0 019 11.25zM9.75 13.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z" />
+                    </svg>
+                    Manage updates
+                </a>
+            </div>
+        </div>
     </section>
 
     {{-- Quick Links --}}
@@ -127,7 +179,6 @@
         <div class="mt-4 flex flex-wrap gap-3">
             <a href="{{ url('/admin/users') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Users</a>
             <a href="{{ url('/admin/blog') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Blog</a>
-            <a href="{{ url('/admin/articles') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Articles</a>
             <a href="{{ url('/admin/support') }}" class="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">Support</a>
         </div>
     </section>
