@@ -124,6 +124,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/unemployment/add', [AdminUnemploymentController::class, 'add'])->name('unemployment.add');
             Route::post('/unemployment', [AdminUnemploymentController::class, 'store'])->name('unemployment.store');
             Route::delete('/unemployment/{id}', [AdminUnemploymentController::class, 'destroy'])->name('unemployment.destroy');
+            // Wage Growth (admin)
+            Route::get('/wage-growth', [\App\Http\Controllers\AdminWageGrowthController::class, 'index'])->name('wagegrowth.index');
+            Route::post('/wage-growth/add', [\App\Http\Controllers\AdminWageGrowthController::class, 'add'])->name('wagegrowth.add');
+            Route::post('/wage-growth', [\App\Http\Controllers\AdminWageGrowthController::class, 'store'])->name('wagegrowth.store');
+            Route::delete('/wage-growth/{id}', [\App\Http\Controllers\AdminWageGrowthController::class, 'destroy'])->name('wagegrowth.destroy');
         });
 
 // Logout route to clear session.

@@ -57,6 +57,9 @@
                                 <a href="/admin/unemployment" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
                                     Unemployment
                                 </a>
+                                <a href="/admin/wage-growth" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
+                                    Wage Growth
+                                </a>
                                 <!-- Future data items go here -->
                             </div>
                         </div>
