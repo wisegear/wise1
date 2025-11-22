@@ -63,6 +63,12 @@
                                 <a href="/admin/interest-rates" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
                                     Interest Rates
                                 </a>
+                                <a href="/admin/arrears" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
+                                    Arrears
+                                </a>
+                                <a href="/admin/approvals" class="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-lime-600">
+                                    Mortgage Approvals
+                                </a>
                                 <!-- Future data items go here -->
                             </div>
                         </div>

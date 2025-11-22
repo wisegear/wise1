@@ -135,6 +135,17 @@ Route::middleware('auth')->group(function () {
             Route::post('/interest-rates/add', [\App\Http\Controllers\AdminInterestRateController::class, 'add'])->name('interestrates.add');
             Route::post('/interest-rates', [\App\Http\Controllers\AdminInterestRateController::class, 'store'])->name('interestrates.store');
             Route::delete('/interest-rates/{id}', [\App\Http\Controllers\AdminInterestRateController::class, 'destroy'])->name('interestrates.destroy');
+            // Arrears (admin)
+            Route::get('/arrears', [\App\Http\Controllers\AdminArrearsController::class, 'index'])->name('arrears.index');
+            Route::post('/arrears/add', [\App\Http\Controllers\AdminArrearsController::class, 'add'])->name('arrears.add');
+            Route::post('/arrears', [\App\Http\Controllers\AdminArrearsController::class, 'store'])->name('arrears.store');
+            Route::delete('/arrears/{id}', [\App\Http\Controllers\AdminArrearsController::class, 'destroy'])->name('arrears.destroy');
+
+            // Mortgage Approvals (admin)
+            Route::get('/approvals', [\App\Http\Controllers\AdminMortgageApprovalController::class, 'index'])->name('approvals.index');
+            Route::post('/approvals/add', [\App\Http\Controllers\AdminMortgageApprovalController::class, 'add'])->name('approvals.add');
+            Route::post('/approvals', [\App\Http\Controllers\AdminMortgageApprovalController::class, 'store'])->name('approvals.store');
+            Route::delete('/approvals/{id}', [\App\Http\Controllers\AdminMortgageApprovalController::class, 'destroy'])->name('approvals.destroy');
         });
 
 // Logout route to clear session.
