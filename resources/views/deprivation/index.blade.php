@@ -10,7 +10,8 @@
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">
         Quick view of the most and least deprived areas using <strong>IMD 2025</strong> (England), <strong>SIMD 2020</strong> (Scotland), <strong>WIMD 2019</strong> (Wales) and <strong>NIMDM 2017</strong> (Northern Ireland). 
-        Use the postcode box to jump straight to a specific place (England / Scotland / Wales).  Northern Ireland is not available by postcode search due to no free matching file being available.
+        Use the postcode box to jump straight to a specific place (England / Scotland / Wales).  Northern Ireland is not available by postcode search due to no free matching file being available.  There is a new search by area 
+        option below for Northern Ireland.
       </p>
       @php
         $imd25LastWarm  = Cache::get('imd25:last_warm');
