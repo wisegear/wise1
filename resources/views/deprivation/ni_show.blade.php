@@ -13,9 +13,16 @@
     ? max(0, min(100, (int) round((1 - (($rankVal - 1) / $totalDisplay)) * 100)))
     : null;
 
-  // NI dataset doesn't include a decile, so we'll just show "N/A"
-  $dec      = null;
-  $badge    = 'bg-zinc-100 text-zinc-800 ring-1 ring-inset ring-zinc-200';
+  // Derive an overall decile from the rank (1 = most deprived, 10 = least deprived)
+  $dec = $rankVal
+    ? max(1, min(10, (int) floor((($rankVal - 1) / $totalDisplay) * 10) + 1))
+    : null;
+  $badge = match (true) {
+    $dec !== null && $dec >= 8 => 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200',
+    $dec !== null && $dec >= 4 => 'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200',
+    $dec !== null && $dec >= 1 => 'bg-rose-100 text-rose-800 ring-1 ring-inset ring-rose-200',
+    default                    => 'bg-zinc-100 text-zinc-800 ring-1 ring-inset ring-zinc-200',
+  };
 @endphp
 
 <script>
@@ -139,7 +146,7 @@
     <h3 class="text-base font-semibold text-gray-900 mb-2">Overall position</h3>
     <div class="flex flex-wrap items-center gap-3">
       <span class="inline-flex items-center rounded-full px-2 py-1 text-xs {{ $badge }}">
-        Decile: N/A
+        Decile: {{ $dec ?? 'N/A' }}
       </span>
       <span class="text-xs text-gray-600">
         Rank:
