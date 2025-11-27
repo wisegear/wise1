@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'PropertyResearch') }}</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicon/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/favicon/favicon-16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/favicon/favicon-180.png') }}">
+    <link rel="manifest" href="{{ asset('assets/favicon/site.webmanifest') }}">
+
     @isset($page)
     <!-- Twitter Meta -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -26,8 +32,6 @@
 
     <!-- moved this to the top due to FOUC -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('/assets/images/site/favicon.ico') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- FontAwesome -->
@@ -49,17 +53,76 @@
 </head>
 <body class="bg-zinc-50">
     <div class="min-h-screen flex flex-col">
-        {{-- Desktop Nav --}}
-        <nav class="hidden xl:block bg-white border-b border-zinc-200 p-4">
+        {{-- Desktop Logo Header --}}
+        <div class="hidden xl:block bg-white border-b border-zinc-200">
             <div class="max-w-7xl mx-auto flex items-center">
-                <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
+                {{-- Left search button --}}
+                <div class="flex-1 flex items-center">
+                    <a href="/property/search"
+                       class="inline-flex items-center shadow gap-2 rounded bg-zinc-800 text-zinc-100 px-4 py-2 text-xs hover:bg-zinc-500 transition shadow">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+                        </svg>
+                        Search property sales
+                    </a>
+                </div>
+
+                {{-- Centered logo --}}
+                <div class="flex-1 flex items-center justify-center gap-1">
+                    <img src="{{ asset('assets/images/site/research-logo-4.png') }}" alt="PropertyResearch.uk logo" class="h-20 w-auto">
+                    <span class="text-xl font-semibold tracking-tight text-slate-800">
+                        PropertyResearch<span class="text-lime-600 text-sm">.uk</span>
+                    </span>
+                </div>
+
+                {{-- Right-side auth (login/register or user menu) --}}
+                <div class="flex-1 flex items-center justify-end text-sm">
+                    @if(Auth::check())
+                        {{-- User dropdown (desktop) --}}
+                        <div class="relative">
+                            <button id="userMenuButton" class="flex items-center gap-1 focus:outline-none cursor-pointer">
+                                {{ Auth::user()->name }}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <div id="userDropdown" class="absolute right-0 mt-4 w-30 bg-white border border-slate-200 translate-x-4 rounded-xl shadow-lg z-50 hidden">
+                                <div>
+                                    <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-4 py-2 hover:bg-zinc-100">Profile</a>
+                                    <a href="/support" class="block px-4 py-2 hover:bg-zinc-100">Support</a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 hover:bg-zinc-100 hover:text-teal-500 cursor-pointer">Logout</button>
+                                    </form>
+                                    @can('Admin')
+                                        <a href="/admin" class="block px-4 py-2 hover:bg-zinc-100 text-orange-800 font-bold">Admin</a>
+                                    @endcan
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-2 text-xs">
+                            <a href="/login" class="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-500 transition">Login</a>
+                            <a href="/register" class="px-4 py-2 rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition hover:text-black">Register</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        {{-- Desktop Nav --}}
+        <nav class="hidden xl:block bg-white border-b border-zinc-200 px-4 py-2">
+            <div class="max-w-7xl mx-auto flex items-center justify-center">
                 <button id="navToggle" aria-controls="primaryNav" aria-expanded="false" class="md:hidden ml-auto inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none" type="button">
                   <span class="sr-only">Open main menu</span>
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
-                <div id="primaryNav" class="hidden md:flex flex-1 gap-2 text-sm md:ml-8 flex-col md:flex-row mt-3 md:mt-0">
+                <div id="primaryNav" class="hidden md:flex gap-2 text-sm flex-col md:flex-row mt-3 md:mt-0 justify-center">
                     <a href="{{ url('/') }}" class="px-3 py-2 rounded {{ request()->is('/') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Home</a>
                     <a href="{{ url('/blog') }}" class="px-3 py-2 rounded {{ request()->is('blog') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">Blog</a>
                     
@@ -144,46 +207,14 @@
                     </div>
                     <a href="{{ url('/about') }}" class="px-3 py-2 rounded {{ request()->is('about') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">About</a>
                 </div>
-                <ul class="flex items-center gap-2 text-sm">
-                    @if(Auth::check())
-                        <!-- Dropdown Trigger -->
-                        <li class="relative">
-                            <button id="userMenuButton" class="flex items-center gap-1 focus:outline-none cursor-pointer">
-                                {{ Auth::user()->name }}
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            <!-- Dropdown Menu -->
-                            <div id="userDropdown" class="absolute right-0 mt-4 w-30 bg-white border border-slate-200 translate-x-4 rounded-xl shadow-lg z-50 hidden">
-                                <div class="">
-                                    <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-4 py-2 hover:bg-zinc-100">Profile</a>
-                                    <a href="/support" class="block px-4 py-2 hover:bg-zinc-100">Support</a>
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="w-full text-left px-4 py-2 hover:bg-zinc-100 hover:text-teal-500 cursor-pointer">Logout</button>
-                                        </form>
-                                    @can('Admin')
-                                        <a href="/admin" class="block px-4 py-2 hover:bg-zinc-100 text-orange-800 font-bold">Admin</a>
-                                    @endcan
-                                </div>
-                            </div>
-                        </li>
-                    @else
-                        <li class="flex items-center gap-2 text-xs">
-                            <a href="/login" class="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-500 transition">Login</a>
-                            <a href="/register" class="px-4 py-2 rounded bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition hover:text-black">Register</a>
-                        </li>
-                    @endif
-                </ul>
             </div>
         </nav>
     {{-- Mobile Nav --}}
     <nav class="bg-white border-b border-zinc-200 p-4 xl:hidden">
         <div class="w-full flex items-center justify-between">
-            <a href="{{ url('/') }}" class="font-semibold text-lg">PropertyResearch<span class="text-sm text-lime-600">.uk</span></a>
+            <a href="{{ url('/') }}" class="font-semibold text-lg">
+                <img src="{{ asset('assets/images/site/research-logo.png') }}" alt="PropertyResearch.uk logo" class="h-12">
+            </a>
             <button id="mobileNavToggle" aria-controls="mobileNav" aria-expanded="false"
                 class="inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none"
                 type="button">
