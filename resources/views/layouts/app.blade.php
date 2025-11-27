@@ -53,17 +53,25 @@
         {{-- Desktop Logo Header --}}
         <div class="hidden xl:block bg-white border-b border-zinc-200">
             <div class="max-w-7xl mx-auto flex items-center">
-                {{-- Left search button --}}
+                {{-- Left social icons --}}
                 <div class="flex-1 flex items-center">
-                    <a href="/property/search"
-                       class="inline-flex items-center shadow gap-2 rounded bg-zinc-800 text-zinc-100 px-4 py-2 text-xs hover:bg-zinc-500 transition shadow">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                             viewBox="0 0 24 24">
-                            <circle cx="11" cy="11" r="7"></circle>
-                            <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
-                        </svg>
-                        Search property sales
-                    </a>
+                    <div class="inline-flex items-center gap-2 text-sm">
+                        <a href="https://www.linkedin.com/in/leewisener/" target="_blank" rel="noopener"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-[#0A66C2] hover:bg-zinc-100 transition shadow-sm"
+                           aria-label="LinkedIn profile">
+                            <i class="fa-brands fa-linkedin-in text-sm"></i>
+                        </a>
+                        <a href="https://www.facebook.com/lee.wisener" target="_blank" rel="noopener"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-[#1877F2] hover:bg-zinc-100 transition shadow-sm"
+                           aria-label="Facebook profile">
+                            <i class="fa-brands fa-square-facebook text-sm"></i>
+                        </a>
+                        <a href="https://x.com/Propertyda03" target="_blank" rel="noopener"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-black hover:bg-zinc-100 transition shadow-sm"
+                           aria-label="X profile">
+                            <i class="fa-brands fa-x-twitter text-sm"></i>
+                        </a>
+                    </div>
                 </div>
 
                 {{-- Centered logo --}}
