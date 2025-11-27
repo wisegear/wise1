@@ -6,10 +6,7 @@
     <title>{{ config('app.name', 'PropertyResearch') }}</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicon/favicon-32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/favicon/favicon-16.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/favicon/favicon-180.png') }}">
-    <link rel="manifest" href="{{ asset('assets/favicon/site.webmanifest') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/favicon/favicon.png') }}">
 
     @isset($page)
     <!-- Twitter Meta -->
