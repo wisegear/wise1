@@ -212,8 +212,11 @@
     {{-- Mobile Nav --}}
     <nav class="bg-white border-b border-zinc-200 p-4 xl:hidden">
         <div class="w-full flex items-center justify-between">
-            <a href="{{ url('/') }}" class="font-semibold text-lg">
-                <img src="{{ asset('assets/images/site/research-logo.png') }}" alt="PropertyResearch.uk logo" class="h-12">
+            <a href="{{ url('/') }}" class="flex items-center gap-1">
+                <img src="{{ asset('assets/images/site/research-logo-4.png') }}" alt="PropertyResearch.uk logo" class="h-10 w-auto">
+                <span class="text-lg font-semibold tracking-tight text-slate-800">
+                    PropertyResearch<span class="text-lime-600 text-sm">.uk</span>
+                </span>
             </a>
             <button id="mobileNavToggle" aria-controls="mobileNav" aria-expanded="false"
                 class="inline-flex items-center justify-center p-2 rounded text-zinc-700 hover:text-lime-600 focus:outline-none"
