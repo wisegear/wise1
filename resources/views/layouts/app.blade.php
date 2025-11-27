@@ -298,6 +298,28 @@
             </div>
             <a href="{{ url('/about') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">About</a>
 
+            {{-- Social links (mobile) --}}
+            <div class="flex items-center gap-2 px-3 py-3 border-t border-zinc-100 mt-1">
+                <span class="text-xs uppercase tracking-wide text-zinc-500">Connect</span>
+                <div class="inline-flex items-center gap-2">
+                    <a href="https://www.linkedin.com/in/leewisener/" target="_blank" rel="noopener"
+                       class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white text-[#0A66C2] hover:bg-zinc-100 transition shadow-sm"
+                       aria-label="LinkedIn profile">
+                        <i class="fa-brands fa-linkedin-in text-sm"></i>
+                    </a>
+                    <a href="https://www.facebook.com/lee.wisener" target="_blank" rel="noopener"
+                       class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white text-[#1877F2] hover:bg-zinc-100 transition shadow-sm"
+                       aria-label="Facebook profile">
+                        <i class="fa-brands fa-square-facebook text-sm"></i>
+                    </a>
+                    <a href="https://x.com/Propertyda03" target="_blank" rel="noopener"
+                       class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white text-black hover:bg-zinc-100 transition shadow-sm"
+                       aria-label="X profile">
+                        <i class="fa-brands fa-x-twitter text-sm"></i>
+                    </a>
+                </div>
+            </div>
+
             {{-- Auth links --}}
             @auth
                 <a href="/profile/{{ Auth::user()->name_slug }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Profile</a>
