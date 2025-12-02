@@ -46,7 +46,7 @@
             </div>
         </form>
     </div>
-
+<!--
     <div class="flex justify-center mt-4">
         <div class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
             <label for="district-search" class="block text-sm font-medium mb-1">Or search by local authority district (England &amp; Wales).</label>
@@ -67,7 +67,7 @@
             <p class="mt-2 text-xs text-zinc-500">Start typing and then click on one of the suggestions to jump straight to that district.</p>
         </div>
     </div>
-
+-->
     {{-- Results --}}
     @if(isset($results))
         @if($results->count() === 0)
