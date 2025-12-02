@@ -1,0 +1,2337 @@
+[
+    {
+        "District": "ABERCONWY",
+        "label": "ABERCONWY",
+        "path": "\/property\/district\/aberconwy"
+    },
+    {
+        "District": "ADUR",
+        "label": "ADUR",
+        "path": "\/property\/district\/adur"
+    },
+    {
+        "District": "ALLERDALE",
+        "label": "ALLERDALE",
+        "path": "\/property\/district\/allerdale"
+    },
+    {
+        "District": "ALNWICK",
+        "label": "ALNWICK",
+        "path": "\/property\/district\/alnwick"
+    },
+    {
+        "District": "ALYN AND DEESIDE",
+        "label": "ALYN AND DEESIDE",
+        "path": "\/property\/district\/alyn-and-deeside"
+    },
+    {
+        "District": "AMBER VALLEY",
+        "label": "AMBER VALLEY",
+        "path": "\/property\/district\/amber-valley"
+    },
+    {
+        "District": "ARFON",
+        "label": "ARFON",
+        "path": "\/property\/district\/arfon"
+    },
+    {
+        "District": "ARUN",
+        "label": "ARUN",
+        "path": "\/property\/district\/arun"
+    },
+    {
+        "District": "ASHFIELD",
+        "label": "ASHFIELD",
+        "path": "\/property\/district\/ashfield"
+    },
+    {
+        "District": "ASHFORD",
+        "label": "ASHFORD",
+        "path": "\/property\/district\/ashford"
+    },
+    {
+        "District": "AYLESBURY VALE",
+        "label": "AYLESBURY VALE",
+        "path": "\/property\/district\/aylesbury-vale"
+    },
+    {
+        "District": "BABERGH",
+        "label": "BABERGH",
+        "path": "\/property\/district\/babergh"
+    },
+    {
+        "District": "BARKING AND DAGENHAM",
+        "label": "BARKING AND DAGENHAM",
+        "path": "\/property\/district\/barking-and-dagenham"
+    },
+    {
+        "District": "BARNET",
+        "label": "BARNET",
+        "path": "\/property\/district\/barnet"
+    },
+    {
+        "District": "BARNSLEY",
+        "label": "BARNSLEY",
+        "path": "\/property\/district\/barnsley"
+    },
+    {
+        "District": "BARROW-IN-FURNESS",
+        "label": "BARROW-IN-FURNESS",
+        "path": "\/property\/district\/barrow-in-furness"
+    },
+    {
+        "District": "BASILDON",
+        "label": "BASILDON",
+        "path": "\/property\/district\/basildon"
+    },
+    {
+        "District": "BASINGSTOKE AND DEANE",
+        "label": "BASINGSTOKE AND DEANE",
+        "path": "\/property\/district\/basingstoke-and-deane"
+    },
+    {
+        "District": "BASSETLAW",
+        "label": "BASSETLAW",
+        "path": "\/property\/district\/bassetlaw"
+    },
+    {
+        "District": "BATH",
+        "label": "BATH",
+        "path": "\/property\/district\/bath"
+    },
+    {
+        "District": "BATH AND NORTH EAST SOMERSET",
+        "label": "BATH AND NORTH EAST SOMERSET",
+        "path": "\/property\/district\/bath-and-north-east-somerset"
+    },
+    {
+        "District": "BEDFORD",
+        "label": "BEDFORD",
+        "path": "\/property\/district\/bedford"
+    },
+    {
+        "District": "BERWICK-UPON-TWEED",
+        "label": "BERWICK-UPON-TWEED",
+        "path": "\/property\/district\/berwick-upon-tweed"
+    },
+    {
+        "District": "BEXLEY",
+        "label": "BEXLEY",
+        "path": "\/property\/district\/bexley"
+    },
+    {
+        "District": "BIRMINGHAM",
+        "label": "BIRMINGHAM",
+        "path": "\/property\/district\/birmingham"
+    },
+    {
+        "District": "BLABY",
+        "label": "BLABY",
+        "path": "\/property\/district\/blaby"
+    },
+    {
+        "District": "BLACKBURN",
+        "label": "BLACKBURN",
+        "path": "\/property\/district\/blackburn"
+    },
+    {
+        "District": "BLACKBURN WITH DARWEN",
+        "label": "BLACKBURN WITH DARWEN",
+        "path": "\/property\/district\/blackburn-with-darwen"
+    },
+    {
+        "District": "BLACKPOOL",
+        "label": "BLACKPOOL",
+        "path": "\/property\/district\/blackpool"
+    },
+    {
+        "District": "BLAENAU GWENT",
+        "label": "BLAENAU GWENT",
+        "path": "\/property\/district\/blaenau-gwent"
+    },
+    {
+        "District": "BLYTH VALLEY",
+        "label": "BLYTH VALLEY",
+        "path": "\/property\/district\/blyth-valley"
+    },
+    {
+        "District": "BOLSOVER",
+        "label": "BOLSOVER",
+        "path": "\/property\/district\/bolsover"
+    },
+    {
+        "District": "BOLTON",
+        "label": "BOLTON",
+        "path": "\/property\/district\/bolton"
+    },
+    {
+        "District": "BOOTHFERRY",
+        "label": "BOOTHFERRY",
+        "path": "\/property\/district\/boothferry"
+    },
+    {
+        "District": "BOSTON",
+        "label": "BOSTON",
+        "path": "\/property\/district\/boston"
+    },
+    {
+        "District": "BOURNEMOUTH",
+        "label": "BOURNEMOUTH",
+        "path": "\/property\/district\/bournemouth"
+    },
+    {
+        "District": "BOURNEMOUTH, CHRISTCHURCH AND POOLE",
+        "label": "BOURNEMOUTH, CHRISTCHURCH AND POOLE",
+        "path": "\/property\/district\/bournemouth-christchurch-and-poole"
+    },
+    {
+        "District": "BRACKNELL",
+        "label": "BRACKNELL",
+        "path": "\/property\/district\/bracknell"
+    },
+    {
+        "District": "BRACKNELL FOREST",
+        "label": "BRACKNELL FOREST",
+        "path": "\/property\/district\/bracknell-forest"
+    },
+    {
+        "District": "BRADFORD",
+        "label": "BRADFORD",
+        "path": "\/property\/district\/bradford"
+    },
+    {
+        "District": "BRAINTREE",
+        "label": "BRAINTREE",
+        "path": "\/property\/district\/braintree"
+    },
+    {
+        "District": "BRECKLAND",
+        "label": "BRECKLAND",
+        "path": "\/property\/district\/breckland"
+    },
+    {
+        "District": "BRECKNOCK",
+        "label": "BRECKNOCK",
+        "path": "\/property\/district\/brecknock"
+    },
+    {
+        "District": "BRENT",
+        "label": "BRENT",
+        "path": "\/property\/district\/brent"
+    },
+    {
+        "District": "BRENTWOOD",
+        "label": "BRENTWOOD",
+        "path": "\/property\/district\/brentwood"
+    },
+    {
+        "District": "BRIDGEND",
+        "label": "BRIDGEND",
+        "path": "\/property\/district\/bridgend"
+    },
+    {
+        "District": "BRIDGNORTH",
+        "label": "BRIDGNORTH",
+        "path": "\/property\/district\/bridgnorth"
+    },
+    {
+        "District": "BRIGHTON",
+        "label": "BRIGHTON",
+        "path": "\/property\/district\/brighton"
+    },
+    {
+        "District": "BRIGHTON AND HOVE",
+        "label": "BRIGHTON AND HOVE",
+        "path": "\/property\/district\/brighton-and-hove"
+    },
+    {
+        "District": "BRISTOL",
+        "label": "BRISTOL",
+        "path": "\/property\/district\/bristol"
+    },
+    {
+        "District": "BROADLAND",
+        "label": "BROADLAND",
+        "path": "\/property\/district\/broadland"
+    },
+    {
+        "District": "BROMLEY",
+        "label": "BROMLEY",
+        "path": "\/property\/district\/bromley"
+    },
+    {
+        "District": "BROMSGROVE",
+        "label": "BROMSGROVE",
+        "path": "\/property\/district\/bromsgrove"
+    },
+    {
+        "District": "BROXBOURNE",
+        "label": "BROXBOURNE",
+        "path": "\/property\/district\/broxbourne"
+    },
+    {
+        "District": "BROXTOWE",
+        "label": "BROXTOWE",
+        "path": "\/property\/district\/broxtowe"
+    },
+    {
+        "District": "BRYHER",
+        "label": "BRYHER",
+        "path": "\/property\/district\/bryher"
+    },
+    {
+        "District": "BUCKINGHAMSHIRE",
+        "label": "BUCKINGHAMSHIRE",
+        "path": "\/property\/district\/buckinghamshire"
+    },
+    {
+        "District": "BURNLEY",
+        "label": "BURNLEY",
+        "path": "\/property\/district\/burnley"
+    },
+    {
+        "District": "BURY",
+        "label": "BURY",
+        "path": "\/property\/district\/bury"
+    },
+    {
+        "District": "CAERPHILLY",
+        "label": "CAERPHILLY",
+        "path": "\/property\/district\/caerphilly"
+    },
+    {
+        "District": "CALDERDALE",
+        "label": "CALDERDALE",
+        "path": "\/property\/district\/calderdale"
+    },
+    {
+        "District": "CAMBRIDGE",
+        "label": "CAMBRIDGE",
+        "path": "\/property\/district\/cambridge"
+    },
+    {
+        "District": "CAMDEN",
+        "label": "CAMDEN",
+        "path": "\/property\/district\/camden"
+    },
+    {
+        "District": "CANNOCK CHASE",
+        "label": "CANNOCK CHASE",
+        "path": "\/property\/district\/cannock-chase"
+    },
+    {
+        "District": "CANTERBURY",
+        "label": "CANTERBURY",
+        "path": "\/property\/district\/canterbury"
+    },
+    {
+        "District": "CARADON",
+        "label": "CARADON",
+        "path": "\/property\/district\/caradon"
+    },
+    {
+        "District": "CARDIFF",
+        "label": "CARDIFF",
+        "path": "\/property\/district\/cardiff"
+    },
+    {
+        "District": "CARDIGANSHIRE",
+        "label": "CARDIGANSHIRE",
+        "path": "\/property\/district\/cardiganshire"
+    },
+    {
+        "District": "CARLISLE",
+        "label": "CARLISLE",
+        "path": "\/property\/district\/carlisle"
+    },
+    {
+        "District": "CARMARTHEN",
+        "label": "CARMARTHEN",
+        "path": "\/property\/district\/carmarthen"
+    },
+    {
+        "District": "CARMARTHENSHIRE",
+        "label": "CARMARTHENSHIRE",
+        "path": "\/property\/district\/carmarthenshire"
+    },
+    {
+        "District": "CARRICK",
+        "label": "CARRICK",
+        "path": "\/property\/district\/carrick"
+    },
+    {
+        "District": "CASTLE MORPETH",
+        "label": "CASTLE MORPETH",
+        "path": "\/property\/district\/castle-morpeth"
+    },
+    {
+        "District": "CASTLE POINT",
+        "label": "CASTLE POINT",
+        "path": "\/property\/district\/castle-point"
+    },
+    {
+        "District": "CENTRAL BEDFORDSHIRE",
+        "label": "CENTRAL BEDFORDSHIRE",
+        "path": "\/property\/district\/central-bedfordshire"
+    },
+    {
+        "District": "CEREDIGION",
+        "label": "CEREDIGION",
+        "path": "\/property\/district\/ceredigion"
+    },
+    {
+        "District": "CHARNWOOD",
+        "label": "CHARNWOOD",
+        "path": "\/property\/district\/charnwood"
+    },
+    {
+        "District": "CHELMSFORD",
+        "label": "CHELMSFORD",
+        "path": "\/property\/district\/chelmsford"
+    },
+    {
+        "District": "CHELTENHAM",
+        "label": "CHELTENHAM",
+        "path": "\/property\/district\/cheltenham"
+    },
+    {
+        "District": "CHERWELL",
+        "label": "CHERWELL",
+        "path": "\/property\/district\/cherwell"
+    },
+    {
+        "District": "CHESHIRE EAST",
+        "label": "CHESHIRE EAST",
+        "path": "\/property\/district\/cheshire-east"
+    },
+    {
+        "District": "CHESHIRE WEST AND CHESTER",
+        "label": "CHESHIRE WEST AND CHESTER",
+        "path": "\/property\/district\/cheshire-west-and-chester"
+    },
+    {
+        "District": "CHESTER",
+        "label": "CHESTER",
+        "path": "\/property\/district\/chester"
+    },
+    {
+        "District": "CHESTER-LE-STREET",
+        "label": "CHESTER-LE-STREET",
+        "path": "\/property\/district\/chester-le-street"
+    },
+    {
+        "District": "CHESTERFIELD",
+        "label": "CHESTERFIELD",
+        "path": "\/property\/district\/chesterfield"
+    },
+    {
+        "District": "CHICHESTER",
+        "label": "CHICHESTER",
+        "path": "\/property\/district\/chichester"
+    },
+    {
+        "District": "CHILTERN",
+        "label": "CHILTERN",
+        "path": "\/property\/district\/chiltern"
+    },
+    {
+        "District": "CHORLEY",
+        "label": "CHORLEY",
+        "path": "\/property\/district\/chorley"
+    },
+    {
+        "District": "CHRISTCHURCH",
+        "label": "CHRISTCHURCH",
+        "path": "\/property\/district\/christchurch"
+    },
+    {
+        "District": "CITY OF BRISTOL",
+        "label": "CITY OF BRISTOL",
+        "path": "\/property\/district\/city-of-bristol"
+    },
+    {
+        "District": "CITY OF DERBY",
+        "label": "CITY OF DERBY",
+        "path": "\/property\/district\/city-of-derby"
+    },
+    {
+        "District": "CITY OF KINGSTON UPON HULL",
+        "label": "CITY OF KINGSTON UPON HULL",
+        "path": "\/property\/district\/city-of-kingston-upon-hull"
+    },
+    {
+        "District": "CITY OF LONDON",
+        "label": "CITY OF LONDON",
+        "path": "\/property\/district\/city-of-london"
+    },
+    {
+        "District": "CITY OF NOTTINGHAM",
+        "label": "CITY OF NOTTINGHAM",
+        "path": "\/property\/district\/city-of-nottingham"
+    },
+    {
+        "District": "CITY OF PETERBOROUGH",
+        "label": "CITY OF PETERBOROUGH",
+        "path": "\/property\/district\/city-of-peterborough"
+    },
+    {
+        "District": "CITY OF PLYMOUTH",
+        "label": "CITY OF PLYMOUTH",
+        "path": "\/property\/district\/city-of-plymouth"
+    },
+    {
+        "District": "CITY OF WESTMINSTER",
+        "label": "CITY OF WESTMINSTER",
+        "path": "\/property\/district\/city-of-westminster"
+    },
+    {
+        "District": "CLEETHORPES",
+        "label": "CLEETHORPES",
+        "path": "\/property\/district\/cleethorpes"
+    },
+    {
+        "District": "COLCHESTER",
+        "label": "COLCHESTER",
+        "path": "\/property\/district\/colchester"
+    },
+    {
+        "District": "COLWYN",
+        "label": "COLWYN",
+        "path": "\/property\/district\/colwyn"
+    },
+    {
+        "District": "CONGLETON",
+        "label": "CONGLETON",
+        "path": "\/property\/district\/congleton"
+    },
+    {
+        "District": "CONWY",
+        "label": "CONWY",
+        "path": "\/property\/district\/conwy"
+    },
+    {
+        "District": "COPELAND",
+        "label": "COPELAND",
+        "path": "\/property\/district\/copeland"
+    },
+    {
+        "District": "CORBY",
+        "label": "CORBY",
+        "path": "\/property\/district\/corby"
+    },
+    {
+        "District": "CORNWALL",
+        "label": "CORNWALL",
+        "path": "\/property\/district\/cornwall"
+    },
+    {
+        "District": "COTSWOLD",
+        "label": "COTSWOLD",
+        "path": "\/property\/district\/cotswold"
+    },
+    {
+        "District": "COUNTY DURHAM",
+        "label": "COUNTY DURHAM",
+        "path": "\/property\/district\/county-durham"
+    },
+    {
+        "District": "COVENTRY",
+        "label": "COVENTRY",
+        "path": "\/property\/district\/coventry"
+    },
+    {
+        "District": "CRAVEN",
+        "label": "CRAVEN",
+        "path": "\/property\/district\/craven"
+    },
+    {
+        "District": "CRAWLEY",
+        "label": "CRAWLEY",
+        "path": "\/property\/district\/crawley"
+    },
+    {
+        "District": "CREWE AND NANTWICH",
+        "label": "CREWE AND NANTWICH",
+        "path": "\/property\/district\/crewe-and-nantwich"
+    },
+    {
+        "District": "CROYDON",
+        "label": "CROYDON",
+        "path": "\/property\/district\/croydon"
+    },
+    {
+        "District": "CUMBERLAND",
+        "label": "CUMBERLAND",
+        "path": "\/property\/district\/cumberland"
+    },
+    {
+        "District": "CYNON VALLEY",
+        "label": "CYNON VALLEY",
+        "path": "\/property\/district\/cynon-valley"
+    },
+    {
+        "District": "DACORUM",
+        "label": "DACORUM",
+        "path": "\/property\/district\/dacorum"
+    },
+    {
+        "District": "DARLINGTON",
+        "label": "DARLINGTON",
+        "path": "\/property\/district\/darlington"
+    },
+    {
+        "District": "DARTFORD",
+        "label": "DARTFORD",
+        "path": "\/property\/district\/dartford"
+    },
+    {
+        "District": "DAVENTRY",
+        "label": "DAVENTRY",
+        "path": "\/property\/district\/daventry"
+    },
+    {
+        "District": "DELYN",
+        "label": "DELYN",
+        "path": "\/property\/district\/delyn"
+    },
+    {
+        "District": "DENBIGHSHIRE",
+        "label": "DENBIGHSHIRE",
+        "path": "\/property\/district\/denbighshire"
+    },
+    {
+        "District": "DERBY",
+        "label": "DERBY",
+        "path": "\/property\/district\/derby"
+    },
+    {
+        "District": "DERBYSHIRE DALES",
+        "label": "DERBYSHIRE DALES",
+        "path": "\/property\/district\/derbyshire-dales"
+    },
+    {
+        "District": "DERWENTSIDE",
+        "label": "DERWENTSIDE",
+        "path": "\/property\/district\/derwentside"
+    },
+    {
+        "District": "DINEFWR",
+        "label": "DINEFWR",
+        "path": "\/property\/district\/dinefwr"
+    },
+    {
+        "District": "DONCASTER",
+        "label": "DONCASTER",
+        "path": "\/property\/district\/doncaster"
+    },
+    {
+        "District": "DORSET",
+        "label": "DORSET",
+        "path": "\/property\/district\/dorset"
+    },
+    {
+        "District": "DOVER",
+        "label": "DOVER",
+        "path": "\/property\/district\/dover"
+    },
+    {
+        "District": "DUDLEY",
+        "label": "DUDLEY",
+        "path": "\/property\/district\/dudley"
+    },
+    {
+        "District": "DURHAM",
+        "label": "DURHAM",
+        "path": "\/property\/district\/durham"
+    },
+    {
+        "District": "DWYFOR",
+        "label": "DWYFOR",
+        "path": "\/property\/district\/dwyfor"
+    },
+    {
+        "District": "EALING",
+        "label": "EALING",
+        "path": "\/property\/district\/ealing"
+    },
+    {
+        "District": "EASINGTON",
+        "label": "EASINGTON",
+        "path": "\/property\/district\/easington"
+    },
+    {
+        "District": "EAST CAMBRIDGESHIRE",
+        "label": "EAST CAMBRIDGESHIRE",
+        "path": "\/property\/district\/east-cambridgeshire"
+    },
+    {
+        "District": "EAST DEVON",
+        "label": "EAST DEVON",
+        "path": "\/property\/district\/east-devon"
+    },
+    {
+        "District": "EAST DORSET",
+        "label": "EAST DORSET",
+        "path": "\/property\/district\/east-dorset"
+    },
+    {
+        "District": "EAST HAMPSHIRE",
+        "label": "EAST HAMPSHIRE",
+        "path": "\/property\/district\/east-hampshire"
+    },
+    {
+        "District": "EAST HERTFORDSHIRE",
+        "label": "EAST HERTFORDSHIRE",
+        "path": "\/property\/district\/east-hertfordshire"
+    },
+    {
+        "District": "EAST LINDSEY",
+        "label": "EAST LINDSEY",
+        "path": "\/property\/district\/east-lindsey"
+    },
+    {
+        "District": "EAST NORTHAMPTONSHIRE",
+        "label": "EAST NORTHAMPTONSHIRE",
+        "path": "\/property\/district\/east-northamptonshire"
+    },
+    {
+        "District": "EAST RIDING OF YORKSHIRE",
+        "label": "EAST RIDING OF YORKSHIRE",
+        "path": "\/property\/district\/east-riding-of-yorkshire"
+    },
+    {
+        "District": "EAST STAFFORDSHIRE",
+        "label": "EAST STAFFORDSHIRE",
+        "path": "\/property\/district\/east-staffordshire"
+    },
+    {
+        "District": "EAST SUFFOLK",
+        "label": "EAST SUFFOLK",
+        "path": "\/property\/district\/east-suffolk"
+    },
+    {
+        "District": "EAST YORKSHIRE",
+        "label": "EAST YORKSHIRE",
+        "path": "\/property\/district\/east-yorkshire"
+    },
+    {
+        "District": "EASTBOURNE",
+        "label": "EASTBOURNE",
+        "path": "\/property\/district\/eastbourne"
+    },
+    {
+        "District": "EASTLEIGH",
+        "label": "EASTLEIGH",
+        "path": "\/property\/district\/eastleigh"
+    },
+    {
+        "District": "EDEN",
+        "label": "EDEN",
+        "path": "\/property\/district\/eden"
+    },
+    {
+        "District": "ELLESMERE PORT AND NESTON",
+        "label": "ELLESMERE PORT AND NESTON",
+        "path": "\/property\/district\/ellesmere-port-and-neston"
+    },
+    {
+        "District": "ELMBRIDGE",
+        "label": "ELMBRIDGE",
+        "path": "\/property\/district\/elmbridge"
+    },
+    {
+        "District": "ENFIELD",
+        "label": "ENFIELD",
+        "path": "\/property\/district\/enfield"
+    },
+    {
+        "District": "EPPING FOREST",
+        "label": "EPPING FOREST",
+        "path": "\/property\/district\/epping-forest"
+    },
+    {
+        "District": "EPSOM AND EWELL",
+        "label": "EPSOM AND EWELL",
+        "path": "\/property\/district\/epsom-and-ewell"
+    },
+    {
+        "District": "EREWASH",
+        "label": "EREWASH",
+        "path": "\/property\/district\/erewash"
+    },
+    {
+        "District": "EXETER",
+        "label": "EXETER",
+        "path": "\/property\/district\/exeter"
+    },
+    {
+        "District": "FAREHAM",
+        "label": "FAREHAM",
+        "path": "\/property\/district\/fareham"
+    },
+    {
+        "District": "FENLAND",
+        "label": "FENLAND",
+        "path": "\/property\/district\/fenland"
+    },
+    {
+        "District": "FLINTSHIRE",
+        "label": "FLINTSHIRE",
+        "path": "\/property\/district\/flintshire"
+    },
+    {
+        "District": "FOLKESTONE AND HYTHE",
+        "label": "FOLKESTONE AND HYTHE",
+        "path": "\/property\/district\/folkestone-and-hythe"
+    },
+    {
+        "District": "FOREST HEATH",
+        "label": "FOREST HEATH",
+        "path": "\/property\/district\/forest-heath"
+    },
+    {
+        "District": "FOREST OF DEAN",
+        "label": "FOREST OF DEAN",
+        "path": "\/property\/district\/forest-of-dean"
+    },
+    {
+        "District": "FYLDE",
+        "label": "FYLDE",
+        "path": "\/property\/district\/fylde"
+    },
+    {
+        "District": "GATESHEAD",
+        "label": "GATESHEAD",
+        "path": "\/property\/district\/gateshead"
+    },
+    {
+        "District": "GEDLING",
+        "label": "GEDLING",
+        "path": "\/property\/district\/gedling"
+    },
+    {
+        "District": "GILLINGHAM",
+        "label": "GILLINGHAM",
+        "path": "\/property\/district\/gillingham"
+    },
+    {
+        "District": "GLANFORD",
+        "label": "GLANFORD",
+        "path": "\/property\/district\/glanford"
+    },
+    {
+        "District": "GLOUCESTER",
+        "label": "GLOUCESTER",
+        "path": "\/property\/district\/gloucester"
+    },
+    {
+        "District": "GLYNDWR",
+        "label": "GLYNDWR",
+        "path": "\/property\/district\/glyndwr"
+    },
+    {
+        "District": "GOSPORT",
+        "label": "GOSPORT",
+        "path": "\/property\/district\/gosport"
+    },
+    {
+        "District": "GRAVESHAM",
+        "label": "GRAVESHAM",
+        "path": "\/property\/district\/gravesham"
+    },
+    {
+        "District": "GREAT GRIMSBY",
+        "label": "GREAT GRIMSBY",
+        "path": "\/property\/district\/great-grimsby"
+    },
+    {
+        "District": "GREAT YARMOUTH",
+        "label": "GREAT YARMOUTH",
+        "path": "\/property\/district\/great-yarmouth"
+    },
+    {
+        "District": "GREENWICH",
+        "label": "GREENWICH",
+        "path": "\/property\/district\/greenwich"
+    },
+    {
+        "District": "GUILDFORD",
+        "label": "GUILDFORD",
+        "path": "\/property\/district\/guildford"
+    },
+    {
+        "District": "GWYNEDD",
+        "label": "GWYNEDD",
+        "path": "\/property\/district\/gwynedd"
+    },
+    {
+        "District": "HACKNEY",
+        "label": "HACKNEY",
+        "path": "\/property\/district\/hackney"
+    },
+    {
+        "District": "HALTON",
+        "label": "HALTON",
+        "path": "\/property\/district\/halton"
+    },
+    {
+        "District": "HAMBLETON",
+        "label": "HAMBLETON",
+        "path": "\/property\/district\/hambleton"
+    },
+    {
+        "District": "HAMMERSMITH AND FULHAM",
+        "label": "HAMMERSMITH AND FULHAM",
+        "path": "\/property\/district\/hammersmith-and-fulham"
+    },
+    {
+        "District": "HARBOROUGH",
+        "label": "HARBOROUGH",
+        "path": "\/property\/district\/harborough"
+    },
+    {
+        "District": "HARINGEY",
+        "label": "HARINGEY",
+        "path": "\/property\/district\/haringey"
+    },
+    {
+        "District": "HARLOW",
+        "label": "HARLOW",
+        "path": "\/property\/district\/harlow"
+    },
+    {
+        "District": "HARROGATE",
+        "label": "HARROGATE",
+        "path": "\/property\/district\/harrogate"
+    },
+    {
+        "District": "HARROW",
+        "label": "HARROW",
+        "path": "\/property\/district\/harrow"
+    },
+    {
+        "District": "HART",
+        "label": "HART",
+        "path": "\/property\/district\/hart"
+    },
+    {
+        "District": "HARTLEPOOL",
+        "label": "HARTLEPOOL",
+        "path": "\/property\/district\/hartlepool"
+    },
+    {
+        "District": "HASTINGS",
+        "label": "HASTINGS",
+        "path": "\/property\/district\/hastings"
+    },
+    {
+        "District": "HAVANT",
+        "label": "HAVANT",
+        "path": "\/property\/district\/havant"
+    },
+    {
+        "District": "HAVERING",
+        "label": "HAVERING",
+        "path": "\/property\/district\/havering"
+    },
+    {
+        "District": "HEREFORD",
+        "label": "HEREFORD",
+        "path": "\/property\/district\/hereford"
+    },
+    {
+        "District": "HEREFORDSHIRE",
+        "label": "HEREFORDSHIRE",
+        "path": "\/property\/district\/herefordshire"
+    },
+    {
+        "District": "HERTSMERE",
+        "label": "HERTSMERE",
+        "path": "\/property\/district\/hertsmere"
+    },
+    {
+        "District": "HIGH PEAK",
+        "label": "HIGH PEAK",
+        "path": "\/property\/district\/high-peak"
+    },
+    {
+        "District": "HILLINGDON",
+        "label": "HILLINGDON",
+        "path": "\/property\/district\/hillingdon"
+    },
+    {
+        "District": "HINCKLEY AND BOSWORTH",
+        "label": "HINCKLEY AND BOSWORTH",
+        "path": "\/property\/district\/hinckley-and-bosworth"
+    },
+    {
+        "District": "HOLDERNESS",
+        "label": "HOLDERNESS",
+        "path": "\/property\/district\/holderness"
+    },
+    {
+        "District": "HORSHAM",
+        "label": "HORSHAM",
+        "path": "\/property\/district\/horsham"
+    },
+    {
+        "District": "HOUNSLOW",
+        "label": "HOUNSLOW",
+        "path": "\/property\/district\/hounslow"
+    },
+    {
+        "District": "HOVE",
+        "label": "HOVE",
+        "path": "\/property\/district\/hove"
+    },
+    {
+        "District": "HUNTINGDONSHIRE",
+        "label": "HUNTINGDONSHIRE",
+        "path": "\/property\/district\/huntingdonshire"
+    },
+    {
+        "District": "HYNDBURN",
+        "label": "HYNDBURN",
+        "path": "\/property\/district\/hyndburn"
+    },
+    {
+        "District": "IPSWICH",
+        "label": "IPSWICH",
+        "path": "\/property\/district\/ipswich"
+    },
+    {
+        "District": "ISLE OF ANGLESEY",
+        "label": "ISLE OF ANGLESEY",
+        "path": "\/property\/district\/isle-of-anglesey"
+    },
+    {
+        "District": "ISLE OF WIGHT",
+        "label": "ISLE OF WIGHT",
+        "path": "\/property\/district\/isle-of-wight"
+    },
+    {
+        "District": "ISLES OF SCILLY",
+        "label": "ISLES OF SCILLY",
+        "path": "\/property\/district\/isles-of-scilly"
+    },
+    {
+        "District": "ISLINGTON",
+        "label": "ISLINGTON",
+        "path": "\/property\/district\/islington"
+    },
+    {
+        "District": "ISLWYN",
+        "label": "ISLWYN",
+        "path": "\/property\/district\/islwyn"
+    },
+    {
+        "District": "KENNET",
+        "label": "KENNET",
+        "path": "\/property\/district\/kennet"
+    },
+    {
+        "District": "KENSINGTON AND CHELSEA",
+        "label": "KENSINGTON AND CHELSEA",
+        "path": "\/property\/district\/kensington-and-chelsea"
+    },
+    {
+        "District": "KERRIER",
+        "label": "KERRIER",
+        "path": "\/property\/district\/kerrier"
+    },
+    {
+        "District": "KETTERING",
+        "label": "KETTERING",
+        "path": "\/property\/district\/kettering"
+    },
+    {
+        "District": "KING'S LYNN AND WEST NORFOLK",
+        "label": "KING'S LYNN AND WEST NORFOLK",
+        "path": "\/property\/district\/kings-lynn-and-west-norfolk"
+    },
+    {
+        "District": "KINGSTON UPON HULL",
+        "label": "KINGSTON UPON HULL",
+        "path": "\/property\/district\/kingston-upon-hull"
+    },
+    {
+        "District": "KINGSTON UPON THAMES",
+        "label": "KINGSTON UPON THAMES",
+        "path": "\/property\/district\/kingston-upon-thames"
+    },
+    {
+        "District": "KINGSWOOD",
+        "label": "KINGSWOOD",
+        "path": "\/property\/district\/kingswood"
+    },
+    {
+        "District": "KIRKLEES",
+        "label": "KIRKLEES",
+        "path": "\/property\/district\/kirklees"
+    },
+    {
+        "District": "KNOWSLEY",
+        "label": "KNOWSLEY",
+        "path": "\/property\/district\/knowsley"
+    },
+    {
+        "District": "LAMBETH",
+        "label": "LAMBETH",
+        "path": "\/property\/district\/lambeth"
+    },
+    {
+        "District": "LANCASTER",
+        "label": "LANCASTER",
+        "path": "\/property\/district\/lancaster"
+    },
+    {
+        "District": "LANGBAURGH-ON-TEES",
+        "label": "LANGBAURGH-ON-TEES",
+        "path": "\/property\/district\/langbaurgh-on-tees"
+    },
+    {
+        "District": "LEEDS",
+        "label": "LEEDS",
+        "path": "\/property\/district\/leeds"
+    },
+    {
+        "District": "LEICESTER",
+        "label": "LEICESTER",
+        "path": "\/property\/district\/leicester"
+    },
+    {
+        "District": "LEOMINSTER",
+        "label": "LEOMINSTER",
+        "path": "\/property\/district\/leominster"
+    },
+    {
+        "District": "LEWES",
+        "label": "LEWES",
+        "path": "\/property\/district\/lewes"
+    },
+    {
+        "District": "LEWISHAM",
+        "label": "LEWISHAM",
+        "path": "\/property\/district\/lewisham"
+    },
+    {
+        "District": "LICHFIELD",
+        "label": "LICHFIELD",
+        "path": "\/property\/district\/lichfield"
+    },
+    {
+        "District": "LINCOLN",
+        "label": "LINCOLN",
+        "path": "\/property\/district\/lincoln"
+    },
+    {
+        "District": "LIVERPOOL",
+        "label": "LIVERPOOL",
+        "path": "\/property\/district\/liverpool"
+    },
+    {
+        "District": "LLANELLI",
+        "label": "LLANELLI",
+        "path": "\/property\/district\/llanelli"
+    },
+    {
+        "District": "LLIW VALLEY",
+        "label": "LLIW VALLEY",
+        "path": "\/property\/district\/lliw-valley"
+    },
+    {
+        "District": "LUTON",
+        "label": "LUTON",
+        "path": "\/property\/district\/luton"
+    },
+    {
+        "District": "MACCLESFIELD",
+        "label": "MACCLESFIELD",
+        "path": "\/property\/district\/macclesfield"
+    },
+    {
+        "District": "MAIDSTONE",
+        "label": "MAIDSTONE",
+        "path": "\/property\/district\/maidstone"
+    },
+    {
+        "District": "MALDON",
+        "label": "MALDON",
+        "path": "\/property\/district\/maldon"
+    },
+    {
+        "District": "MALVERN HILLS",
+        "label": "MALVERN HILLS",
+        "path": "\/property\/district\/malvern-hills"
+    },
+    {
+        "District": "MANCHESTER",
+        "label": "MANCHESTER",
+        "path": "\/property\/district\/manchester"
+    },
+    {
+        "District": "MANSFIELD",
+        "label": "MANSFIELD",
+        "path": "\/property\/district\/mansfield"
+    },
+    {
+        "District": "MEDINA",
+        "label": "MEDINA",
+        "path": "\/property\/district\/medina"
+    },
+    {
+        "District": "MEDWAY",
+        "label": "MEDWAY",
+        "path": "\/property\/district\/medway"
+    },
+    {
+        "District": "MEIRIONNYDD",
+        "label": "MEIRIONNYDD",
+        "path": "\/property\/district\/meirionnydd"
+    },
+    {
+        "District": "MELTON",
+        "label": "MELTON",
+        "path": "\/property\/district\/melton"
+    },
+    {
+        "District": "MENDIP",
+        "label": "MENDIP",
+        "path": "\/property\/district\/mendip"
+    },
+    {
+        "District": "MERTHYR TYDFIL",
+        "label": "MERTHYR TYDFIL",
+        "path": "\/property\/district\/merthyr-tydfil"
+    },
+    {
+        "District": "MERTON",
+        "label": "MERTON",
+        "path": "\/property\/district\/merton"
+    },
+    {
+        "District": "MID BEDFORDSHIRE",
+        "label": "MID BEDFORDSHIRE",
+        "path": "\/property\/district\/mid-bedfordshire"
+    },
+    {
+        "District": "MID DEVON",
+        "label": "MID DEVON",
+        "path": "\/property\/district\/mid-devon"
+    },
+    {
+        "District": "MID SUFFOLK",
+        "label": "MID SUFFOLK",
+        "path": "\/property\/district\/mid-suffolk"
+    },
+    {
+        "District": "MID SUSSEX",
+        "label": "MID SUSSEX",
+        "path": "\/property\/district\/mid-sussex"
+    },
+    {
+        "District": "MIDDLESBROUGH",
+        "label": "MIDDLESBROUGH",
+        "path": "\/property\/district\/middlesbrough"
+    },
+    {
+        "District": "MILTON KEYNES",
+        "label": "MILTON KEYNES",
+        "path": "\/property\/district\/milton-keynes"
+    },
+    {
+        "District": "MOLE VALLEY",
+        "label": "MOLE VALLEY",
+        "path": "\/property\/district\/mole-valley"
+    },
+    {
+        "District": "MONMOUTH",
+        "label": "MONMOUTH",
+        "path": "\/property\/district\/monmouth"
+    },
+    {
+        "District": "MONMOUTHSHIRE",
+        "label": "MONMOUTHSHIRE",
+        "path": "\/property\/district\/monmouthshire"
+    },
+    {
+        "District": "MONTGOMERYSHIRE",
+        "label": "MONTGOMERYSHIRE",
+        "path": "\/property\/district\/montgomeryshire"
+    },
+    {
+        "District": "NEATH",
+        "label": "NEATH",
+        "path": "\/property\/district\/neath"
+    },
+    {
+        "District": "NEATH PORT TALBOT",
+        "label": "NEATH PORT TALBOT",
+        "path": "\/property\/district\/neath-port-talbot"
+    },
+    {
+        "District": "NEW FOREST",
+        "label": "NEW FOREST",
+        "path": "\/property\/district\/new-forest"
+    },
+    {
+        "District": "NEWARK AND SHERWOOD",
+        "label": "NEWARK AND SHERWOOD",
+        "path": "\/property\/district\/newark-and-sherwood"
+    },
+    {
+        "District": "NEWBURY",
+        "label": "NEWBURY",
+        "path": "\/property\/district\/newbury"
+    },
+    {
+        "District": "NEWCASTLE UPON TYNE",
+        "label": "NEWCASTLE UPON TYNE",
+        "path": "\/property\/district\/newcastle-upon-tyne"
+    },
+    {
+        "District": "NEWCASTLE-UNDER-LYME",
+        "label": "NEWCASTLE-UNDER-LYME",
+        "path": "\/property\/district\/newcastle-under-lyme"
+    },
+    {
+        "District": "NEWHAM",
+        "label": "NEWHAM",
+        "path": "\/property\/district\/newham"
+    },
+    {
+        "District": "NEWPORT",
+        "label": "NEWPORT",
+        "path": "\/property\/district\/newport"
+    },
+    {
+        "District": "NORTH BEDFORDSHIRE",
+        "label": "NORTH BEDFORDSHIRE",
+        "path": "\/property\/district\/north-bedfordshire"
+    },
+    {
+        "District": "NORTH CORNWALL",
+        "label": "NORTH CORNWALL",
+        "path": "\/property\/district\/north-cornwall"
+    },
+    {
+        "District": "NORTH DEVON",
+        "label": "NORTH DEVON",
+        "path": "\/property\/district\/north-devon"
+    },
+    {
+        "District": "NORTH DORSET",
+        "label": "NORTH DORSET",
+        "path": "\/property\/district\/north-dorset"
+    },
+    {
+        "District": "NORTH EAST DERBYSHIRE",
+        "label": "NORTH EAST DERBYSHIRE",
+        "path": "\/property\/district\/north-east-derbyshire"
+    },
+    {
+        "District": "NORTH EAST LINCOLNSHIRE",
+        "label": "NORTH EAST LINCOLNSHIRE",
+        "path": "\/property\/district\/north-east-lincolnshire"
+    },
+    {
+        "District": "NORTH HERTFORDSHIRE",
+        "label": "NORTH HERTFORDSHIRE",
+        "path": "\/property\/district\/north-hertfordshire"
+    },
+    {
+        "District": "NORTH KESTEVEN",
+        "label": "NORTH KESTEVEN",
+        "path": "\/property\/district\/north-kesteven"
+    },
+    {
+        "District": "NORTH LINCOLNSHIRE",
+        "label": "NORTH LINCOLNSHIRE",
+        "path": "\/property\/district\/north-lincolnshire"
+    },
+    {
+        "District": "NORTH NORFOLK",
+        "label": "NORTH NORFOLK",
+        "path": "\/property\/district\/north-norfolk"
+    },
+    {
+        "District": "NORTH NORTHAMPTONSHIRE",
+        "label": "NORTH NORTHAMPTONSHIRE",
+        "path": "\/property\/district\/north-northamptonshire"
+    },
+    {
+        "District": "NORTH SHROPSHIRE",
+        "label": "NORTH SHROPSHIRE",
+        "path": "\/property\/district\/north-shropshire"
+    },
+    {
+        "District": "NORTH SOMERSET",
+        "label": "NORTH SOMERSET",
+        "path": "\/property\/district\/north-somerset"
+    },
+    {
+        "District": "NORTH TYNESIDE",
+        "label": "NORTH TYNESIDE",
+        "path": "\/property\/district\/north-tyneside"
+    },
+    {
+        "District": "NORTH WARWICKSHIRE",
+        "label": "NORTH WARWICKSHIRE",
+        "path": "\/property\/district\/north-warwickshire"
+    },
+    {
+        "District": "NORTH WEST LEICESTERSHIRE",
+        "label": "NORTH WEST LEICESTERSHIRE",
+        "path": "\/property\/district\/north-west-leicestershire"
+    },
+    {
+        "District": "NORTH WILTSHIRE",
+        "label": "NORTH WILTSHIRE",
+        "path": "\/property\/district\/north-wiltshire"
+    },
+    {
+        "District": "NORTH YORKSHIRE",
+        "label": "NORTH YORKSHIRE",
+        "path": "\/property\/district\/north-yorkshire"
+    },
+    {
+        "District": "NORTHAMPTON",
+        "label": "NORTHAMPTON",
+        "path": "\/property\/district\/northampton"
+    },
+    {
+        "District": "NORTHAVON",
+        "label": "NORTHAVON",
+        "path": "\/property\/district\/northavon"
+    },
+    {
+        "District": "NORTHUMBERLAND",
+        "label": "NORTHUMBERLAND",
+        "path": "\/property\/district\/northumberland"
+    },
+    {
+        "District": "NORWICH",
+        "label": "NORWICH",
+        "path": "\/property\/district\/norwich"
+    },
+    {
+        "District": "NOTTINGHAM",
+        "label": "NOTTINGHAM",
+        "path": "\/property\/district\/nottingham"
+    },
+    {
+        "District": "NUNEATON AND BEDWORTH",
+        "label": "NUNEATON AND BEDWORTH",
+        "path": "\/property\/district\/nuneaton-and-bedworth"
+    },
+    {
+        "District": "OADBY AND WIGSTON",
+        "label": "OADBY AND WIGSTON",
+        "path": "\/property\/district\/oadby-and-wigston"
+    },
+    {
+        "District": "OGWR",
+        "label": "OGWR",
+        "path": "\/property\/district\/ogwr"
+    },
+    {
+        "District": "OLDHAM",
+        "label": "OLDHAM",
+        "path": "\/property\/district\/oldham"
+    },
+    {
+        "District": "OSWESTRY",
+        "label": "OSWESTRY",
+        "path": "\/property\/district\/oswestry"
+    },
+    {
+        "District": "OXFORD",
+        "label": "OXFORD",
+        "path": "\/property\/district\/oxford"
+    },
+    {
+        "District": "PEMBROKESHIRE",
+        "label": "PEMBROKESHIRE",
+        "path": "\/property\/district\/pembrokeshire"
+    },
+    {
+        "District": "PENDLE",
+        "label": "PENDLE",
+        "path": "\/property\/district\/pendle"
+    },
+    {
+        "District": "PENWITH",
+        "label": "PENWITH",
+        "path": "\/property\/district\/penwith"
+    },
+    {
+        "District": "PETERBOROUGH",
+        "label": "PETERBOROUGH",
+        "path": "\/property\/district\/peterborough"
+    },
+    {
+        "District": "PLYMOUTH",
+        "label": "PLYMOUTH",
+        "path": "\/property\/district\/plymouth"
+    },
+    {
+        "District": "POOLE",
+        "label": "POOLE",
+        "path": "\/property\/district\/poole"
+    },
+    {
+        "District": "PORT TALBOT",
+        "label": "PORT TALBOT",
+        "path": "\/property\/district\/port-talbot"
+    },
+    {
+        "District": "PORTSMOUTH",
+        "label": "PORTSMOUTH",
+        "path": "\/property\/district\/portsmouth"
+    },
+    {
+        "District": "POWYS",
+        "label": "POWYS",
+        "path": "\/property\/district\/powys"
+    },
+    {
+        "District": "PRESELI PEMBROKESHIRE",
+        "label": "PRESELI PEMBROKESHIRE",
+        "path": "\/property\/district\/preseli-pembrokeshire"
+    },
+    {
+        "District": "PRESTON",
+        "label": "PRESTON",
+        "path": "\/property\/district\/preston"
+    },
+    {
+        "District": "PURBECK",
+        "label": "PURBECK",
+        "path": "\/property\/district\/purbeck"
+    },
+    {
+        "District": "RADNOR",
+        "label": "RADNOR",
+        "path": "\/property\/district\/radnor"
+    },
+    {
+        "District": "RADNORSHIRE",
+        "label": "RADNORSHIRE",
+        "path": "\/property\/district\/radnorshire"
+    },
+    {
+        "District": "READING",
+        "label": "READING",
+        "path": "\/property\/district\/reading"
+    },
+    {
+        "District": "REDBRIDGE",
+        "label": "REDBRIDGE",
+        "path": "\/property\/district\/redbridge"
+    },
+    {
+        "District": "REDCAR AND CLEVELAND",
+        "label": "REDCAR AND CLEVELAND",
+        "path": "\/property\/district\/redcar-and-cleveland"
+    },
+    {
+        "District": "REDDITCH",
+        "label": "REDDITCH",
+        "path": "\/property\/district\/redditch"
+    },
+    {
+        "District": "REIGATE AND BANSTEAD",
+        "label": "REIGATE AND BANSTEAD",
+        "path": "\/property\/district\/reigate-and-banstead"
+    },
+    {
+        "District": "RESTORMEL",
+        "label": "RESTORMEL",
+        "path": "\/property\/district\/restormel"
+    },
+    {
+        "District": "RHONDDA",
+        "label": "RHONDDA",
+        "path": "\/property\/district\/rhondda"
+    },
+    {
+        "District": "RHONDDA CYNON TAFF",
+        "label": "RHONDDA CYNON TAFF",
+        "path": "\/property\/district\/rhondda-cynon-taff"
+    },
+    {
+        "District": "RHUDDLAN",
+        "label": "RHUDDLAN",
+        "path": "\/property\/district\/rhuddlan"
+    },
+    {
+        "District": "RHYMNEY VALLEY",
+        "label": "RHYMNEY VALLEY",
+        "path": "\/property\/district\/rhymney-valley"
+    },
+    {
+        "District": "RIBBLE VALLEY",
+        "label": "RIBBLE VALLEY",
+        "path": "\/property\/district\/ribble-valley"
+    },
+    {
+        "District": "RICHMOND UPON THAMES",
+        "label": "RICHMOND UPON THAMES",
+        "path": "\/property\/district\/richmond-upon-thames"
+    },
+    {
+        "District": "RICHMONDSHIRE",
+        "label": "RICHMONDSHIRE",
+        "path": "\/property\/district\/richmondshire"
+    },
+    {
+        "District": "ROCHDALE",
+        "label": "ROCHDALE",
+        "path": "\/property\/district\/rochdale"
+    },
+    {
+        "District": "ROCHESTER UPON MEDWAY",
+        "label": "ROCHESTER UPON MEDWAY",
+        "path": "\/property\/district\/rochester-upon-medway"
+    },
+    {
+        "District": "ROCHFORD",
+        "label": "ROCHFORD",
+        "path": "\/property\/district\/rochford"
+    },
+    {
+        "District": "ROSSENDALE",
+        "label": "ROSSENDALE",
+        "path": "\/property\/district\/rossendale"
+    },
+    {
+        "District": "ROTHER",
+        "label": "ROTHER",
+        "path": "\/property\/district\/rother"
+    },
+    {
+        "District": "ROTHERHAM",
+        "label": "ROTHERHAM",
+        "path": "\/property\/district\/rotherham"
+    },
+    {
+        "District": "RUGBY",
+        "label": "RUGBY",
+        "path": "\/property\/district\/rugby"
+    },
+    {
+        "District": "RUNNYMEDE",
+        "label": "RUNNYMEDE",
+        "path": "\/property\/district\/runnymede"
+    },
+    {
+        "District": "RUSHCLIFFE",
+        "label": "RUSHCLIFFE",
+        "path": "\/property\/district\/rushcliffe"
+    },
+    {
+        "District": "RUSHMOOR",
+        "label": "RUSHMOOR",
+        "path": "\/property\/district\/rushmoor"
+    },
+    {
+        "District": "RUTLAND",
+        "label": "RUTLAND",
+        "path": "\/property\/district\/rutland"
+    },
+    {
+        "District": "RYEDALE",
+        "label": "RYEDALE",
+        "path": "\/property\/district\/ryedale"
+    },
+    {
+        "District": "SALFORD",
+        "label": "SALFORD",
+        "path": "\/property\/district\/salford"
+    },
+    {
+        "District": "SALISBURY",
+        "label": "SALISBURY",
+        "path": "\/property\/district\/salisbury"
+    },
+    {
+        "District": "SANDWELL",
+        "label": "SANDWELL",
+        "path": "\/property\/district\/sandwell"
+    },
+    {
+        "District": "SCARBOROUGH",
+        "label": "SCARBOROUGH",
+        "path": "\/property\/district\/scarborough"
+    },
+    {
+        "District": "SCUNTHORPE",
+        "label": "SCUNTHORPE",
+        "path": "\/property\/district\/scunthorpe"
+    },
+    {
+        "District": "SEDGEFIELD",
+        "label": "SEDGEFIELD",
+        "path": "\/property\/district\/sedgefield"
+    },
+    {
+        "District": "SEDGEMOOR",
+        "label": "SEDGEMOOR",
+        "path": "\/property\/district\/sedgemoor"
+    },
+    {
+        "District": "SEFTON",
+        "label": "SEFTON",
+        "path": "\/property\/district\/sefton"
+    },
+    {
+        "District": "SELBY",
+        "label": "SELBY",
+        "path": "\/property\/district\/selby"
+    },
+    {
+        "District": "SEVENOAKS",
+        "label": "SEVENOAKS",
+        "path": "\/property\/district\/sevenoaks"
+    },
+    {
+        "District": "SHEFFIELD",
+        "label": "SHEFFIELD",
+        "path": "\/property\/district\/sheffield"
+    },
+    {
+        "District": "SHEPWAY",
+        "label": "SHEPWAY",
+        "path": "\/property\/district\/shepway"
+    },
+    {
+        "District": "SHREWSBURY AND ATCHAM",
+        "label": "SHREWSBURY AND ATCHAM",
+        "path": "\/property\/district\/shrewsbury-and-atcham"
+    },
+    {
+        "District": "SHROPSHIRE",
+        "label": "SHROPSHIRE",
+        "path": "\/property\/district\/shropshire"
+    },
+    {
+        "District": "SLOUGH",
+        "label": "SLOUGH",
+        "path": "\/property\/district\/slough"
+    },
+    {
+        "District": "SOLIHULL",
+        "label": "SOLIHULL",
+        "path": "\/property\/district\/solihull"
+    },
+    {
+        "District": "SOMERSET",
+        "label": "SOMERSET",
+        "path": "\/property\/district\/somerset"
+    },
+    {
+        "District": "SOMERSET WEST AND TAUNTON",
+        "label": "SOMERSET WEST AND TAUNTON",
+        "path": "\/property\/district\/somerset-west-and-taunton"
+    },
+    {
+        "District": "SOUTH BEDFORDSHIRE",
+        "label": "SOUTH BEDFORDSHIRE",
+        "path": "\/property\/district\/south-bedfordshire"
+    },
+    {
+        "District": "SOUTH BUCKS",
+        "label": "SOUTH BUCKS",
+        "path": "\/property\/district\/south-bucks"
+    },
+    {
+        "District": "SOUTH CAMBRIDGESHIRE",
+        "label": "SOUTH CAMBRIDGESHIRE",
+        "path": "\/property\/district\/south-cambridgeshire"
+    },
+    {
+        "District": "SOUTH DERBYSHIRE",
+        "label": "SOUTH DERBYSHIRE",
+        "path": "\/property\/district\/south-derbyshire"
+    },
+    {
+        "District": "SOUTH GLOUCESTERSHIRE",
+        "label": "SOUTH GLOUCESTERSHIRE",
+        "path": "\/property\/district\/south-gloucestershire"
+    },
+    {
+        "District": "SOUTH HAMS",
+        "label": "SOUTH HAMS",
+        "path": "\/property\/district\/south-hams"
+    },
+    {
+        "District": "SOUTH HEREFORDSHIRE",
+        "label": "SOUTH HEREFORDSHIRE",
+        "path": "\/property\/district\/south-herefordshire"
+    },
+    {
+        "District": "SOUTH HOLLAND",
+        "label": "SOUTH HOLLAND",
+        "path": "\/property\/district\/south-holland"
+    },
+    {
+        "District": "SOUTH KESTEVEN",
+        "label": "SOUTH KESTEVEN",
+        "path": "\/property\/district\/south-kesteven"
+    },
+    {
+        "District": "SOUTH LAKELAND",
+        "label": "SOUTH LAKELAND",
+        "path": "\/property\/district\/south-lakeland"
+    },
+    {
+        "District": "SOUTH NORFOLK",
+        "label": "SOUTH NORFOLK",
+        "path": "\/property\/district\/south-norfolk"
+    },
+    {
+        "District": "SOUTH NORTHAMPTONSHIRE",
+        "label": "SOUTH NORTHAMPTONSHIRE",
+        "path": "\/property\/district\/south-northamptonshire"
+    },
+    {
+        "District": "SOUTH OXFORDSHIRE",
+        "label": "SOUTH OXFORDSHIRE",
+        "path": "\/property\/district\/south-oxfordshire"
+    },
+    {
+        "District": "SOUTH PEMBROKESHIRE",
+        "label": "SOUTH PEMBROKESHIRE",
+        "path": "\/property\/district\/south-pembrokeshire"
+    },
+    {
+        "District": "SOUTH RIBBLE",
+        "label": "SOUTH RIBBLE",
+        "path": "\/property\/district\/south-ribble"
+    },
+    {
+        "District": "SOUTH SHROPSHIRE",
+        "label": "SOUTH SHROPSHIRE",
+        "path": "\/property\/district\/south-shropshire"
+    },
+    {
+        "District": "SOUTH SOMERSET",
+        "label": "SOUTH SOMERSET",
+        "path": "\/property\/district\/south-somerset"
+    },
+    {
+        "District": "SOUTH STAFFORDSHIRE",
+        "label": "SOUTH STAFFORDSHIRE",
+        "path": "\/property\/district\/south-staffordshire"
+    },
+    {
+        "District": "SOUTH TYNESIDE",
+        "label": "SOUTH TYNESIDE",
+        "path": "\/property\/district\/south-tyneside"
+    },
+    {
+        "District": "SOUTH WIGHT",
+        "label": "SOUTH WIGHT",
+        "path": "\/property\/district\/south-wight"
+    },
+    {
+        "District": "SOUTHAMPTON",
+        "label": "SOUTHAMPTON",
+        "path": "\/property\/district\/southampton"
+    },
+    {
+        "District": "SOUTHEND-ON-SEA",
+        "label": "SOUTHEND-ON-SEA",
+        "path": "\/property\/district\/southend-on-sea"
+    },
+    {
+        "District": "SOUTHWARK",
+        "label": "SOUTHWARK",
+        "path": "\/property\/district\/southwark"
+    },
+    {
+        "District": "SPELTHORNE",
+        "label": "SPELTHORNE",
+        "path": "\/property\/district\/spelthorne"
+    },
+    {
+        "District": "ST ALBANS",
+        "label": "ST ALBANS",
+        "path": "\/property\/district\/st-albans"
+    },
+    {
+        "District": "ST EDMUNDSBURY",
+        "label": "ST EDMUNDSBURY",
+        "path": "\/property\/district\/st-edmundsbury"
+    },
+    {
+        "District": "ST HELENS",
+        "label": "ST HELENS",
+        "path": "\/property\/district\/st-helens"
+    },
+    {
+        "District": "ST MARTIN'S",
+        "label": "ST MARTIN'S",
+        "path": "\/property\/district\/st-martins"
+    },
+    {
+        "District": "ST MARY'S",
+        "label": "ST MARY'S",
+        "path": "\/property\/district\/st-marys"
+    },
+    {
+        "District": "STAFFORD",
+        "label": "STAFFORD",
+        "path": "\/property\/district\/stafford"
+    },
+    {
+        "District": "STAFFORDSHIRE MOORLANDS",
+        "label": "STAFFORDSHIRE MOORLANDS",
+        "path": "\/property\/district\/staffordshire-moorlands"
+    },
+    {
+        "District": "STEVENAGE",
+        "label": "STEVENAGE",
+        "path": "\/property\/district\/stevenage"
+    },
+    {
+        "District": "STOCKPORT",
+        "label": "STOCKPORT",
+        "path": "\/property\/district\/stockport"
+    },
+    {
+        "District": "STOCKTON-ON-TEES",
+        "label": "STOCKTON-ON-TEES",
+        "path": "\/property\/district\/stockton-on-tees"
+    },
+    {
+        "District": "STOKE-ON-TRENT",
+        "label": "STOKE-ON-TRENT",
+        "path": "\/property\/district\/stoke-on-trent"
+    },
+    {
+        "District": "STRATFORD-ON-AVON",
+        "label": "STRATFORD-ON-AVON",
+        "path": "\/property\/district\/stratford-on-avon"
+    },
+    {
+        "District": "STROUD",
+        "label": "STROUD",
+        "path": "\/property\/district\/stroud"
+    },
+    {
+        "District": "SUFFOLK COASTAL",
+        "label": "SUFFOLK COASTAL",
+        "path": "\/property\/district\/suffolk-coastal"
+    },
+    {
+        "District": "SUNDERLAND",
+        "label": "SUNDERLAND",
+        "path": "\/property\/district\/sunderland"
+    },
+    {
+        "District": "SURREY HEATH",
+        "label": "SURREY HEATH",
+        "path": "\/property\/district\/surrey-heath"
+    },
+    {
+        "District": "SUTTON",
+        "label": "SUTTON",
+        "path": "\/property\/district\/sutton"
+    },
+    {
+        "District": "SWALE",
+        "label": "SWALE",
+        "path": "\/property\/district\/swale"
+    },
+    {
+        "District": "SWANSEA",
+        "label": "SWANSEA",
+        "path": "\/property\/district\/swansea"
+    },
+    {
+        "District": "SWINDON",
+        "label": "SWINDON",
+        "path": "\/property\/district\/swindon"
+    },
+    {
+        "District": "TAFF-ELY",
+        "label": "TAFF-ELY",
+        "path": "\/property\/district\/taff-ely"
+    },
+    {
+        "District": "TAMESIDE",
+        "label": "TAMESIDE",
+        "path": "\/property\/district\/tameside"
+    },
+    {
+        "District": "TAMWORTH",
+        "label": "TAMWORTH",
+        "path": "\/property\/district\/tamworth"
+    },
+    {
+        "District": "TANDRIDGE",
+        "label": "TANDRIDGE",
+        "path": "\/property\/district\/tandridge"
+    },
+    {
+        "District": "TAUNTON DEANE",
+        "label": "TAUNTON DEANE",
+        "path": "\/property\/district\/taunton-deane"
+    },
+    {
+        "District": "TEESDALE",
+        "label": "TEESDALE",
+        "path": "\/property\/district\/teesdale"
+    },
+    {
+        "District": "TEIGNBRIDGE",
+        "label": "TEIGNBRIDGE",
+        "path": "\/property\/district\/teignbridge"
+    },
+    {
+        "District": "TENDRING",
+        "label": "TENDRING",
+        "path": "\/property\/district\/tendring"
+    },
+    {
+        "District": "TEST VALLEY",
+        "label": "TEST VALLEY",
+        "path": "\/property\/district\/test-valley"
+    },
+    {
+        "District": "TEWKESBURY",
+        "label": "TEWKESBURY",
+        "path": "\/property\/district\/tewkesbury"
+    },
+    {
+        "District": "THAMESDOWN",
+        "label": "THAMESDOWN",
+        "path": "\/property\/district\/thamesdown"
+    },
+    {
+        "District": "THANET",
+        "label": "THANET",
+        "path": "\/property\/district\/thanet"
+    },
+    {
+        "District": "THE EAST YORKSHIRE BOROUGH OF BEVERLEY",
+        "label": "THE EAST YORKSHIRE BOROUGH OF BEVERLEY",
+        "path": "\/property\/district\/the-east-yorkshire-borough-of-beverley"
+    },
+    {
+        "District": "THE VALE OF GLAMORGAN",
+        "label": "THE VALE OF GLAMORGAN",
+        "path": "\/property\/district\/the-vale-of-glamorgan"
+    },
+    {
+        "District": "THE WREKIN",
+        "label": "THE WREKIN",
+        "path": "\/property\/district\/the-wrekin"
+    },
+    {
+        "District": "THREE RIVERS",
+        "label": "THREE RIVERS",
+        "path": "\/property\/district\/three-rivers"
+    },
+    {
+        "District": "THURROCK",
+        "label": "THURROCK",
+        "path": "\/property\/district\/thurrock"
+    },
+    {
+        "District": "TONBRIDGE AND MALLING",
+        "label": "TONBRIDGE AND MALLING",
+        "path": "\/property\/district\/tonbridge-and-malling"
+    },
+    {
+        "District": "TORBAY",
+        "label": "TORBAY",
+        "path": "\/property\/district\/torbay"
+    },
+    {
+        "District": "TORFAEN",
+        "label": "TORFAEN",
+        "path": "\/property\/district\/torfaen"
+    },
+    {
+        "District": "TORRIDGE",
+        "label": "TORRIDGE",
+        "path": "\/property\/district\/torridge"
+    },
+    {
+        "District": "TOWER HAMLETS",
+        "label": "TOWER HAMLETS",
+        "path": "\/property\/district\/tower-hamlets"
+    },
+    {
+        "District": "TRAFFORD",
+        "label": "TRAFFORD",
+        "path": "\/property\/district\/trafford"
+    },
+    {
+        "District": "TUNBRIDGE WELLS",
+        "label": "TUNBRIDGE WELLS",
+        "path": "\/property\/district\/tunbridge-wells"
+    },
+    {
+        "District": "TYNEDALE",
+        "label": "TYNEDALE",
+        "path": "\/property\/district\/tynedale"
+    },
+    {
+        "District": "UTTLESFORD",
+        "label": "UTTLESFORD",
+        "path": "\/property\/district\/uttlesford"
+    },
+    {
+        "District": "VALE OF GLAMORGAN",
+        "label": "VALE OF GLAMORGAN",
+        "path": "\/property\/district\/vale-of-glamorgan"
+    },
+    {
+        "District": "VALE OF WHITE HORSE",
+        "label": "VALE OF WHITE HORSE",
+        "path": "\/property\/district\/vale-of-white-horse"
+    },
+    {
+        "District": "VALE ROYAL",
+        "label": "VALE ROYAL",
+        "path": "\/property\/district\/vale-royal"
+    },
+    {
+        "District": "WAKEFIELD",
+        "label": "WAKEFIELD",
+        "path": "\/property\/district\/wakefield"
+    },
+    {
+        "District": "WALSALL",
+        "label": "WALSALL",
+        "path": "\/property\/district\/walsall"
+    },
+    {
+        "District": "WALTHAM FOREST",
+        "label": "WALTHAM FOREST",
+        "path": "\/property\/district\/waltham-forest"
+    },
+    {
+        "District": "WANDSWORTH",
+        "label": "WANDSWORTH",
+        "path": "\/property\/district\/wandsworth"
+    },
+    {
+        "District": "WANSBECK",
+        "label": "WANSBECK",
+        "path": "\/property\/district\/wansbeck"
+    },
+    {
+        "District": "WANSDYKE",
+        "label": "WANSDYKE",
+        "path": "\/property\/district\/wansdyke"
+    },
+    {
+        "District": "WARRINGTON",
+        "label": "WARRINGTON",
+        "path": "\/property\/district\/warrington"
+    },
+    {
+        "District": "WARWICK",
+        "label": "WARWICK",
+        "path": "\/property\/district\/warwick"
+    },
+    {
+        "District": "WATFORD",
+        "label": "WATFORD",
+        "path": "\/property\/district\/watford"
+    },
+    {
+        "District": "WAVENEY",
+        "label": "WAVENEY",
+        "path": "\/property\/district\/waveney"
+    },
+    {
+        "District": "WAVERLEY",
+        "label": "WAVERLEY",
+        "path": "\/property\/district\/waverley"
+    },
+    {
+        "District": "WEALDEN",
+        "label": "WEALDEN",
+        "path": "\/property\/district\/wealden"
+    },
+    {
+        "District": "WEAR VALLEY",
+        "label": "WEAR VALLEY",
+        "path": "\/property\/district\/wear-valley"
+    },
+    {
+        "District": "WELLINGBOROUGH",
+        "label": "WELLINGBOROUGH",
+        "path": "\/property\/district\/wellingborough"
+    },
+    {
+        "District": "WELWYN HATFIELD",
+        "label": "WELWYN HATFIELD",
+        "path": "\/property\/district\/welwyn-hatfield"
+    },
+    {
+        "District": "WEST BERKSHIRE",
+        "label": "WEST BERKSHIRE",
+        "path": "\/property\/district\/west-berkshire"
+    },
+    {
+        "District": "WEST DEVON",
+        "label": "WEST DEVON",
+        "path": "\/property\/district\/west-devon"
+    },
+    {
+        "District": "WEST DORSET",
+        "label": "WEST DORSET",
+        "path": "\/property\/district\/west-dorset"
+    },
+    {
+        "District": "WEST LANCASHIRE",
+        "label": "WEST LANCASHIRE",
+        "path": "\/property\/district\/west-lancashire"
+    },
+    {
+        "District": "WEST LINDSEY",
+        "label": "WEST LINDSEY",
+        "path": "\/property\/district\/west-lindsey"
+    },
+    {
+        "District": "WEST NORTHAMPTONSHIRE",
+        "label": "WEST NORTHAMPTONSHIRE",
+        "path": "\/property\/district\/west-northamptonshire"
+    },
+    {
+        "District": "WEST OXFORDSHIRE",
+        "label": "WEST OXFORDSHIRE",
+        "path": "\/property\/district\/west-oxfordshire"
+    },
+    {
+        "District": "WEST SOMERSET",
+        "label": "WEST SOMERSET",
+        "path": "\/property\/district\/west-somerset"
+    },
+    {
+        "District": "WEST SUFFOLK",
+        "label": "WEST SUFFOLK",
+        "path": "\/property\/district\/west-suffolk"
+    },
+    {
+        "District": "WEST WILTSHIRE",
+        "label": "WEST WILTSHIRE",
+        "path": "\/property\/district\/west-wiltshire"
+    },
+    {
+        "District": "WESTMORLAND AND FURNESS",
+        "label": "WESTMORLAND AND FURNESS",
+        "path": "\/property\/district\/westmorland-and-furness"
+    },
+    {
+        "District": "WEYMOUTH AND PORTLAND",
+        "label": "WEYMOUTH AND PORTLAND",
+        "path": "\/property\/district\/weymouth-and-portland"
+    },
+    {
+        "District": "WIGAN",
+        "label": "WIGAN",
+        "path": "\/property\/district\/wigan"
+    },
+    {
+        "District": "WILTSHIRE",
+        "label": "WILTSHIRE",
+        "path": "\/property\/district\/wiltshire"
+    },
+    {
+        "District": "WINCHESTER",
+        "label": "WINCHESTER",
+        "path": "\/property\/district\/winchester"
+    },
+    {
+        "District": "WINDSOR AND MAIDENHEAD",
+        "label": "WINDSOR AND MAIDENHEAD",
+        "path": "\/property\/district\/windsor-and-maidenhead"
+    },
+    {
+        "District": "WIRRAL",
+        "label": "WIRRAL",
+        "path": "\/property\/district\/wirral"
+    },
+    {
+        "District": "WOKING",
+        "label": "WOKING",
+        "path": "\/property\/district\/woking"
+    },
+    {
+        "District": "WOKINGHAM",
+        "label": "WOKINGHAM",
+        "path": "\/property\/district\/wokingham"
+    },
+    {
+        "District": "WOLVERHAMPTON",
+        "label": "WOLVERHAMPTON",
+        "path": "\/property\/district\/wolverhampton"
+    },
+    {
+        "District": "WOODSPRING",
+        "label": "WOODSPRING",
+        "path": "\/property\/district\/woodspring"
+    },
+    {
+        "District": "WORCESTER",
+        "label": "WORCESTER",
+        "path": "\/property\/district\/worcester"
+    },
+    {
+        "District": "WORTHING",
+        "label": "WORTHING",
+        "path": "\/property\/district\/worthing"
+    },
+    {
+        "District": "WREKIN",
+        "label": "WREKIN",
+        "path": "\/property\/district\/wrekin"
+    },
+    {
+        "District": "WREXHAM",
+        "label": "WREXHAM",
+        "path": "\/property\/district\/wrexham"
+    },
+    {
+        "District": "WREXHAM MAELOR",
+        "label": "WREXHAM MAELOR",
+        "path": "\/property\/district\/wrexham-maelor"
+    },
+    {
+        "District": "WYCHAVON",
+        "label": "WYCHAVON",
+        "path": "\/property\/district\/wychavon"
+    },
+    {
+        "District": "WYCOMBE",
+        "label": "WYCOMBE",
+        "path": "\/property\/district\/wycombe"
+    },
+    {
+        "District": "WYRE",
+        "label": "WYRE",
+        "path": "\/property\/district\/wyre"
+    },
+    {
+        "District": "WYRE FOREST",
+        "label": "WYRE FOREST",
+        "path": "\/property\/district\/wyre-forest"
+    },
+    {
+        "District": "YNYS MON-ISLE OF ANGLESEY",
+        "label": "YNYS MON-ISLE OF ANGLESEY",
+        "path": "\/property\/district\/ynys-mon-isle-of-anglesey"
+    },
+    {
+        "District": "YORK",
+        "label": "YORK",
+        "path": "\/property\/district\/york"
+    }
+]

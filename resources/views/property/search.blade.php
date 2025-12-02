@@ -47,6 +47,27 @@
         </form>
     </div>
 
+    <div class="flex justify-center mt-4">
+        <div class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
+            <label for="district-search" class="block text-sm font-medium mb-1">Or search by local authority district (England &amp; Wales).</label>
+            <div class="relative">
+                <input
+                    id="district-search"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Start typing a district or county name..."
+                    class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white"
+                />
+                <div
+                    id="district-suggestions"
+                    class="absolute z-20 mt-1 w-full bg-white border border-zinc-200 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm hidden">
+                    {{-- Suggestions will be injected here by JavaScript --}}
+                </div>
+            </div>
+            <p class="mt-2 text-xs text-zinc-500">Start typing and then click on one of the suggestions to jump straight to that district.</p>
+        </div>
+    </div>
+
     {{-- Results --}}
     @if(isset($results))
         @if($results->count() === 0)
@@ -249,5 +270,95 @@
         @endif
     @endif
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('district-search');
+        const suggestionsBox = document.getElementById('district-suggestions');
+        if (!input || !suggestionsBox) return;
+
+        let allDistricts = [];
+
+        fetch('{{ asset('data/property_districts.json') }}')
+            .then(function (response) {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(function (data) {
+                if (!Array.isArray(data)) return;
+                allDistricts = data;
+            })
+            .catch(function () {
+                // Fail silently if the JSON file is missing or invalid
+            });
+
+        function renderSuggestions(query) {
+            suggestionsBox.innerHTML = '';
+
+            const q = query.trim().toLowerCase();
+            if (!q) {
+                suggestionsBox.classList.add('hidden');
+                return;
+            }
+
+            const matches = allDistricts
+                .filter(function (item) {
+                    if (!item || !item.label) return false;
+                    return item.label.toLowerCase().includes(q);
+                })
+                .slice(0, 15);
+
+            if (matches.length === 0) {
+                suggestionsBox.classList.add('hidden');
+                return;
+            }
+
+            matches.forEach(function (item) {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'w-full text-left px-3 py-2 hover:bg-zinc-100 cursor-pointer flex flex-col';
+
+                const main = document.createElement('span');
+                main.className = 'font-medium text-zinc-800';
+                main.textContent = item.label;
+                option.appendChild(main);
+
+                if (item.district || item.county || item.town) {
+                    const meta = document.createElement('span');
+                    meta.className = 'text-xs text-zinc-500';
+                    const bits = [];
+                    if (item.district) bits.push(item.district);
+                    if (item.town) bits.push(item.town);
+                    if (item.county) bits.push(item.county);
+                    meta.textContent = bits.join(' · ');
+                    option.appendChild(meta);
+                }
+
+                option.addEventListener('click', function () {
+                    if (item.path) {
+                        window.location.href = item.path;
+                    } else {
+                        input.value = item.label;
+                        suggestionsBox.classList.add('hidden');
+                    }
+                });
+
+                suggestionsBox.appendChild(option);
+            });
+
+            suggestionsBox.classList.remove('hidden');
+        }
+
+        input.addEventListener('input', function () {
+            renderSuggestions(this.value);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!suggestionsBox.contains(event.target) && event.target !== input) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+    });
+</script>
 
 @endsection
