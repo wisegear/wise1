@@ -23,7 +23,10 @@ class WarmAllLocalityCaches extends Command
 
         $ttl = now()->addDays(45);
 
-        // Distinct non-empty localities
+        // Avoid Laravel keeping every result in memory
+        DB::connection()->disableQueryLog();
+
+        // Get distinct localities
         $localities = DB::table('land_registry')
             ->select('Locality')
             ->whereNotNull('Locality')
@@ -36,131 +39,113 @@ class WarmAllLocalityCaches extends Command
             $localities = $localities->take($limit);
         }
 
-        $count  = $localities->count();
-        $steps  = $count * (($only === 'all') ? 3 : 1);
+        $count = $localities->count();
+        if ($count === 0) {
+            $this->info('No localities found.');
+            return self::SUCCESS;
+        }
+
+        $sections = match ($only) {
+            'price', 'sales', 'types' => 1,
+            default => 3,
+        };
+
+        $steps = $count * $sections;
 
         $this->info("Warming caches for {$count} localities (PPD={$ppd}, only={$only})...");
         $bar = $this->output->createProgressBar($steps);
         $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% | %elapsed:6s% elapsed | %estimated:-6s% eta | %memory:6s% | %message%');
-        $bar->setBarCharacter('=');
-        $bar->setEmptyBarCharacter(' ');
-        $bar->setProgressCharacter('>');
-        $bar->setRedrawFrequency(1);
         $bar->start();
 
-        // ---- PRICE HISTORY ----
-        if ($only === 'all' || $only === 'price') {
-            $priceRows = DB::table('land_registry')
-                ->select('Locality', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
-                ->where('PPDCategoryType', $ppd)
-                ->whereNotNull('Locality')
-                ->where('Locality', '!=', '')
-                ->groupBy('Locality', 'YearDate')
-                ->orderBy('Locality')
-                ->orderBy('YearDate')
-                ->get()
-                ->groupBy('Locality');
+        foreach ($localities as $locality) {
 
-            foreach ($priceRows as $locality => $rows) {
-                Cache::put('locality:priceHistory:v2:cat' . $ppd . ':' . $locality, $rows, $ttl);
+            // ---- PRICE HISTORY (v2 + v3) ----
+            if ($only === 'all' || $only === 'price') {
+                // v2: all property types for this locality
+                $price = DB::table('land_registry')
+                    ->select('YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                    ->where('PPDCategoryType', $ppd)
+                    ->where('Locality', $locality)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate')
+                    ->get();
+
+                Cache::put('locality:priceHistory:v2:cat' . $ppd . ':' . $locality, $price, $ttl);
                 $bar->setMessage('Price: ' . $locality);
                 $bar->advance();
-            }
 
-            // Additionally warm per-property-type locality price history (v3)
-            $priceRowsByType = DB::table('land_registry')
-                ->select('Locality', 'PropertyType', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
-                ->where('PPDCategoryType', $ppd)
-                ->whereNotNull('Locality')
-                ->where('Locality', '!=', '')
-                ->groupBy('Locality', 'PropertyType', 'YearDate')
-                ->orderBy('Locality')
-                ->orderBy('PropertyType')
-                ->orderBy('YearDate')
-                ->get()
-                ->groupBy('Locality');
+                // v3: per-property-type for this locality
+                $priceByType = DB::table('land_registry')
+                    ->select('PropertyType', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                    ->where('PPDCategoryType', $ppd)
+                    ->where('Locality', $locality)
+                    ->groupBy('PropertyType', 'YearDate')
+                    ->orderBy('PropertyType')
+                    ->orderBy('YearDate')
+                    ->get()
+                    ->groupBy('PropertyType');
 
-            foreach ($priceRowsByType as $locality => $rows) {
-                $rowsByType = $rows->groupBy('PropertyType');
-
-                foreach ($rowsByType as $type => $series) {
+                foreach ($priceByType as $type => $series) {
                     Cache::put(
                         'locality:priceHistory:v3:cat' . $ppd . ':' . $locality . ':type:' . $type,
                         $series->values(),
                         $ttl
                     );
-                    // No progress advance here – this is extra warming work.
                 }
             }
-        }
 
-        // ---- SALES HISTORY ----
-        if ($only === 'all' || $only === 'sales') {
-            $salesRows = DB::table('land_registry')
-                ->select('Locality', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
-                ->where('PPDCategoryType', $ppd)
-                ->whereNotNull('Locality')
-                ->where('Locality', '!=', '')
-                ->groupBy('Locality', 'YearDate')
-                ->orderBy('Locality')
-                ->orderBy('YearDate')
-                ->get()
-                ->groupBy('Locality');
+            // ---- SALES HISTORY (v2 + v3) ----
+            if ($only === 'all' || $only === 'sales') {
+                // v2: all property types for this locality
+                $sales = DB::table('land_registry')
+                    ->select('YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                    ->where('PPDCategoryType', $ppd)
+                    ->where('Locality', $locality)
+                    ->groupBy('YearDate')
+                    ->orderBy('YearDate')
+                    ->get();
 
-            foreach ($salesRows as $locality => $rows) {
-                Cache::put('locality:salesHistory:v2:cat' . $ppd . ':' . $locality, $rows, $ttl);
+                Cache::put('locality:salesHistory:v2:cat' . $ppd . ':' . $locality, $sales, $ttl);
                 $bar->setMessage('Sales: ' . $locality);
                 $bar->advance();
-            }
 
-            // Additionally warm per-property-type locality sales history (v3)
-            $salesRowsByType = DB::table('land_registry')
-                ->select('Locality', 'PropertyType', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
-                ->where('PPDCategoryType', $ppd)
-                ->whereNotNull('Locality')
-                ->where('Locality', '!=', '')
-                ->groupBy('Locality', 'PropertyType', 'YearDate')
-                ->orderBy('Locality')
-                ->orderBy('PropertyType')
-                ->orderBy('YearDate')
-                ->get()
-                ->groupBy('Locality');
+                // v3: per-property-type for this locality
+                $salesByType = DB::table('land_registry')
+                    ->select('PropertyType', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                    ->where('PPDCategoryType', $ppd)
+                    ->where('Locality', $locality)
+                    ->groupBy('PropertyType', 'YearDate')
+                    ->orderBy('PropertyType')
+                    ->orderBy('YearDate')
+                    ->get()
+                    ->groupBy('PropertyType');
 
-            foreach ($salesRowsByType as $locality => $rows) {
-                $rowsByType = $rows->groupBy('PropertyType');
-
-                foreach ($rowsByType as $type => $series) {
+                foreach ($salesByType as $type => $series) {
                     Cache::put(
                         'locality:salesHistory:v3:cat' . $ppd . ':' . $locality . ':type:' . $type,
                         $series->values(),
                         $ttl
                     );
-                    // No progress advance here either.
                 }
             }
-        }
 
-        // ---- PROPERTY TYPES ----
-        if ($only === 'all' || $only === 'types') {
-            $map = [
-                'D' => 'Detached',
-                'S' => 'Semi-Detached',
-                'T' => 'Terraced',
-                'F' => 'Flat',
-                'O' => 'Other',
-            ];
+            // ---- PROPERTY TYPES (v2) ----
+            if ($only === 'all' || $only === 'types') {
+                $map = [
+                    'D' => 'Detached',
+                    'S' => 'Semi-Detached',
+                    'T' => 'Terraced',
+                    'F' => 'Flat',
+                    'O' => 'Other',
+                ];
 
-            $typeRows = DB::table('land_registry')
-                ->select('Locality', 'PropertyType', DB::raw('COUNT(*) as property_count'))
-                ->where('PPDCategoryType', $ppd)
-                ->whereNotNull('Locality')
-                ->where('Locality', '!=', '')
-                ->groupBy('Locality', 'PropertyType')
-                ->orderBy('Locality')
-                ->get()
-                ->groupBy('Locality');
+                $rows = DB::table('land_registry')
+                    ->select('PropertyType', DB::raw('COUNT(*) as property_count'))
+                    ->where('PPDCategoryType', $ppd)
+                    ->where('Locality', $locality)
+                    ->groupBy('PropertyType')
+                    ->get();
 
-            foreach ($typeRows as $locality => $rows) {
                 $mapped = $rows->map(function ($row) use ($map) {
                     return [
                         'label' => $map[$row->PropertyType] ?? $row->PropertyType,
