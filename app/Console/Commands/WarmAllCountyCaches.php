@@ -52,6 +52,21 @@ class WarmAllCountyCaches extends Command
                     ->orderBy('YearDate', 'asc')
                     ->get();
                 Cache::put('county:priceHistory:v2:cat' . $ppd . ':' . $county, $price, $ttl);
+
+                // Additionally warm per-property-type county price history (v3)
+                $priceByType = DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
+                    ->selectRaw('PropertyType, YearDate AS year, ROUND(AVG(Price)) AS avg_price')
+                    ->where('County', $county)
+                    ->where('PPDCategoryType', $ppd)
+                    ->groupBy('PropertyType', 'YearDate')
+                    ->orderBy('PropertyType')
+                    ->orderBy('YearDate')
+                    ->get()
+                    ->groupBy('PropertyType');
+
+                foreach ($priceByType as $type => $rows) {
+                    Cache::put('county:priceHistory:v3:cat' . $ppd . ':' . $county . ':type:' . $type, $rows->values(), $ttl);
+                }
             }
 
             // SALES HISTORY (Yearly COUNT)
@@ -64,6 +79,21 @@ class WarmAllCountyCaches extends Command
                     ->orderBy('YearDate', 'asc')
                     ->get();
                 Cache::put('county:salesHistory:v2:cat' . $ppd . ':' . $county, $sales, $ttl);
+
+                // Additionally warm per-property-type county sales history (v3)
+                $salesByType = DB::table(DB::raw('land_registry FORCE INDEX (idx_county)'))
+                    ->selectRaw('PropertyType, YearDate AS year, COUNT(*) AS total_sales')
+                    ->where('County', $county)
+                    ->where('PPDCategoryType', $ppd)
+                    ->groupBy('PropertyType', 'YearDate')
+                    ->orderBy('PropertyType')
+                    ->orderBy('YearDate')
+                    ->get()
+                    ->groupBy('PropertyType');
+
+                foreach ($salesByType as $type => $rows) {
+                    Cache::put('county:salesHistory:v3:cat' . $ppd . ':' . $county . ':type:' . $type, $rows->values(), $ttl);
+                }
             }
 
             // PROPERTY TYPES (Count of rows by type over full dataset)
@@ -103,4 +133,3 @@ class WarmAllCountyCaches extends Command
         return self::SUCCESS;
     }
 }
-

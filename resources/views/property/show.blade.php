@@ -227,7 +227,7 @@
         $epcCount = is_countable($epcMatches ?? []) ? count($epcMatches ?? []) : 0;
     @endphp
     <details class="mt-6 group">
-        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
+        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
             <div>
                 <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & address)</h2>
                 <p class="text-xs text-zinc-600 mt-1">
@@ -238,78 +238,82 @@
         </summary>
 
         <div class="mt-4">
-            <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry & EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach Based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
-
             @if(empty($epcMatches))
-                <div class="border rounded bg-white p-4 text-sm text-zinc-600">No EPC certificates found for this property.</div>
+                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg text-sm text-zinc-600">
+                    <p class="mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
+                    <p class="m-0">No EPC certificates found for this property.</p>
+                </div>
             @else
-                <div class="overflow-x-auto rounded border border-zinc-200 bg-white">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-zinc-100">
-                            <tr class="text-left">
-                                <th class="px-3 py-2 border-b">Lodgement Date</th>
-                                <th class="px-3 py-2 border-b">Rating</th>
-                                <th class="px-3 py-2 border-b">Potential</th>
-                                <th class="px-3 py-2 border-b">Address</th>
-                                <th class="px-3 py-2 border-b text-right">floor space (sq ft)</th>
-                                <th class="px-3 py-2 border-b">Match Score</th>
-                                <th class="px-3 py-2 border-b text-center">View</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($epcMatches as $m)
-                                @php
-                                    $row = $m['row'];
-                                @endphp
-                                <tr class="odd:bg-white even:bg-zinc-50">
-                                    <td class="px-3 py-2 border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
-                                    <td class="px-3 py-2 border-b">{{ $row->current_energy_rating }}</td>
-                                    <td class="px-3 py-2 border-b">{{ $row->potential_energy_rating }}</td>
-                                    <td class="px-3 py-2 border-b">{{ $row->address }}</td>
-                                    <td class="px-3 py-2 border-b text-right">
-                                        {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
-                                    </td>
-                                    <td class="px-3 py-2 border-b text-center">
-                                        @php
-                                            $s = (int) round($m['score'] ?? 0);
-                                        @endphp
-                                        @php
-                                            if ($s >= 80) {
-                                                $badge = ['High','bg-green-100 text-green-800 border-green-200'];
-                                            } elseif ($s >= 65) {
-                                                $badge = ['Medium','bg-amber-100 text-amber-800 border-amber-200'];
-                                            } else {
-                                                $badge = ['Low','bg-zinc-100 text-zinc-800 border-zinc-200'];
-                                            }
-                                        @endphp
-                                        <span class="inline-flex items-center gap-2">
-                                            <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium {{ $badge[1] }}">
-                                                {{ $badge[0] }}
-                                            </span>
-                                            <span class="text-xs text-zinc-500">({{ $s }})</span>
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2 border-b text-center">
-                                        @if(function_exists('route') && Route::has('epc.show'))
-                                            <a
-                                                href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}"
-                                                class="inline-flex items-center justify-center gap-1 text-lime-700 hover:text-lime-900"
-                                                title="View EPC report"
-                                                aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
-                                                </svg>
-                                                <span class="sr-only">View</span>
-                                            </a>
-                                        @else
-                                            <span class="text-zinc-400">N/A</span>
-                                        @endif
-                                    </td>
+                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg">
+                    <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-zinc-100">
+                                <tr class="text-left">
+                                    <th class="px-3 py-2 border-b">Lodgement Date</th>
+                                    <th class="px-3 py-2 border-b">Rating</th>
+                                    <th class="px-3 py-2 border-b">Potential</th>
+                                    <th class="px-3 py-2 border-b">Address</th>
+                                    <th class="px-3 py-2 border-b text-right">floor space (sq ft)</th>
+                                    <th class="px-3 py-2 border-b">Match Score</th>
+                                    <th class="px-3 py-2 border-b text-center">View</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($epcMatches as $m)
+                                    @php
+                                        $row = $m['row'];
+                                    @endphp
+                                    <tr class="odd:bg-white even:bg-zinc-50">
+                                        <td class="px-3 py-2 border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
+                                        <td class="px-3 py-2 border-b">{{ $row->current_energy_rating }}</td>
+                                        <td class="px-3 py-2 border-b">{{ $row->potential_energy_rating }}</td>
+                                        <td class="px-3 py-2 border-b">{{ $row->address }}</td>
+                                        <td class="px-3 py-2 border-b text-right">
+                                            {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
+                                        </td>
+                                        <td class="px-3 py-2 border-b text-center">
+                                            @php
+                                                $s = (int) round($m['score'] ?? 0);
+                                            @endphp
+                                            @php
+                                                if ($s >= 80) {
+                                                    $badge = ['High','bg-green-100 text-green-800 border-green-200'];
+                                                } elseif ($s >= 65) {
+                                                    $badge = ['Medium','bg-amber-100 text-amber-800 border-amber-200'];
+                                                } else {
+                                                    $badge = ['Low','bg-zinc-100 text-zinc-800 border-zinc-200'];
+                                                }
+                                            @endphp
+                                            <span class="inline-flex items-center gap-2">
+                                                <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium {{ $badge[1] }}">
+                                                    {{ $badge[0] }}
+                                                </span>
+                                                <span class="text-xs text-zinc-500">({{ $s }})</span>
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 border-b text-center">
+                                            @if(function_exists('route') && Route::has('epc.show'))
+                                                <a
+                                                    href="{{ route('epc.show', ['lmk' => $row->lmk_key]) }}"
+                                                    class="inline-flex items-center justify-center gap-1 text-lime-700 hover:text-lime-900"
+                                                    title="View EPC report"
+                                                    aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
+                                                    </svg>
+                                                    <span class="sr-only">View</span>
+                                                </a>
+                                            @else
+                                                <span class="text-zinc-400">N/A</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
         </div>
@@ -419,7 +423,7 @@
     @endphp
 
     <details class="my-8 group">
-        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm hover:border-lime-400 hover:bg-lime-50">
+        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
             <div>
                 <h2 class="text-lg font-semibold m-0">Local Deprivation Index</h2>
                 <p class="text-xs text-zinc-600 mt-1">Derived from postcode via ONSPD → LSOA (England only).</p>
@@ -482,76 +486,76 @@
     </details>
 
     <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="border border-zinc-200 rounded-md p-2">
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
             <canvas id="priceHistoryChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $postcode }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ $postcode }}</h2>
             <canvas id="postcodePriceChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $postcode }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ $postcode }}</h2>
             <canvas id="postcodeSalesChart" class="block w-full"></canvas>
         </div>
         <!-- Locality Charts (moved up) -->
         @if($showLocalityCharts)
         <!-- Locality Charts (shown only when locality is present and distinct) -->
-        <div class="border border-zinc-200 rounded-md p-2">
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localityPropertyTypesChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($locality)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localityPriceChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($locality)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localitySalesChart" class="block w-full"></canvas>
         </div>
         @endif
         @if($showTownCharts)
         <!-- Town/City Charts -->
-        <div class="border border-zinc-200 rounded-md p-2">
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townPropertyTypesChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($town)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townPriceChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($town)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townSalesChart" class="block w-full"></canvas>
         </div>
         @endif
         <!-- District Charts -->
         @if($showDistrictCharts)
-        <div class="border border-zinc-200 rounded-md p-2">
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtPropertyTypesChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtPriceChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtSalesChart" class="block w-full"></canvas>
         </div>
         @endif
         @if(!empty($county))
         <!-- County Charts -->
-        <div class="border border-zinc-200 rounded-md p-2">
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countyPropertyTypesChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Average Price of property in {{ ucfirst(strtolower($county)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countyPriceChart" class="block w-full"></canvas>
         </div>
-        <div class="border border-zinc-200 rounded-md p-2">
-            <h2 class="text-lg font-bold mb-4">Number of Sales in {{ ucfirst(strtolower($county)) }}</h2>
+        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
+            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countySalesChart" class="block w-full"></canvas>
         </div>
         @endif

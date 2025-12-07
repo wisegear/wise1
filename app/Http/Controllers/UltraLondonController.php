@@ -83,7 +83,7 @@ class UltraLondonController extends Controller
                 });
 
                 // Top 5% average per year
-                $top5 = Cache::remember($keyBase . 'top5Avg', $ttl, function () use ($baseAll) {
+                $top5 = Cache::remember($keyBase . 'top5', $ttl, function () use ($baseAll) {
                     $ranked = (clone $baseAll)
                         ->selectRaw('lr.YearDate, lr.Price, ROW_NUMBER() OVER (PARTITION BY lr.YearDate ORDER BY lr.Price DESC) as rn, COUNT(*) OVER (PARTITION BY lr.YearDate) as cnt');
 
@@ -173,7 +173,7 @@ class UltraLondonController extends Controller
                 });
 
                 // Prime indicator – Top 5% average (uses window functions)
-                $top5 = Cache::remember($keyBase . 'top5Avg', $ttl, function () use ($district) {
+                $top5 = Cache::remember($keyBase . 'top5', $ttl, function () use ($district) {
                     $ranked = DB::table('land_registry')
                         ->selectRaw('`YearDate`, `Price`, ROW_NUMBER() OVER (PARTITION BY `YearDate` ORDER BY `Price` DESC) as rn, COUNT(*) OVER (PARTITION BY `YearDate`) as cnt')
                         ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])

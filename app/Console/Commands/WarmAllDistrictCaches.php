@@ -63,6 +63,29 @@ class WarmAllDistrictCaches extends Command
                 $bar->setMessage('Price: ' . $district);
                 $bar->advance();
             }
+            // Additionally warm per-property-type district price history (v3)
+            $priceRowsByType = DB::table('land_registry')
+                ->select('District', 'PropertyType', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                ->where('PPDCategoryType', $ppd)
+                ->whereNotNull('District')
+                ->where('District', '!=', '')
+                ->groupBy('District', 'PropertyType', 'YearDate')
+                ->orderBy('District')
+                ->orderBy('PropertyType')
+                ->orderBy('YearDate')
+                ->get()
+                ->groupBy('District');
+
+            foreach ($priceRowsByType as $district => $rows) {
+                // Group rows by PropertyType within each district
+                $rowsByType = $rows->groupBy('PropertyType');
+
+                foreach ($rowsByType as $type => $series) {
+                    // v3 district price history is keyed by district + property type
+                    Cache::put('district:priceHistory:v3:cat' . $ppd . ':' . $district . ':type:' . $type, $series->values(), $ttl);
+                    // We do not advance the progress bar here, as this is extra warming work.
+                }
+            }
         }
 
         if ($only === 'all' || $only === 'sales') {
@@ -80,6 +103,27 @@ class WarmAllDistrictCaches extends Command
                 Cache::put('district:salesHistory:v2:cat' . $ppd . ':' . $district, $rows, $ttl);
                 $bar->setMessage('Sales: ' . $district);
                 $bar->advance();
+            }
+            // Additionally warm per-property-type district sales history (v3)
+            $salesRowsByType = DB::table('land_registry')
+                ->select('District', 'PropertyType', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                ->where('PPDCategoryType', $ppd)
+                ->whereNotNull('District')
+                ->where('District', '!=', '')
+                ->groupBy('District', 'PropertyType', 'YearDate')
+                ->orderBy('District')
+                ->orderBy('PropertyType')
+                ->orderBy('YearDate')
+                ->get()
+                ->groupBy('District');
+
+            foreach ($salesRowsByType as $district => $rows) {
+                $rowsByType = $rows->groupBy('PropertyType');
+
+                foreach ($rowsByType as $type => $series) {
+                    Cache::put('district:salesHistory:v3:cat' . $ppd . ':' . $district . ':type:' . $type, $series->values(), $ttl);
+                    // As above, we do not advance the progress bar for these extra series.
+                }
             }
         }
 

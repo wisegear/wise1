@@ -178,7 +178,6 @@ class PclWarm extends Command
         Cache::put($keyBaseAll . 'top3PerYear', $top3PerYearAll, $ttl);
 
         Cache::put('pcl:v3:catA:last_warm', now()->toIso8601String(), $ttl);
-        Cache::put('pcl:v2:catA:last_warm', now()->toIso8601String(), $ttl);
 
         $this->newLine(2);
         $this->info('Prime Central cache warm complete.');

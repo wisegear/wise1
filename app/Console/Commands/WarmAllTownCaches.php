@@ -85,6 +85,33 @@ class WarmAllTownCaches extends Command
                 Cache::put('town:priceHistory:v2:cat' . $ppd . ':' . $town, $rows, $ttl);
                 $bar->advance();
             }
+
+            // Additionally warm per-property-type town price history for v3 keys
+            $priceRowsByType = DB::table('land_registry')
+                ->selectRaw('TRIM(TownCity) AS town, PropertyType, YearDate AS year, ROUND(AVG(Price)) AS avg_price')
+                ->where('PPDCategoryType', $ppd)
+                ->whereNotNull('TownCity')
+                ->whereRaw("TRIM(TownCity) <> ''")
+                ->groupBy('town', 'PropertyType', 'YearDate')
+                ->orderBy('town')
+                ->orderBy('PropertyType')
+                ->orderBy('YearDate')
+                ->get()
+                ->groupBy('town');
+
+            foreach ($priceRowsByType as $town => $rows) {
+                if ($skipDup && $dupTowns->contains($town)) continue;
+
+                // Group rows by PropertyType within each town
+                $rowsByType = $rows->groupBy('PropertyType');
+
+                foreach ($rowsByType as $type => $series) {
+                    // v3 town price history is keyed by town + property type
+                    Cache::put('town:priceHistory:v3:cat' . $ppd . ':' . $town . ':type:' . $type, $series->values(), $ttl);
+                    // We intentionally do not advance the progress bar here to avoid
+                    // over-counting beyond the precomputed max; this is extra warming.
+                }
+            }
         }
 
         // ---- SALES HISTORY (all towns at once)
@@ -105,6 +132,30 @@ class WarmAllTownCaches extends Command
                 $bar->setMessage('Sales: ' . $town);
                 Cache::put('town:salesHistory:v2:cat' . $ppd . ':' . $town, $rows, $ttl);
                 $bar->advance();
+            }
+
+            // Additionally warm per-property-type town sales history for v3 keys
+            $salesRowsByType = DB::table('land_registry')
+                ->selectRaw('TRIM(TownCity) AS town, PropertyType, YearDate AS year, COUNT(*) AS total_sales')
+                ->where('PPDCategoryType', $ppd)
+                ->whereNotNull('TownCity')
+                ->whereRaw("TRIM(TownCity) <> ''")
+                ->groupBy('town', 'PropertyType', 'YearDate')
+                ->orderBy('town')
+                ->orderBy('PropertyType')
+                ->orderBy('YearDate')
+                ->get()
+                ->groupBy('town');
+
+            foreach ($salesRowsByType as $town => $rows) {
+                if ($skipDup && $dupTowns->contains($town)) continue;
+
+                $rowsByType = $rows->groupBy('PropertyType');
+
+                foreach ($rowsByType as $type => $series) {
+                    Cache::put('town:salesHistory:v3:cat' . $ppd . ':' . $town . ':type:' . $type, $series->values(), $ttl);
+                    // As above, we do not advance the progress bar for these extra series.
+                }
             }
         }
 
