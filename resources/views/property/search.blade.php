@@ -4,14 +4,16 @@
 <div class="max-w-7xl mx-auto">
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Search</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
+                Use this page to explore Land Registry sale records for England &amp; Wales.
                 There are currently <span class="text-lime-700">{{ number_format($records) }}</span> records in this table.
-                <span class="font-semibold">Only England &amp; Wales are currently available</span>
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from January 1995 to September 2025
+                You can either search for a specific postcode to see every sale in that postcode, or search for a
+                locality, town/city, district or county to view a wider area summary. Data covers the period from
+                January 1995 to September 2025.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
@@ -19,54 +21,70 @@
         </div>
     </section>
 
-    {{-- Search form --}}
-    <div class="flex justify-center">
-        <form method="GET" action="{{ route('property.search') }}" class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
-            <div class="flex items-end gap-3">
-                <div class="flex-1">
-                    <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995. (England & Wales).</label>
+    {{-- Search tools --}}
+    <section class="mb-10">
+        <div class="grid gap-6 md:grid-cols-2">
+
+            {{-- Search by postcode (specific properties) --}}
+            <div class="rounded border border-zinc-200 bg-white/80 p-6">
+                <h2 class="text-base font-semibold mb-2">Search by postcode</h2>
+                <p class="text-xs text-zinc-600 mb-4">
+                    Enter a full postcode to see every sale in that postcode from 1995 onwards. This is best when you
+                    want to look at a specific street or a small cluster of properties.
+                </p>
+
+                <form method="GET" action="{{ route('property.search') }}" class="space-y-3">
+                    <div>
+                        <label for="postcode" class="block text-sm font-medium mb-1">Postcode</label>
+                        <input
+                            id="postcode"
+                            name="postcode"
+                            type="text"
+                            value="{{ old('postcode', $postcode ?? '') }}"
+                            placeholder="e.g. WR5 3EU or SW7 5PH"
+                            class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white"
+                        />
+                        @error('postcode')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="bg-zinc-700 hover:bg-zinc-500 text-white px-4 py-2 rounded-md text-sm font-medium transition cursor-pointer">
+                        Search postcode
+                    </button>
+                </form>
+            </div>
+
+            {{-- Search by area (summary dashboards) --}}
+            <div class="rounded border border-zinc-200 bg-white/80 p-6">
+                <h2 class="text-base font-semibold mb-2">Search by area</h2>
+                <p class="text-xs text-zinc-600 mb-4">
+                    Start typing the name of a locality, town/city, district or county in England &amp; Wales. Choose one
+                    of the suggestions to go straight to an area dashboard showing prices, sales and property types.
+                </p>
+
+                <label for="district-search" class="block text-sm font-medium mb-1">Area name</label>
+                <div class="relative">
                     <input
-                        id="postcode"
-                        name="postcode"
+                        id="district-search"
                         type="text"
-                        value="{{ old('postcode', $postcode ?? '') }}"
-                        placeholder="e.g. WR5 3EU or SW7 5PH"
+                        autocomplete="off"
+                        placeholder="e.g. Worcester, Kensington, Gloucestershire"
                         class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white"
                     />
-                    @error('postcode')
-                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                    @enderror
+                    <div
+                        id="district-suggestions"
+                        class="absolute z-20 mt-1 w-full bg-white border border-zinc-200 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm hidden">
+                        {{-- Suggestions will be injected here by JavaScript --}}
+                    </div>
                 </div>
-
-                <button
-                    type="submit"
-                    class="bg-zinc-700 hover:bg-zinc-500 text-white px-2 py-2 rounded-md transition cursor-pointer">
-                    Search
-                </button>
+                <p class="mt-2 text-xs text-zinc-500">Click on one of the suggestions to open the dashboard for that area.</p>
             </div>
-        </form>
-    </div>
 
-    <div class="flex justify-center mt-4">
-        <div class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
-            <label for="district-search" class="block text-sm font-medium mb-1">Or search any Locality, Town/City, District or County (England &amp; Wales).</label>
-            <div class="relative">
-                <input
-                    id="district-search"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="Start typing a district or county name..."
-                    class="w-full border border-zinc-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500 bg-white"
-                />
-                <div
-                    id="district-suggestions"
-                    class="absolute z-20 mt-1 w-full bg-white border border-zinc-200 rounded-md shadow-lg max-h-64 overflow-y-auto text-sm hidden">
-                    {{-- Suggestions will be injected here by JavaScript --}}
-                </div>
-            </div>
-            <p class="mt-2 text-xs text-zinc-500">Start typing and then click on one of the suggestions to jump straight to that district.</p>
         </div>
-    </div>
+    </section>
 
     {{-- Results --}}
     @if(isset($results))

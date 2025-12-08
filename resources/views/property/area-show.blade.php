@@ -36,10 +36,6 @@
     @endif
 
     <div class="mt-10">
-        <h2 class="text-lg font-semibold mb-3">Area overview</h2>
-        <p class="text-sm text-zinc-600 mb-4">
-            Average sale price and number of sales per year for this {{ $type }}.
-        </p>
 
         <div class="border rounded bg-white p-4 shadow-lg">
             <div class="w-full">
@@ -51,44 +47,28 @@
     <div class="mt-10">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h2 class="text-sm font-semibold mb-2">Sales split by property type</h2>
-                <p class="text-xs text-zinc-600 mb-3">
-                    Number of sales each year across detached, semi-detached, terraced and flats.
-                </p>
                 <canvas id="areaTypeSplitChart" class="w-full max-h-[260px]"></canvas>
             </div>
 
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h2 class="text-sm font-semibold mb-2">New build vs existing</h2>
-                <p class="text-xs text-zinc-600 mb-3">
-                    Number of sales each year split by new build and existing properties.
-                </p>
                 <canvas id="newBuildSplitChart" class="w-full max-h-[260px]"></canvas>
             </div>
         </div>
     </div>
 
     <div class="mt-10">
-        <h2 class="text-lg font-semibold mb-3">By property type</h2>
-        <p class="text-sm text-zinc-600 mb-4">
-            Average sale price and number of sales per year by property type in this {{ $type }}.
-        </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h3 class="text-sm font-semibold mb-2">Detached</h3>
                 <canvas id="areaTypeChart_detached" class="w-full max-h-[320px]"></canvas>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h3 class="text-sm font-semibold mb-2">Semi-detached</h3>
                 <canvas id="areaTypeChart_semi" class="w-full max-h-[320px]"></canvas>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h3 class="text-sm font-semibold mb-2">Terraced</h3>
                 <canvas id="areaTypeChart_terraced" class="w-full max-h-[320px]"></canvas>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
-                <h3 class="text-sm font-semibold mb-2">Flat</h3>
                 <canvas id="areaTypeChart_flat" class="w-full max-h-[320px]"></canvas>
             </div>
         </div>
@@ -148,6 +128,7 @@
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         pointRadius: 3,
                         pointHoverRadius: 5,
+                        pointBorderWidth: 2,
                         pointBackgroundColor: function(context) {
                             const index = context.dataIndex;
                             const value = context.dataset.data[index];
@@ -181,6 +162,7 @@
                         borderWidth: 1,
                         backgroundColor: 'rgba(54, 162, 235, 0.4)',
                         borderColor: 'rgba(54, 162, 235, 1)',
+                        pointStyle: 'rect',
                     }
                 ]
             },
@@ -192,6 +174,13 @@
                     intersect: false,
                 },
                 plugins: {
+                    legend: {
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 10,
+                            boxHeight: 10,
+                        }
+                    },
                     title: {
                         display: true,
                         text: 'Average sale price and number of sales per year for this {{ ucfirst($type) }}',
@@ -286,6 +275,7 @@
                             backgroundColor: 'rgba(54, 162, 235, 0.2)',
                             pointRadius: 3,
                             pointHoverRadius: 5,
+                            pointBorderWidth: 2,
                             pointBackgroundColor: function(context) {
                                 const index = context.dataIndex;
                                 const value = context.dataset.data[index];
@@ -319,6 +309,7 @@
                             borderWidth: 1,
                             backgroundColor: 'rgba(54, 162, 235, 0.4)',
                             borderColor: 'rgba(54, 162, 235, 1)',
+                            pointStyle: 'rect',
                         }
                     ]
                 },
@@ -330,6 +321,13 @@
                         intersect: false,
                     },
                     plugins: {
+                        legend: {
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10,
+                                boxHeight: 10,
+                            }
+                        },
                         title: {
                             display: true,
                             text: cfg.label + ' – average sale price and number of sales per year',
@@ -400,17 +398,26 @@
         if (typeSplit && typeSplit.years && typeSplit.years.length) {
             const el = document.getElementById('areaTypeSplitChart');
             if (el) {
-                const typeColors = ['#2563eb', '#f97316', '#22c55e', '#a855f7'];
+                const typeColorMap = {
+                    'Detached': 'oklch(64.8% 0.2 131.684)',
+                    'Semi-detached': 'oklch(64.5% 0.246 16.439)',
+                    'Terraced': 'oklch(66.6% 0.179 58.318)',
+                    'Flat': 'rgba(54, 162, 235, 0.8)',
+                    'Other': 'rgba(75, 192, 192, 0.8)'
+                };
+
                 const datasets = [];
                 Object.keys(typeSplit.types).forEach(function (key) {
-                    let idx = datasets.length;
+                    const label = typeSplit.types[key].label;
+                    const color = typeColorMap[label] || 'rgba(148, 163, 184, 0.8)';
+
                     datasets.push({
                         type: 'bar',
-                        label: typeSplit.types[key].label,
+                        label: label,
                         data: typeSplit.types[key].counts,
                         borderWidth: 1,
-                        backgroundColor: typeColors[idx % typeColors.length],
-                        borderColor: typeColors[idx % typeColors.length],
+                        backgroundColor: color,
+                        borderColor: color,
                         stacked: true,
                     });
                 });

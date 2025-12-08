@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
 
         <!-- Left: title, address, PPD note -->
-        <div class="space-y-3 md:w-4/5">
+        <div class="space-y-2 md:w-4/5">
             <h1 class="text-2xl md:text-3xl font-semibold text-zinc-600">Property History</h1>
 
             @php
