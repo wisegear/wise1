@@ -24,7 +24,7 @@
         <form method="GET" action="{{ route('property.search') }}" class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
-                    <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995.</label>
+                    <label for="postcode" class="block text-sm font-medium mb-1">Enter a postcode below to get details of all properties sold from 1995. (England & Wales).</label>
                     <input
                         id="postcode"
                         name="postcode"
@@ -46,10 +46,10 @@
             </div>
         </form>
     </div>
-<!--
+
     <div class="flex justify-center mt-4">
         <div class="w-full lg:w-1/2 mx-auto rounded border p-6 bg-white/80 mb-10">
-            <label for="district-search" class="block text-sm font-medium mb-1">Or search by local authority district (England &amp; Wales).</label>
+            <label for="district-search" class="block text-sm font-medium mb-1">Or search any Locality, Town/City, District or County (England &amp; Wales).</label>
             <div class="relative">
                 <input
                     id="district-search"
@@ -67,7 +67,7 @@
             <p class="mt-2 text-xs text-zinc-500">Start typing and then click on one of the suggestions to jump straight to that district.</p>
         </div>
     </div>
--->
+
     {{-- Results --}}
     @if(isset($results))
         @if($results->count() === 0)
@@ -277,6 +277,13 @@
         const suggestionsBox = document.getElementById('district-suggestions');
         if (!input || !suggestionsBox) return;
 
+        const typeLabels = {
+            locality: 'Locality',
+            town: 'Town',
+            district: 'District',
+            county: 'County',
+        };
+
         let allDistricts = [];
 
         fetch('{{ asset('data/property_districts.json') }}')
@@ -303,8 +310,9 @@
 
             const matches = allDistricts
                 .filter(function (item) {
-                    if (!item || !item.label) return false;
-                    return item.label.toLowerCase().includes(q);
+                    const name = (item && item.name) ? String(item.name) : (item && item.label ? String(item.label) : '');
+                    if (!name) return false;
+                    return name.toLowerCase().includes(q);
                 })
                 .slice(0, 15);
 
@@ -319,20 +327,21 @@
                 option.className = 'w-full text-left px-3 py-2 hover:bg-zinc-100 cursor-pointer flex flex-col';
 
                 const main = document.createElement('span');
-                main.className = 'font-medium text-zinc-800';
-                main.textContent = item.label;
-                option.appendChild(main);
+                main.className = 'font-medium text-zinc-800 flex items-baseline';
 
-                if (item.district || item.county || item.town) {
-                    const meta = document.createElement('span');
-                    meta.className = 'text-xs text-zinc-500';
-                    const bits = [];
-                    if (item.district) bits.push(item.district);
-                    if (item.town) bits.push(item.town);
-                    if (item.county) bits.push(item.county);
-                    meta.textContent = bits.join(' · ');
-                    option.appendChild(meta);
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = item.name || item.label || '';
+                main.appendChild(nameSpan);
+
+                if (item.type) {
+                    const typePretty = typeLabels[item.type] || item.type;
+                    const typeSpan = document.createElement('span');
+                    typeSpan.className = 'ml-1 text-xs text-zinc-400';
+                    typeSpan.textContent = ' (' + typePretty + ')';
+                    main.appendChild(typeSpan);
                 }
+
+                option.appendChild(main);
 
                 option.addEventListener('click', function () {
                     if (item.path) {

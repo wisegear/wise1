@@ -2,77 +2,136 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-semibold mb-4">Property History</h1>
+
+<div class="mb-10 mt-6 rounded-lg border border-zinc-200 bg-white shadow-lg p-6 md:p-10">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+
+        <!-- Left: title, address, PPD note -->
+        <div class="space-y-3 md:w-4/5">
+            <h1 class="text-2xl md:text-3xl font-semibold text-zinc-600">Property History</h1>
+
+            @php
+                $firstRow = $results->first();
+                $parts = [];
+                $norm = function($s) { return strtolower(trim((string) $s)); };
+                $seen = [];
+
+                if (!empty(trim($firstRow->PAON ?? ''))) { $parts[] = trim($firstRow->PAON); }
+                if (!empty(trim($firstRow->SAON ?? ''))) { $parts[] = trim($firstRow->SAON); }
+                if (!empty(trim($firstRow->Street ?? ''))) { $parts[] = trim($firstRow->Street); }
+
+                $locality = trim((string) ($firstRow->Locality ?? ''));
+                $town     = trim((string) ($firstRow->TownCity ?? ''));
+                $district = trim((string) ($firstRow->District ?? ''));
+                $county   = trim((string) ($firstRow->County ?? ''));
+                $postcode = trim((string) ($firstRow->Postcode ?? ''));
+
+                if ($locality !== '') { $parts[] = $locality; $seen[] = $norm($locality); }
+                if ($town !== '' && !in_array($norm($town), $seen, true)) { $parts[] = $town; $seen[] = $norm($town); }
+                if ($district !== '' && !in_array($norm($district), $seen, true)) { $parts[] = $district; $seen[] = $norm($district); }
+                if ($county !== '' && !in_array($norm($county), $seen, true)) { $parts[] = $county; $seen[] = $norm($county); }
+
+                if ($postcode !== '') { $parts[] = $postcode; }
+
+                $displayAddress = implode(', ', $parts);
+
+                $showLocalityCharts = ($locality !== '')
+                    && ($norm($locality) !== $norm($town))
+                    && ($norm($locality) !== $norm($district))
+                    && ($norm($locality) !== $norm($county));
+
+                $showTownCharts = ($town !== '')
+                    && ($norm($town) !== $norm($district))
+                    && ($norm($town) !== $norm($county));
+
+                $showDistrictCharts = ($district !== '')
+                    && ($norm($district) !== $norm($county));
+
+                // PPD Category note
+                $ppdSet = $results->pluck('PPDCategoryType')->filter()->unique();
+                $hasA = $ppdSet->contains('A');
+                $hasB = $ppdSet->contains('B');
+            @endphp
+
+            <p class="text-zinc-900 font-semibold tracking-wide text-sm">
+                {{ $displayAddress }}
+            </p>
+
+            @if($ppdSet->isNotEmpty())
+                @if($hasA && !$hasB)
+                    <p class="text-sm text-zinc-600 leading-relaxed">
+                        All transactions shown for this property are
+                        <span class="font-semibold text-rose-500">Category A</span> sales. This means all sales were at
+                        market value in an arms length transaction.
+                    </p>
+                @elseif($hasB && !$hasA)
+                    <p class="text-sm text-zinc-600 leading-relaxed">
+                        All transactions shown for this property are
+                        <span class="font-bold text-rose-500">Category B</span> sales. It may have been a repossession,
+                        power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or
+                        simply where the property type is not known. This transaction may not be representative of a true
+                        sale at market value in an arms length transaction and could skew the data below.
+                    </p>
+                @elseif($hasA && $hasB)
+                    <p class="text-sm text-zinc-600 leading-relaxed">
+                        This property has a <span class="font-semibold text-rose-500">mix of Category A and Category B</span>
+                        sales. Category A means sales at market value in an arms length transaction. Category B may have been
+                        a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a
+                        parking space or simply where the property type is not known. These may not be representative of
+                        true market value and could skew the data below.
+                    </p>
+                @else
+                    <p class="text-sm text-zinc-600 leading-relaxed">
+                        Note: Transactions include categories: {{ $ppdSet->join(', ') }}.
+                    </p>
+                @endif
+            @endif
+        </div>
+
+        <!-- Right: illustration -->
+        <div class="hidden md:flex md:w-1/5 justify-end">
+            <img src="/assets/images/site/ordinary_day.svg"
+                 alt="Property Illustration"
+                 class="max-w-full h-32">
+        </div>
+
+    </div>
+</div>
+
     @php
-        $firstRow = $results->first();
-        $parts = [];
-        $norm = function($s) { return strtolower(trim((string) $s)); };
-        $seen = [];
+        // Map coordinates from postcode via ONSPD (postcode centroid)
+        $mapLat = null;
+        $mapLong = null;
+        $pcInputForMap = trim((string)($postcode ?? ''));
 
-        // Core address lines
-        if (!empty(trim($firstRow->PAON ?? ''))) { $parts[] = trim($firstRow->PAON); }
-        if (!empty(trim($firstRow->SAON ?? ''))) { $parts[] = trim($firstRow->SAON); }
-        if (!empty(trim($firstRow->Street ?? ''))) { $parts[] = trim($firstRow->Street); }
+        if ($pcInputForMap !== '') {
+            $pcKeyMap = strtoupper(str_replace(' ', '', $pcInputForMap));
+            $pcRowMap = DB::table('onspd')
+                ->select(['lat', 'long'])
+                ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKeyMap])
+                ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKeyMap])
+                ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKeyMap])
+                ->orderByDesc('dointr')
+                ->first();
 
-        // Location hierarchy with de-duplication
-        $locality = trim((string) ($firstRow->Locality ?? ''));
-        $town     = trim((string) ($firstRow->TownCity ?? ''));
-        $district = trim((string) ($firstRow->District ?? ''));
-        $county   = trim((string) ($firstRow->County ?? ''));
-        $postcode = trim((string) ($firstRow->Postcode ?? ''));
-
-        if ($locality !== '') { $parts[] = $locality; $seen[] = $norm($locality); }
-        if ($town !== '' && !in_array($norm($town), $seen, true)) { $parts[] = $town; $seen[] = $norm($town); }
-        if ($district !== '' && !in_array($norm($district), $seen, true)) { $parts[] = $district; $seen[] = $norm($district); }
-        if ($county !== '' && !in_array($norm($county), $seen, true)) { $parts[] = $county; $seen[] = $norm($county); }
-
-        // Postcode always last if present
-        if ($postcode !== '') { $parts[] = $postcode; }
-
-        $displayAddress = implode(', ', $parts);
-        // Determine if locality charts should be shown (locality must be non-empty and distinct from TownCity, District, County)
-        $showLocalityCharts = ($locality !== '')
-            && ($norm($locality) !== $norm($town))
-            && ($norm($locality) !== $norm($district))
-            && ($norm($locality) !== $norm($county));
-        // Determine if town charts should be shown (town must be non-empty and distinct from District, County)
-        $showTownCharts = ($town !== '')
-            && ($norm($town) !== $norm($district))
-            && ($norm($town) !== $norm($county));
-        // Determine if district charts should be shown (district must be non-empty and distinct from County)
-        $showDistrictCharts = ($district !== '')
-            && ($norm($district) !== $norm($county));
+            if ($pcRowMap) {
+                $mapLat = $pcRowMap->lat;
+                $mapLong = $pcRowMap->long;
+            }
+        }
     @endphp
-    <p class="text-zinc-500 font-semibold mb-1">{{ $displayAddress }}</p>
-    
-    {{-- PPD Category note --}}
-    @php
-        $ppdSet = $results->pluck('PPDCategoryType')->filter()->unique();
-        $hasA = $ppdSet->contains('A');
-        $hasB = $ppdSet->contains('B');
-    @endphp
-    @if($ppdSet->isNotEmpty())
-        @if($hasA && !$hasB)
-            <div class="mb-6 text-sm text-zinc-600">
-                All transactions shown for this property are <span class="font-semibold text-rose-500">Category A</span> sales.  This means all sales were at market value in an arms length transaction.
+
+    @if($mapLat && $mapLong)
+        <div class="mb-6">
+            <h2 class="text-base font-semibold mb-2">Approximate location (postcode centroid)</h2>
+            <div id="property-map" class="w-full h-100 rounded-md border border-zinc-200 relative overflow-hidden">
+                <div id="property-map-loading" class="absolute inset-0 flex items-center justify-center text-xs text-zinc-400 bg-zinc-50">
+                    Loading map…
+                </div>
             </div>
-        @elseif($hasB && !$hasA)
-            <div class="mb-6 text-sm text-zinc-600">
-                All transactions shown for this property are <span class="font-bold text-rose-500">Category B</span> sales.  It may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
-                may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
-            </div>
-        @elseif($hasA && $hasB)
-            <div class="mb-6 text-sm text-zinc-600">
-                This property has a <span class="font-semibold text-rose-500">mix of Category A and Category B</span> sales.  Category A means all sales were at market value in an arms length transaction.  Category B may have been a repossession, power of sale, sale to a company or social landlord, a part transfer, sale of a parking space or simply where the property type is not known. This transaction
-                may not be representative of a true sale at market value in an arms length transaction.  Where the transaction is not reflective of general trends in the immediate vicinity it could skew the data below.
-            </div>
-        @else
-            <div class="mb-6 text-sm text-zinc-600">
-                Note: Transactions include categories: {{ $ppdSet->join(', ') }}.
-            </div>
-        @endif
+            <p class="mt-2 text-xs text-zinc-500">Map is approximate based on postcode and does not show the exact property location.</p>
+        </div>
     @endif
-    
 
     <!-- Links: Google Maps & Zoopla & Rightmove -->
     @php
@@ -487,80 +546,82 @@
 
     <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Price History of this property</h2>
+            <h2 class="text-base font-semibold mb-3">Price History of this property</h2>
             <canvas id="priceHistoryChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ $postcode }}</h2>
+            <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ $postcode }}</h2>
             <canvas id="postcodePriceChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ $postcode }}</h2>
+            <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ $postcode }}</h2>
             <canvas id="postcodeSalesChart" class="block w-full"></canvas>
         </div>
         <!-- Locality Charts (moved up) -->
         @if($showLocalityCharts)
         <!-- Locality Charts (shown only when locality is present and distinct) -->
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Property Types in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localityPropertyTypesChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($locality)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localityPriceChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($locality)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($locality)) }}</h2>
             <canvas id="localitySalesChart" class="block w-full"></canvas>
         </div>
         @endif
         @if($showTownCharts)
         <!-- Town/City Charts -->
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Property Types in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townPropertyTypesChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($town)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townPriceChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($town)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($town)) }}</h2>
             <canvas id="townSalesChart" class="block w-full"></canvas>
         </div>
         @endif
         <!-- District Charts -->
         @if($showDistrictCharts)
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Property Types in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtPropertyTypesChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtPriceChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ $district !== '' ? ucfirst(strtolower($district)) : ucfirst(strtolower($county)) }}</h2>
             <canvas id="districtSalesChart" class="block w-full"></canvas>
         </div>
         @endif
         @if(!empty($county))
         <!-- County Charts -->
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Property Types in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countyPropertyTypesChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Average Price of {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countyPriceChart" class="block w-full"></canvas>
         </div>
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-lg font-bold mb-4">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($county)) }}</h2>
+            <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ ucfirst(strtolower($county)) }}</h2>
             <canvas id="countySalesChart" class="block w-full"></canvas>
         </div>
         @endif
     </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const ctx = document.getElementById('priceHistoryChart').getContext('2d');
@@ -579,18 +640,17 @@ new Chart(ctx, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'blue';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                position: 'top'
-            },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -607,7 +667,14 @@ new Chart(ctx, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90 }
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
             },
             y: {
                 beginAtZero: false,
@@ -637,18 +704,17 @@ new Chart(ctxPostcode, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                position: 'top'
-            },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -665,7 +731,14 @@ new Chart(ctxPostcode, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90 }
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
             },
             y: {
                 beginAtZero: false,
@@ -699,16 +772,17 @@ new Chart(ctxPostcode, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: { position: 'top' },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -722,7 +796,14 @@ new Chart(ctxPostcode, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90 }
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
             },
             y: {
                 beginAtZero: false,
@@ -750,16 +831,17 @@ new Chart(ctxCountyPrice, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: { position: 'top' },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -772,7 +854,16 @@ new Chart(ctxCountyPrice, {
             }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: { beginAtZero: false, ticks: { callback: function(value) { return '£' + value.toLocaleString(); } } }
         }
     }
@@ -796,16 +887,17 @@ new Chart(ctxTownPrice, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: { position: 'top' },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -818,7 +910,16 @@ new Chart(ctxTownPrice, {
             }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: {
                 beginAtZero: false,
                 ticks: { callback: function(value) { return '£' + value.toLocaleString(); } }
@@ -845,16 +946,17 @@ new Chart(ctxLocality, {
             pointHoverRadius: 5,
             pointBackgroundColor: function(context) {
                 const index = context.dataIndex;
-                const value = context.dataset.data[index];
-                const prev = index > 0 ? context.dataset.data[index - 1] : value;
-                return value < prev ? 'red' : 'rgb(54, 162, 235)';
+                const value = Number(context.dataset.data[index]);
+                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
+                const epsilon = 1; // ignore tiny rounding differences
+                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
             }
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: { position: 'top' },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -867,7 +969,16 @@ new Chart(ctxLocality, {
             }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: {
                 beginAtZero: false,
                 ticks: { callback: function(value) { return '£' + value.toLocaleString(); } }
@@ -877,6 +988,72 @@ new Chart(ctxLocality, {
 });
 @endif
 </script>
+
+@if(isset($mapLat, $mapLong) && $mapLat && $mapLong)
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var mapEl = document.getElementById('property-map');
+    if (!mapEl || typeof L === 'undefined') return;
+
+    var initialized = false;
+
+    function initLeafletMap() {
+        if (initialized) return;
+        initialized = true;
+
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        });
+
+        var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: 'Tiles © Esri, Maxar, Earthstar Geographics'
+        });
+
+        var map = L.map('property-map', {
+            center: [{{ $mapLat }}, {{ $mapLong }}],
+            zoom: 15,
+            layers: [osm]
+        });
+
+        L.marker([{{ $mapLat }}, {{ $mapLong }}]).addTo(map)
+            .bindPopup('Approximate location (postcode centroid)')
+            .openPopup();
+
+        L.control.layers({
+            'Map': osm,
+            'Satellite': satellite
+        }).addTo(map);
+
+        var loadingEl = document.getElementById('property-map-loading');
+        if (loadingEl) {
+            osm.on('load', function () {
+                loadingEl.style.transition = 'opacity 200ms ease-out';
+                loadingEl.style.opacity = '0';
+                setTimeout(function () { loadingEl.style.display = 'none'; }, 220);
+            });
+        }
+    }
+
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries, obs) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    initLeafletMap();
+                    obs.disconnect();
+                }
+            });
+        }, { root: null, threshold: 0.1 });
+
+        observer.observe(mapEl);
+    } else {
+        // Fallback: initialise immediately if IntersectionObserver is not supported
+        initLeafletMap();
+    }
+});
+</script>
+@endif
 <script>
 // === Property Types chart helpers (uniform look & order) ===
 function normalizePropertyTypes(rawLabels, rawCounts) {
@@ -1051,9 +1228,7 @@ new Chart(ctxPostcodeSales, {
         responsive: true,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: {
-                display: true
-            },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -1072,7 +1247,14 @@ new Chart(ctxPostcodeSales, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90, padding: 4 }
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
             },
             y: {
                 beginAtZero: true,
@@ -1112,7 +1294,7 @@ new Chart(ctxPostcodeSales, {
         responsive: true,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: { display: true },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -1127,7 +1309,14 @@ new Chart(ctxPostcodeSales, {
         },
         scales: {
             x: {
-                ticks: { minRotation: 90, maxRotation: 90, padding: 4 }
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
             },
             y: {
                 beginAtZero: true,
@@ -1166,7 +1355,7 @@ new Chart(ctxCountySales, {
         responsive: true,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: { display: true },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -1180,7 +1369,16 @@ new Chart(ctxCountySales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
@@ -1215,7 +1413,7 @@ new Chart(ctxTownSales, {
         responsive: true,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: { display: true },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -1229,7 +1427,16 @@ new Chart(ctxTownSales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
@@ -1264,7 +1471,7 @@ new Chart(ctxLocalitySales, {
         responsive: true,
         layout: { padding: { bottom: 0 } },
         plugins: {
-            legend: { display: true },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -1278,21 +1485,22 @@ new Chart(ctxLocalitySales, {
             title: { display: false }
         },
         scales: {
-            x: { ticks: { minRotation: 90, maxRotation: 90, padding: 4 } },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 8,
+                    minRotation: 45,
+                    maxRotation: 45,
+                    font: { size: 11 },
+                    padding: 4
+                }
+            },
             y: { beginAtZero: true, ticks: { precision: 0 } }
         }
     }
 });
 @endif
 </script>
-
-<!-- Notes -->
-<div class="text-sm text-zinc-500">
-    <h2 class="font-bold mb-4">Notes:</h2>
-    <ol class="list-decimal list-inside space-y-1 pl-4">
-        <li>Other Property Type relates to properties such as mixed-use, converted barns, lighthouses or unusual property that does not fit in standard Detached, Semi, Terraced or Flat.</li>
-    </ol>    
-</div>
 
 </div>
 

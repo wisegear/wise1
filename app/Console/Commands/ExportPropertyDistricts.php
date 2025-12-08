@@ -18,20 +18,16 @@ class ExportPropertyDistricts extends Command
     /**
      * The console command description.
      */
-    protected $description = 'Export unique Land Registry districts to a JSON file for the property search.';
+    protected $description = 'Export unique property areas (locality/town/district/county) with de-duplicated names to a JSON file.';
 
     public function handle(): int
     {
-        $this->info('Exporting districts from land_registry…');
+        $this->info('Exporting areas from land_registry…');
 
-        // Adjust column names here if needed (district / county / town)
+        // Pull distinct combinations of the 4 area columns.
         $rows = DB::table('land_registry')
-            ->select([
-                'District',
-            ])
-            ->whereNotNull('District')
-            ->groupBy('District')
-            ->orderBy('District')
+            ->select('Locality', 'TownCity', 'District', 'County')
+            ->groupBy('Locality', 'TownCity', 'District', 'County')
             ->get();
 
         if ($rows->isEmpty()) {
@@ -39,14 +35,90 @@ class ExportPropertyDistricts extends Command
             return self::SUCCESS;
         }
 
-        // Map into a lightweight structure for the frontend
-        $districts = $rows->map(function ($row) {
-            return [
-                'District' => $row->District,
-                'label'    => $row->District,
-                'path'     => '/property/district/' . Str::slug($row->District),
+        /**
+         * Priority for levels:
+         *  locality (1) < town (2) < district (3) < county (4)
+         *
+         * For any given *name* (e.g. "BLACKPOOL") we keep it only at the
+         * highest level it ever appears. So if BLACKPOOL appears as:
+         *  - locality
+         *  - town
+         *  - district
+         *  - county
+         * we only export: type = county, name = BLACKPOOL.
+         */
+        $levels = [
+            'locality' => 1,
+            'town'     => 2,
+            'district' => 3,
+            'county'   => 4,
+        ];
+
+        // nameKey (lowercased) => ['type' => 'county', 'name' => 'BLACKPOOL']
+        $bestByName = [];
+
+        foreach ($rows as $row) {
+            $locality = trim((string) ($row->Locality ?? ''));
+            $town     = trim((string) ($row->TownCity ?? ''));
+            $district = trim((string) ($row->District ?? ''));
+            $county   = trim((string) ($row->County ?? ''));
+
+            $candidates = [];
+
+            if ($locality !== '') {
+                $candidates[] = ['type' => 'locality', 'name' => $locality];
+            }
+            if ($town !== '') {
+                $candidates[] = ['type' => 'town', 'name' => $town];
+            }
+            if ($district !== '') {
+                $candidates[] = ['type' => 'district', 'name' => $district];
+            }
+            if ($county !== '') {
+                $candidates[] = ['type' => 'county', 'name' => $county];
+            }
+
+            foreach ($candidates as $candidate) {
+                $type = $candidate['type'];
+                $name = $candidate['name'];
+
+                // Use lowercase key so BLACKPOOL / Blackpool / blackpool collapse.
+                $key = mb_strtolower($name);
+
+                $level = $levels[$type] ?? 0;
+                $currentLevel = isset($bestByName[$key])
+                    ? ($levels[$bestByName[$key]['type']] ?? 0)
+                    : 0;
+
+                // If we've never seen this name OR this is a higher level, replace it.
+                if ($level > $currentLevel) {
+                    $bestByName[$key] = [
+                        'type' => $type,
+                        'name' => $name,
+                    ];
+                }
+            }
+        }
+
+        // Build final flat list for JSON.
+        $areas = [];
+
+        foreach ($bestByName as $entry) {
+            $type = $entry['type'];
+            $name = $entry['name'];
+
+            $areas[] = [
+                'type'  => $type,
+                'name'  => $name,
+                'label' => $name . ' (' . ucfirst($type) . ')',
+                'path'  => '/property/area/' . $type . '/' . Str::slug($name),
             ];
-        })->values()->all();
+        }
+
+        if (empty($areas)) {
+            $this->warn('No areas were derived – nothing to export.');
+            return self::SUCCESS;
+        }
 
         // Ensure the target directory exists, e.g. public/data/property_districts.json
         $dir = public_path('data');
@@ -61,10 +133,10 @@ class ExportPropertyDistricts extends Command
 
         file_put_contents(
             $file,
-            json_encode($districts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            json_encode($areas, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
 
-        $this->info('Exported ' . count($districts) . ' districts to: ' . $file);
+        $this->info('Exported ' . count($areas) . ' areas to: ' . $file);
 
         return self::SUCCESS;
     }

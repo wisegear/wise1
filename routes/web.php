@@ -22,6 +22,7 @@ use App\Http\Controllers\DeprivationController;
 use App\Http\Controllers\MlarArrearsController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\Admin\DataUpdateController;
+use App\Http\Controllers\PropertyAreaController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +95,11 @@ Route::get('/deprivation/wales/{lsoa}', [DeprivationController::class, 'showWale
 Route::get('/deprivation/northern-ireland/{sa}', [DeprivationController::class, 'showNorthernIreland'])->name('deprivation.ni.show');
 
 Route::resource('/blog', BlogController::class);
+
+// Area property search
+Route::get('/property/area/{type}/{slug}', [PropertyAreaController::class, 'show'])
+    ->whereIn('type', ['locality', 'town', 'district', 'county'])
+    ->name('property.area.show');
 
 // Routes first protected by Auth
 
