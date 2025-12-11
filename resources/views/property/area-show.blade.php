@@ -11,25 +11,25 @@
             <div class="border rounded p-3 bg-white shadow-lg">
                 <div class="text-xs text-zinc-500">Total sales</div>
                 <div class="text-lg font-semibold">
-                    {{ number_format($summary->sales_count) }}
+                    {{ number_format((float) $summary->sales_count) }}
                 </div>
             </div>
             <div class="border rounded p-3 bg-white shadow-lg">
                 <div class="text-xs text-zinc-500">Average price</div>
                 <div class="text-lg font-semibold">
-                    £{{ number_format($summary->avg_price, 0) }}
+                    £{{ number_format((float) $summary->avg_price, 0) }}
                 </div>
             </div>
             <div class="border rounded p-3 bg-white shadow-lg">
                 <div class="text-xs text-zinc-500">Lowest recorded</div>
                 <div class="text-lg font-semibold">
-                    £{{ number_format($summary->min_price, 0) }}
+                    £{{ number_format((float) $summary->min_price, 0) }}
                 </div>
             </div>
             <div class="border rounded p-3 bg-white shadow-lg">
                 <div class="text-xs text-zinc-500">Highest recorded</div>
                 <div class="text-lg font-semibold">
-                    £{{ number_format($summary->max_price, 0) }}
+                    £{{ number_format((float) $summary->max_price, 0) }}
                 </div>
             </div>
         </div>

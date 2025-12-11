@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PropertyAreaController extends Controller
@@ -51,28 +53,59 @@ class PropertyAreaController extends Controller
 
         $column = $columnMap[$type];
 
-        // High-level summary (MySQL)
+        // Cache key + TTL must match the warmer
+        $cacheKey = 'area:v1:' . $type . ':' . Str::slug($areaName);
+        $ttl = now()->addDays(45);
+
+        // Use Laravel's cache normally now that config is fixed
+        $data = Cache::remember($cacheKey, $ttl, function () use ($column, $areaName) {
+            return $this->buildAreaPayload($column, $areaName);
+        });
+
+        return view('property.area-show', array_merge([
+            'type'       => $type,
+            'areaName'   => $areaName,
+            'column'     => $column,
+        ], $data));
+
+    }
+
+    /**
+     * Build the payload (summary and chart series) for a given area.
+     * This is shared between the controller and the area warmer.
+     */
+    public function buildAreaPayload(string $column, string $areaName): array
+    {
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            $yearExpr = 'EXTRACT(YEAR FROM "Date")';
+        } else {
+            // MySQL and others
+            $yearExpr = 'YEAR(Date)';
+        }
+
+        // High-level summary
         $summary = DB::table('land_registry')
             ->selectRaw('
-                COUNT(*)      as sales_count,
-                MIN(`Price`)  as min_price,
-                MAX(`Price`)  as max_price,
-                AVG(`Price`)  as avg_price
+                COUNT(*)   as sales_count,
+                MIN(Price) as min_price,
+                MAX(Price) as max_price,
+                AVG(Price) as avg_price
             ')
             ->where($column, $areaName)
             ->where('PPDCategoryType', '<>', 'B')
             ->first();
 
-        // Simple yearly series for charts later (MySQL)
+        // Simple yearly series for charts later
         $byYear = DB::table('land_registry')
-            ->selectRaw('
-                YEAR(`Date`)      as year,
-                COUNT(*)          as sales_count,
-                AVG(`Price`)      as avg_price
-            ')
+            ->selectRaw("
+                {$yearExpr}   as year,
+                COUNT(*)      as sales_count,
+                AVG(Price)    as avg_price
+            ")
             ->where($column, $areaName)
             ->where('PPDCategoryType', '<>', 'B')
-            ->groupBy(DB::raw('YEAR(`Date`)'))
+            ->groupBy(DB::raw($yearExpr))
             ->orderBy('year')
             ->get();
 
@@ -88,20 +121,20 @@ class PropertyAreaController extends Controller
 
         foreach ($propertyTypes as $code => $meta) {
             $series = DB::table('land_registry')
-                ->selectRaw('
-                    YEAR(`Date`)      as year,
-                    COUNT(*)          as sales_count,
-                    AVG(`Price`)      as avg_price
-                ')
+                ->selectRaw("
+                    {$yearExpr}   as year,
+                    COUNT(*)      as sales_count,
+                    AVG(Price)    as avg_price
+                ")
                 ->where($column, $areaName)
                 ->where('PPDCategoryType', '<>', 'B')
                 ->where('PropertyType', $code)
-                ->groupBy(DB::raw('YEAR(`Date`)'))
+                ->groupBy(DB::raw($yearExpr))
                 ->orderBy('year')
                 ->get();
 
             $byType[$meta['key']] = [
-                'label' => $meta['label'],
+                'label'  => $meta['label'],
                 'series' => $series,
             ];
         }
@@ -140,15 +173,15 @@ class PropertyAreaController extends Controller
 
         // 2) Yearly split of sales by NewBuild flag (Y = new build, N = existing)
         $newBuildRaw = DB::table('land_registry')
-            ->selectRaw('
-                YEAR(`Date`)      as year,
-                NewBuild          as new_build,
-                COUNT(*)          as sales_count
-            ')
+            ->selectRaw("
+                {$yearExpr}   as year,
+                NewBuild      as new_build,
+                COUNT(*)      as sales_count
+            ")
             ->where($column, $areaName)
             ->where('PPDCategoryType', '<>', 'B')
             ->whereIn('NewBuild', ['Y', 'N'])
-            ->groupBy(DB::raw('YEAR(`Date`)'), 'NewBuild')
+            ->groupBy(DB::raw($yearExpr), 'NewBuild')
             ->orderBy('year')
             ->get();
 
@@ -181,15 +214,13 @@ class PropertyAreaController extends Controller
             $newBuildSplit['series'][$flag]['counts'][$idx] = (int) $row->sales_count;
         }
 
-        return view('property.area-show', [
-            'type'              => $type,
-            'areaName'          => $areaName,
+        return [
             'summary'           => $summary,
             'byYear'            => $byYear,
             'byType'            => $byType,
             'propertyTypeSplit' => $propertyTypeSplit,
             'newBuildSplit'     => $newBuildSplit,
-            'column'            => $column,
-        ]);
+            'generated_at'      => now()->toIso8601String(),
+        ];
     }
 }
