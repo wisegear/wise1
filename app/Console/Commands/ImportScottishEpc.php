@@ -125,6 +125,10 @@ class ImportScottishEpc extends Command
             $columnsSql = implode(', ', $tokens);
 
             $base = basename($file);
+            // Detect line endings (some quarters are CRLF)
+            $sample = @file_get_contents($file, false, null, 0, 200000) ?: '';
+            $lineTerm = (strpos($sample, "\r\n") !== false) ? "\\r\\n" : "\\n";
+
             $this->info("Importing {$base}...");
 
             $sql = "
@@ -134,11 +138,13 @@ class ImportScottishEpc extends Command
                 FIELDS TERMINATED BY ','
                 ENCLOSED BY '\"'
                 ESCAPED BY '\\\\'
-                LINES TERMINATED BY '\n'
+                LINES TERMINATED BY '{$lineTerm}'
                 IGNORE 2 LINES
                 ({$columnsSql})
                 SET source_file = '{$base}'
             ";
+
+            $this->line(" - line endings: " . ($lineTerm === "\\r\\n" ? "CRLF" : "LF"));
 
             try {
                 DB::connection()->getPdo()->exec($sql);
