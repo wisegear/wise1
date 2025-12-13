@@ -229,9 +229,10 @@
                                 </td>
                                 <td class="px-3 py-2 align-top border-b">{{ $row->local_authority_label }}</td>
                                 <td class="px-3 py-2 align-top border-b text-center">
-                                    @if(!empty($row->lmk_key))
+                                    @php($rrn = $row->report_reference_number ?? ($row->REPORT_REFERENCE_NUMBER ?? null))
+                                    @if(!empty($rrn))
                                         <a
-                                            href="{{ route('epc.show', ['lmk' => $row->lmk_key, 'r' => base64_encode($cleanReturnUrl)]) }}"
+                                            href="{{ route('epc.scotland.show', ['rrn' => $rrn, 'r' => base64_encode($cleanReturnUrl)]) }}"
                                             class="inline-flex items-center justify-center gap-1 text-lime-700 hover:text-lime-900"
                                             title="View report"
                                             aria-label="View EPC report for {{ $row->address }}, {{ $row->postcode }}"

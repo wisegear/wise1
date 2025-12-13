@@ -240,7 +240,8 @@ class EpcController extends Controller
 
         $resultsQuery = DB::table('epc_certificates_scotland')
             ->select([
-                DB::raw("BUILDING_REFERENCE_NUMBER as lmk_key"),
+                DB::raw("REPORT_REFERENCE_NUMBER as report_reference_number"),
+                DB::raw("BUILDING_REFERENCE_NUMBER as building_reference_number"),
                 DB::raw("POSTCODE as postcode"),
                 DB::raw("LODGEMENT_DATE as lodgement_date"),
                 DB::raw("CURRENT_ENERGY_RATING as current_energy_rating"),
@@ -346,5 +347,41 @@ class EpcController extends Controller
             return substr($pc, 0, -3) . ' ' . substr($pc, -3);
         }
         return $pc;
+    }
+
+    /**
+     * Show a single Scotland EPC report by REPORT_REFERENCE_NUMBER.
+     */
+    public function showScotland(Request $request, string $rrn)
+    {
+        $encoded = $request->query('r');
+        $decoded = $encoded ? base64_decode($encoded, true) : null;
+
+        $backUrl = $decoded ?: route('epc.search_scotland');
+
+        $scot = DB::table('epc_certificates_scotland')
+            ->where('REPORT_REFERENCE_NUMBER', $rrn)
+            ->first();
+
+        abort_if(!$scot, 404);
+
+        // Build a readable address
+        $address = trim(implode(', ', array_filter([
+            $scot->ADDRESS1 ?? null,
+            $scot->ADDRESS2 ?? null,
+            $scot->ADDRESS3 ?? null,
+        ])));
+
+        $record = (array) $scot;
+        $record['address_display'] = $address;
+        $record['nation'] = 'scotland';
+
+        return view('epc.show', [
+            'nation'  => 'scotland',
+            'lmk'     => $rrn, // reuse slot; Scotland uses RRN
+            'record'  => $record,
+            'columns' => array_keys($record),
+            'backUrl' => $backUrl,
+        ]);
     }
 }
