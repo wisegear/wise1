@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\InflationCpihMonthly;
+use App\Models\InflationCPIHMonthly;
 
 class InflationController extends Controller
 {
