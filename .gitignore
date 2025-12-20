@@ -19,6 +19,8 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
 /vendor
 Homestead.json
 Homestead.yaml
@@ -27,4 +29,3 @@ Thumbs.db
 /public/geo/lsoa/lsoa_2021_bfc.json
 /public/geo/wales/wimd2019.json
 /public/geo/northern_ireland/SA2011_full.json
-
