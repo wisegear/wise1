@@ -196,7 +196,7 @@
             @if($interest)
                 <div class="text-2xl font-semibold">{{ number_format($interest->rate, 2) }}%</div>
                 <div class="text-sm text-gray-600 mt-1">
-                    As of {{ \Carbon\Carbon::parse($interest->effective_date)->format('d M Y') }}
+                    {{ \Carbon\Carbon::parse($interest->effective_date)->format('M Y') }}
                     @if(!empty($sparklines['interest']['values'] ?? []))
                         <div class="h-28 pt-8">
                             <canvas id="spark-interest"></canvas>
