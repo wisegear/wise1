@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-7xl px-4 py-8">
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center">
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">Repossessions</h1>
             <p class="text-zinc-500 text-sm">Data from 2003 to September 2025 provided by the court service. Next update January 2026, data is provided quarterly.</p>
         </div>
