@@ -11,7 +11,7 @@
                 <span class="font-semibold">House Price Index for UK and England, Wales, Scotland & Northern Ireland.</span>
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from 1969 to 2025 (June).  Updates from Gov.uk are sporadic, no new data as at 31st Oct 2025.
+                Data covers the period from 1969 to 2025 (October).  Next Update expected January 2026.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
