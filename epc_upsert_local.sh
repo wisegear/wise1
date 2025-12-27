@@ -4,12 +4,18 @@ set -euo pipefail
 # ==== CONFIG (LOCAL / HERD) ====
 DB_HOST="127.0.0.1"
 DB_PORT="3306"
-DB_NAME="uk_property"
+DB_NAME="property"
 DB_USER="root"
 
-echo ">>> Upserting ALL rows from epc_staging into epc_certificates (no year filter)"
+START_YEAR=2008
+END_YEAR=$(date +%Y)
 
-mysql --local-infile=1 -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" "${DB_NAME}" <<SQL
+echo ">>> Upserting epc_staging into epc_certificates year by year (${START_YEAR}..${END_YEAR})"
+
+for Y in $(seq "${START_YEAR}" "${END_YEAR}"); do
+  echo ">>> Processing year ${Y}..."
+
+  mysql --local-infile=1 -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" "${DB_NAME}" <<SQL
 INSERT INTO epc_certificates (
   lmk_key, building_reference_number, uprn, uprn_source,
   postcode, address, posttown,
@@ -64,6 +70,8 @@ SELECT
        THEN s.EXTENSION_COUNT+0 ELSE NULL END
 FROM epc_staging s
 WHERE s.LMK_KEY IS NOT NULL
+  AND STR_TO_DATE(NULLIF(s.LODGEMENT_DATE,''), '%Y-%m-%d') >= '${Y}-01-01'
+  AND STR_TO_DATE(NULLIF(s.LODGEMENT_DATE,''), '%Y-%m-%d') <  DATE_ADD('${Y}-01-01', INTERVAL 1 YEAR)
 ON DUPLICATE KEY UPDATE
   building_reference_number   = VALUES(building_reference_number),
   uprn                        = VALUES(uprn),
@@ -92,5 +100,8 @@ ON DUPLICATE KEY UPDATE
   number_habitable_rooms      = VALUES(number_habitable_rooms),
   extension_count             = VALUES(extension_count);
 SQL
+
+  echo ">>> Year ${Y} complete."
+done
 
 echo ">>> Done."
