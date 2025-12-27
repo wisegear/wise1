@@ -13,7 +13,7 @@
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 You can either search for a specific postcode to see every sale in that postcode, or search for a
                 locality, town/city, district or county to view a wider area summary. Data covers the period from
-                January 1995 to September 2025.
+                January 1995 to October 2025.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
