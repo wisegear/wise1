@@ -36,7 +36,7 @@ class PropertyHomeWarm extends Command
         }
 
         // Orchestrator mode: define the seven independent tasks
-        $tasks = ['sales','avgPrice','p90','top5','topSale','top3','monthly24'];
+        $tasks = ['sales','avgPrice','p90','top5','topSale','top3','monthly24','typeSplit','newBuildSplit','durationSplit','avgPriceByType'];
 
         $parallel = max(1, (int) ($this->option('parallel') ?? 1));
         if ($parallel <= 1) {
@@ -57,7 +57,7 @@ class PropertyHomeWarm extends Command
         $bar = $this->output->createProgressBar($total);
         $bar->start();
 
-        $maxWorkers = (int) min($parallel, 7); // safety cap (we have 7 tasks)
+        $maxWorkers = (int) min($parallel, 11); // safety cap (we have 11 tasks)
         $queue = $tasks; // array of strings
         $running = [];
 
@@ -213,6 +213,65 @@ class PropertyHomeWarm extends Command
 
                 // Store combined payload to match controller Cache::remember() contract
                 Cache::put('dashboard:sales_last_24m:EW:catA:v2', [$labels, $data], $ttl);
+                break;
+
+            case 'typeSplit':
+                // Property type split by year (England & Wales, Cat A)
+                // D = Detached, S = Semi-detached, T = Terraced, F = Flat
+                $data = DB::table('land_registry')
+                    ->selectRaw('`YearDate` as year, `PropertyType` as type, COUNT(*) as total')
+                    ->where('PPDCategoryType', 'A')
+                    ->whereIn('PropertyType', ['D','S','T','F'])
+                    ->groupBy('year', 'type')
+                    ->orderBy('year')
+                    ->get();
+
+                // Cache key used by the homepage Blade (or future controller) for the stacked type chart
+                Cache::put('ew:propertyTypeSplitByYear:catA:v1', $data, $ttl);
+                break;
+
+            case 'newBuildSplit':
+                // New build vs existing split by year (England & Wales, Cat A)
+                // Y = New build, N = Existing
+                $data = DB::table('land_registry')
+                    ->selectRaw('`YearDate` as year, `NewBuild` as nb, COUNT(*) as total')
+                    ->where('PPDCategoryType', 'A')
+                    ->whereIn('NewBuild', ['Y','N'])
+                    ->groupBy('year', 'nb')
+                    ->orderBy('year')
+                    ->get();
+
+                Cache::put('ew:newBuildSplitByYear:catA:v1', $data, $ttl);
+                break;
+
+            case 'durationSplit':
+                // Leasehold vs Freehold split by year (England & Wales, Cat A)
+                // F = Freehold, L = Leasehold
+                $data = DB::table('land_registry')
+                    ->selectRaw('`YearDate` as year, `Duration` as dur, COUNT(*) as total')
+                    ->where('PPDCategoryType', 'A')
+                    ->whereIn('Duration', ['F','L'])
+                    ->groupBy('year', 'dur')
+                    ->orderBy('year')
+                    ->get();
+
+                Cache::put('ew:durationSplitByYear:catA:v1', $data, $ttl);
+                break;
+
+            case 'avgPriceByType':
+                // Average price by property type by year (England & Wales, Cat A)
+                // D = Detached, S = Semi-detached, T = Terraced, F = Flat
+                $data = DB::table('land_registry')
+                    ->selectRaw('`YearDate` as year, `PropertyType` as type, ROUND(AVG(`Price`)) as avg_price')
+                    ->where('PPDCategoryType', 'A')
+                    ->whereIn('PropertyType', ['D','S','T','F'])
+                    ->whereNotNull('Price')
+                    ->where('Price', '>', 0)
+                    ->groupBy('year', 'type')
+                    ->orderBy('year')
+                    ->get();
+
+                Cache::put('ew:avgPriceByTypeByYear:catA:v1', $data, $ttl);
                 break;
 
             default:

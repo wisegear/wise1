@@ -139,6 +139,22 @@
     <div class="border p-4 bg-white rounded-lg shadow h-80 md:col-span-2 overflow-hidden">
         <canvas id="p90AvgTop5Chart" class="w-full h-full"></canvas>
     </div>
+    <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
+        <h3 class="text-sm font-medium text-zinc-700 mb-2 text-center">Property type split by year (sales count)</h3>
+        <canvas id="propertyTypeSplitChart" class="w-full h-full"></canvas>
+    </div>
+    <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
+        <h3 class="text-sm font-medium text-zinc-700 mb-2 text-center">Average price by property type (yearly)</h3>
+        <canvas id="avgPriceByTypeChart" class="w-full h-full"></canvas>
+    </div>
+    <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
+        <h3 class="text-sm font-medium text-zinc-700 mb-2 text-center">New build vs existing by year (%)</h3>
+        <canvas id="newBuildSplitChart" class="w-full h-full"></canvas>
+    </div>
+    <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
+        <h3 class="text-sm font-medium text-zinc-700 mb-2 text-center">Leasehold vs freehold by year (%)</h3>
+        <canvas id="durationSplitChart" class="w-full h-full"></canvas>
+    </div>
 </div>
 
 <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2 mt-6">
@@ -231,6 +247,156 @@
         (int) collect($ewP90Series)->filter(fn($v) => !is_null($v))->min(),
         (int) collect($ewTop5Series)->filter(fn($v) => !is_null($v))->min(),
     ])->min();
+
+    // === Property type split (England & Wales, Cat A) ===
+    // Prefer warmed cache; fallback to live query if missing.
+    $typeRows = \Illuminate\Support\Facades\Cache::get('ew:propertyTypeSplitByYear:catA:v1');
+
+    if (!$typeRows) {
+        $typeRows = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `PropertyType` as type, COUNT(*) as total')
+            ->where('PPDCategoryType', 'A')
+            ->whereIn('PropertyType', ['D','S','T','F'])
+            ->groupBy('year', 'type')
+            ->orderBy('year')
+            ->get();
+    }
+
+    // Normalise into a year -> {D,S,T,F} map, then align to $ewYears
+    $typeByYear = collect($typeRows)->groupBy('year')->map(function ($rows) {
+        $out = ['D' => 0, 'S' => 0, 'T' => 0, 'F' => 0];
+        foreach ($rows as $r) {
+            $t = (string) ($r->type ?? '');
+            if (isset($out[$t])) {
+                $out[$t] = (int) ($r->total ?? 0);
+            }
+        }
+        return $out;
+    });
+
+    $typeYears = $ewYears; // align to existing EW year axis
+    $typeSeriesD = $typeYears->map(fn($y) => (int) (($typeByYear[$y]['D'] ?? 0)));
+    $typeSeriesS = $typeYears->map(fn($y) => (int) (($typeByYear[$y]['S'] ?? 0)));
+    $typeSeriesT = $typeYears->map(fn($y) => (int) (($typeByYear[$y]['T'] ?? 0)));
+    $typeSeriesF = $typeYears->map(fn($y) => (int) (($typeByYear[$y]['F'] ?? 0)));
+
+    // === Average price by property type (England & Wales, Cat A) ===
+    // Prefer warmed cache; fallback to live query if missing.
+    $avgTypeRows = \Illuminate\Support\Facades\Cache::get('ew:avgPriceByTypeByYear:catA:v1');
+
+    if (!$avgTypeRows) {
+        $avgTypeRows = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `PropertyType` as type, ROUND(AVG(`Price`)) as avg_price')
+            ->where('PPDCategoryType', 'A')
+            ->whereIn('PropertyType', ['D','S','T','F'])
+            ->whereNotNull('Price')
+            ->where('Price', '>', 0)
+            ->groupBy('year', 'type')
+            ->orderBy('year')
+            ->get();
+    }
+
+    $avgTypeByYear = collect($avgTypeRows)->groupBy('year')->map(function ($rows) {
+        $out = ['D' => null, 'S' => null, 'T' => null, 'F' => null];
+        foreach ($rows as $r) {
+            $t = (string) ($r->type ?? '');
+            if (array_key_exists($t, $out)) {
+                $out[$t] = is_null($r->avg_price) ? null : (int) $r->avg_price;
+            }
+        }
+        return $out;
+    });
+
+    $avgTypeYears = $ewYears;
+    $avgTypeSeriesD = $avgTypeYears->map(fn($y) => $avgTypeByYear[$y]['D'] ?? null);
+    $avgTypeSeriesS = $avgTypeYears->map(fn($y) => $avgTypeByYear[$y]['S'] ?? null);
+    $avgTypeSeriesT = $avgTypeYears->map(fn($y) => $avgTypeByYear[$y]['T'] ?? null);
+    $avgTypeSeriesF = $avgTypeYears->map(fn($y) => $avgTypeByYear[$y]['F'] ?? null);
+
+    // === New build vs existing split (England & Wales, Cat A) ===
+    // Prefer warmed cache; fallback to live query if missing.
+    $nbRows = \Illuminate\Support\Facades\Cache::get('ew:newBuildSplitByYear:catA:v1');
+
+    if (!$nbRows) {
+        $nbRows = DB::table('land_registry')
+            ->selectRaw('`YearDate` as year, `NewBuild` as nb, COUNT(*) as total')
+            ->where('PPDCategoryType', 'A')
+            ->whereIn('NewBuild', ['Y','N'])
+            ->groupBy('year', 'nb')
+            ->orderBy('year')
+            ->get();
+    }
+
+    $nbByYear = collect($nbRows)->groupBy('year')->map(function ($rows) {
+        $out = ['Y' => 0, 'N' => 0];
+        foreach ($rows as $r) {
+            $k = (string) ($r->nb ?? '');
+            if (isset($out[$k])) {
+                $out[$k] = (int) ($r->total ?? 0);
+            }
+        }
+        return $out;
+    });
+
+    $nbYears = $ewYears;
+    $nbPctNew = $nbYears->map(function ($y) use ($nbByYear) {
+        $yKey = (string) $y;
+        $new = (int) (($nbByYear[$yKey]['Y'] ?? 0));
+        $old = (int) (($nbByYear[$yKey]['N'] ?? 0));
+        $tot = $new + $old;
+        return $tot > 0 ? round(($new / $tot) * 100, 2) : 0;
+    });
+    $nbPctExisting = $nbYears->map(function ($y) use ($nbByYear) {
+        $yKey = (string) $y;
+        $new = (int) (($nbByYear[$yKey]['Y'] ?? 0));
+        $old = (int) (($nbByYear[$yKey]['N'] ?? 0));
+        $tot = $new + $old;
+        return $tot > 0 ? round(($old / $tot) * 100, 2) : 0;
+    });
+
+// === Leasehold vs freehold split (England & Wales, Cat A) ===
+// Prefer warmed cache; fallback to live query if missing.
+$durRows = \Illuminate\Support\Facades\Cache::get('ew:durationSplitByYear:catA:v1');
+
+if (!$durRows) {
+    $durRows = DB::table('land_registry')
+        ->selectRaw('`YearDate` as year, `Duration` as dur, COUNT(*) as total')
+        ->where('PPDCategoryType', 'A')
+        ->whereIn('Duration', ['F','L'])
+        ->groupBy('year', 'dur')
+        ->orderBy('year')
+        ->get();
+}
+
+$durByYear = collect($durRows)->groupBy('year')->map(function ($rows) {
+    $out = ['F' => 0, 'L' => 0];
+    foreach ($rows as $r) {
+        $k = (string) ($r->dur ?? '');
+        if (isset($out[$k])) {
+            $out[$k] = (int) ($r->total ?? 0);
+        }
+    }
+    return $out;
+});
+
+$durYears = $ewYears;
+
+$durPctFreehold = $durYears->map(function ($y) use ($durByYear) {
+    $yKey = (string) $y;
+    $f = (int) (($durByYear[$yKey]['F'] ?? 0));
+    $l = (int) (($durByYear[$yKey]['L'] ?? 0));
+    $tot = $f + $l;
+    return $tot > 0 ? round(($f / $tot) * 100, 2) : 0;
+});
+
+$durPctLeasehold = $durYears->map(function ($y) use ($durByYear) {
+    $yKey = (string) $y;
+    $f = (int) (($durByYear[$yKey]['F'] ?? 0));
+    $l = (int) (($durByYear[$yKey]['L'] ?? 0));
+    $tot = $f + $l;
+    return $tot > 0 ? round(($l / $tot) * 100, 2) : 0;
+});
+
 @endphp
 
 <script>
@@ -609,6 +775,273 @@
     })();
 </script>
 
+<script>
+    (function(){
+        const labels = {!! json_encode($typeYears ?? collect()) !!}.map(String).map(s => s.replace(/,/g,''));
+        if (!labels.length) return;
+
+        const dataD = {!! json_encode($typeSeriesD ?? collect()) !!};
+        const dataS = {!! json_encode($typeSeriesS ?? collect()) !!};
+        const dataT = {!! json_encode($typeSeriesT ?? collect()) !!};
+        const dataF = {!! json_encode($typeSeriesF ?? collect()) !!};
+
+        const el = document.getElementById('propertyTypeSplitChart');
+        if (!el) return;
+
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Detached',      data: dataD, backgroundColor: 'rgba(54, 162, 235, 0.70)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1, stack: 'types' },
+                    { label: 'Semi-detached', data: dataS, backgroundColor: 'rgba(75, 192, 192, 0.70)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1, stack: 'types' },
+                    { label: 'Terraced',      data: dataT, backgroundColor: 'rgba(255, 159, 64, 0.70)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1, stack: 'types' },
+                    { label: 'Flat',          data: dataF, backgroundColor: 'rgba(255, 99, 132, 0.70)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, stack: 'types' },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 12, right: 12, bottom: 28, left: 12 } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c){
+                                const v = c.parsed.y ?? 0;
+                                return `${c.dataset.label}: ` + new Intl.NumberFormat('en-GB').format(v);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            callback: function(value, index){
+                                const lbl = this.getLabelForValue(value);
+                                const clean = String(lbl).replace(/,/g, '');
+                                return (index % 2 === 0) ? clean : '';
+                            },
+                            padding: 12,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: false
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => new Intl.NumberFormat('en-GB').format(v)
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+<script>
+    (function(){
+        const labels = {!! json_encode($avgTypeYears ?? collect()) !!}.map(String).map(s => s.replace(/,/g,''));
+        if (!labels.length) return;
+
+        const d = {!! json_encode($avgTypeSeriesD ?? collect()) !!};
+        const s = {!! json_encode($avgTypeSeriesS ?? collect()) !!};
+        const t = {!! json_encode($avgTypeSeriesT ?? collect()) !!};
+        const f = {!! json_encode($avgTypeSeriesF ?? collect()) !!};
+
+        const el = document.getElementById('avgPriceByTypeChart');
+        if (!el) return;
+
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Detached',      data: d, borderColor: 'rgb(54, 162, 235)', backgroundColor: 'rgba(54, 162, 235, 0.12)', tension: 0.1, pointRadius: 3, pointHoverRadius: 5 },
+                    { label: 'Semi-detached', data: s, borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.10)', tension: 0.1, pointRadius: 3, pointHoverRadius: 5 },
+                    { label: 'Terraced',      data: t, borderColor: 'rgb(255, 159, 64)', backgroundColor: 'rgba(255, 159, 64, 0.10)', tension: 0.1, pointRadius: 3, pointHoverRadius: 5 },
+                    { label: 'Flat',          data: f, borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.10)', tension: 0.1, pointRadius: 3, pointHoverRadius: 5 },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 12, right: 12, bottom: 28, left: 12 } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c){
+                                const v = c.parsed.y;
+                                if (v === null || typeof v === 'undefined') return `${c.dataset.label}: n/a`;
+                                return `${c.dataset.label}: £` + new Intl.NumberFormat('en-GB').format(v);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value, index){
+                                const lbl = this.getLabelForValue(value);
+                                const clean = String(lbl).replace(/,/g, '');
+                                return (index % 2 === 0) ? clean : '';
+                            },
+                            padding: 12,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: (v) => '£' + new Intl.NumberFormat('en-GB').format(v)
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
 </div>
+
+<script>
+    (function(){
+        const labels = {!! json_encode($nbYears ?? collect()) !!}.map(String).map(s => s.replace(/,/g,''));
+        if (!labels.length) return;
+
+        const pctNew = {!! json_encode($nbPctNew ?? collect()) !!};
+        const pctOld = {!! json_encode($nbPctExisting ?? collect()) !!};
+
+        const el = document.getElementById('newBuildSplitChart');
+        if (!el) return;
+
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'New build (Y)', data: pctNew, backgroundColor: 'rgba(87, 161, 0, 0.70)', borderColor: 'rgba(87, 161, 0, 1)', borderWidth: 1, stack: 'nb' },
+                    { label: 'Existing (N)',  data: pctOld, backgroundColor: 'rgba(54, 162, 235, 0.70)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1, stack: 'nb' },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 12, right: 12, bottom: 28, left: 12 } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c){
+                                const v = c.parsed.y ?? 0;
+                                return `${c.dataset.label}: ${Number(v).toFixed(2)}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            callback: function(value, index){
+                                const lbl = this.getLabelForValue(value);
+                                const clean = String(lbl).replace(/,/g, '');
+                                return (index % 2 === 0) ? clean : '';
+                            },
+                            padding: 12,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: false
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: (v) => v + '%'
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+<script>
+    (function(){
+        const labels = {!! json_encode($durYears ?? collect()) !!}.map(String).map(s => s.replace(/,/g,''));
+        if (!labels.length) return;
+
+        const pctF = {!! json_encode($durPctFreehold ?? collect()) !!};
+        const pctL = {!! json_encode($durPctLeasehold ?? collect()) !!};
+
+        const el = document.getElementById('durationSplitChart');
+        if (!el) return;
+
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Leasehold (L)', data: pctL, backgroundColor: 'rgba(255, 159, 64, 0.70)', borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1, stack: 'dur', order: 0 },
+                    { label: 'Freehold (F)',  data: pctF, backgroundColor: 'rgba(87, 161, 0, 0.70)', borderColor: 'rgba(87, 161, 0, 1)', borderWidth: 1, stack: 'dur', order: 1 },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 12, right: 12, bottom: 28, left: 12 } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', reverse: true },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c){
+                                const v = c.parsed.y ?? 0;
+                                return `${c.dataset.label}: ${Number(v).toFixed(2)}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            callback: function(value, index){
+                                const lbl = this.getLabelForValue(value);
+                                const clean = String(lbl).replace(/,/g, '');
+                                return (index % 2 === 0) ? clean : '';
+                            },
+                            padding: 12,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: false
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: (v) => v + '%' }
+                    }
+                }
+            }
+        });
+    })();
+</script>
 
 @endsection
