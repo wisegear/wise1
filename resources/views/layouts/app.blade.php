@@ -143,7 +143,7 @@
                             <div class="flex">
                                 <!-- Left column -->
                                 <div class="py-2 flex-1">
-                                    <a href="{{ url('/property') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Dashboard</a>
+                                    <a href="{{ url('/property') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700 font-bold">Dashboard</a>
                                     <a href="{{ url('/property/search') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Property Search</a>
                                     <a href="{{ url('/property/outer-prime-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Outer Prime London</a>
                                     <a href="{{ url('/property/prime-central-london') }}" role="menuitem" tabindex="-1" class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">Prime Central London</a>
@@ -249,7 +249,7 @@
                     </svg>
                 </button>
                 <div id="mobilePropertyMenu" class="hidden flex-col pl-2 space-y-1 mt-1">
-                    <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Dashboard</a>
+                    <a href="{{ url('/property') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100 font-bold">Dashboard</a>
                     <a href="{{ url('/property/search') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Property Search</a>
                     <a href="{{ url('/property/outer-prime-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Outer Prime London</a>
                     <a href="{{ url('/property/prime-central-london') }}" class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">Prime Central London</a>

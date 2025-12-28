@@ -7,10 +7,15 @@
         <div class="max-w-5xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</p>  
-            <p class="mt-2 text-sm leading-6 text-gray-700">All property data includes Category A sales only, these are sales at market value on an arms length basis.  Category B sales are not included as they are transactions for a variety of reasons not neccessairly at 
-                arms length therefore skew the data so are excluded.</p>     
+            <p class="mt-2 text-sm leading-6 text-gray-700">All property data includes <span class="text-lime-600 font-bold">Category A</span> sales only, these are sales at market value on an arms length basis.  <span class="text-rose-500 font-bold">Category B</span> sales are not included as they are transactions for a variety of reasons not neccessairly at 
+                arms length therefore skew the data so are excluded. Read more about this <a href="/blog/category-a-vs-category-b-property-sales-what-the-land-registry-is-actually-telling-you" class="text-lime-600 hover:text-lime-700">Here.</a></p>     
             <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
-                <a href="/property/search" class="standard-button">Property Search</a>
+                <a href="/property/search" class="standard-button bg-lime-600! hover:bg-lime-700! inline-flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM1.5 9a7.5 7.5 0 1 1 13.134 4.708l3.329 3.33a1 1 0 0 1-1.414 1.414l-3.33-3.329A7.5 7.5 0 0 1 1.5 9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Property Search</span>
+                </a>
                 <a href="/property/outer-prime-london" class="standard-button">Outer Prime London</a>
                 <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
                 <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
