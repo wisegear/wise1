@@ -20,7 +20,7 @@
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
-                    Latest data<datalist></datalist>: <class="">October 2025
+                    Latest data<datalist></datalist>: <class="">November 2025
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
@@ -40,7 +40,7 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-zinc-900">Property Sales</h2>
             </div>
-            <p class="mt-2 text-sm text-zinc-700">Drill into transactions by postcode, street or county. Yearly trends &amp; quick summaries.</p>
+            <p class="mt-2 text-sm text-zinc-700">Drill into transactions by postcode, street or any area. Yearly trends &amp; quick summaries.</p>
             <div class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 group-hover:underline">Open Property Dashboard
             </div>
         </a>
@@ -70,7 +70,7 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-zinc-900">Energy Performance Certificates - EPC</h2>
             </div>
-            <p class="mt-2 text-sm text-zinc-700">Basic EPC report details for England, Wales and now Scotland.</p>
+            <p class="mt-2 text-sm text-zinc-700">EPC report details for England, Wales and Scotland.</p>
             <div class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 group-hover:underline">Open EPC Dashboard
             </div>
         </a>
@@ -90,7 +90,7 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-zinc-900">Deprivation Indexes</h2>
             </div>
-            <p class="mt-2 text-sm text-zinc-700">Explore the Index of Multiple Deprivation at LSOA level. Search by postcode and see domain breakdowns.  Scotland, England and Wales.</p>
+            <p class="mt-2 text-sm text-zinc-700">Explore the Index of Multiple Deprivation at LSOA level. Search by postcode and see domain breakdowns.  Scotland, England, Wales and Northern Ireland.</p>
             <div class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 group-hover:underline">Open Deprivation Dashboard
             </div>
         </a>
@@ -102,7 +102,7 @@
         <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 class="text-xl font-semibold text-zinc-900 mb-2">Economic Indicators Dashboard</h2>
             <p class="text-sm text-zinc-700 leading-6">
-                Our new Economic Indicators Dashboard brings together seven key measures that influence the property market:
+                Our new Economic Indicators Dashboard brings together eight key measures that influence the property market:
                 interest rates, inflation, wage growth, unemployment, mortgage approvals, repossessions and the UK House Price Index.
                 Each indicator is tracked quarterly using a consistent early‑warning system to show when conditions are improving,
                 stable or deteriorating.

@@ -8,7 +8,7 @@
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Search</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 Use this page to explore Land Registry sale records for England &amp; Wales.
-                There are currently <span class="text-lime-700">{{ number_format($records) }}</span> records in this table.
+                There are currently in excess of<span class="text-lime-700"> 30,600,000</span> records in this table.
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 You can either search for a specific postcode to see every sale in that postcode, or search for a
