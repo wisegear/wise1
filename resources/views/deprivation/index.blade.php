@@ -44,10 +44,10 @@
           <p class="text-xs text-gray-600 -mt-2 mb-2 w-full">
             Postcode can be in England, Scotland or Wales (not NI).
           </p>
-          <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+          <div class="flex flex-row items-center gap-2 w-full">
             <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
-                   class="flex-grow rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
-            <button class="rounded bg-zinc-700 text-white px-4 py-1.5 text-sm hover:bg-zinc-500 transition-colors duration-150 whitespace-nowrap">
+                   class="flex-grow h-10 rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
+            <button class="standard-button h-10 inline-flex items-center justify-center mt-0">
               Search
             </button>
           </div>
@@ -57,7 +57,7 @@
       {{-- Northern Ireland area search (no postcode) --}}
       <section class="w-full border p-6 bg-white rounded h-full flex flex-col justify-center gap-3">
         <p class="text-xs text-gray-600 -mt-2 mb-2 w-full">
-          Northern Ireland does not support postcode search. Start typing a Small Area or council name instead.
+          Northern Ireland does not support postcode search. Start typing a Small Area or council name instead.  Result names are limited to what is contained with the NI Index.
         </p>
 
         <div class="relative mt-1">
@@ -78,10 +78,6 @@
           </div>
         </div>
 
-        <p class="mt-3 text-[11px] text-gray-500 leading-snug">
-          Covers all NIMDM 2017 Small Areas across Northern Ireland. Data is updated infrequently, so this lookup
-          is built once and reused.
-        </p>
       </section>
     </div>
   </div>

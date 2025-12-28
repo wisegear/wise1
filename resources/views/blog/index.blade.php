@@ -129,7 +129,7 @@
                     <h2 class="text-lg font-bold border-b mb-4 border-slate-300">Popular Tags</h2>
                     @foreach ($popular_tags as $tag)
                     <a href="/blog?tag={{ $tag->name }}" class="">
-                        <button class="mr-2 mb-4 p-1 text-xs uppercase border border-slate-300 bg-zinc-800 text-white hover:bg-zinc-500 rounded cursor-pointer">{{ $tag->name }}</button>
+                        <button class="mr-2 mb-4 p-1 text-xs uppercase border border-slate-300 bg-zinc-500 text-white hover:bg-zinc-500 rounded cursor-pointer">{{ $tag->name }}</button>
                     </a>
                     @endforeach
                 </div>

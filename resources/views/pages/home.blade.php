@@ -159,7 +159,8 @@
 
     {{-- Economic Dashboard Overview --}}
     <section class="mt-6">
-        <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+        <a href="{{ route('economic.dashboard') }}"
+           class="group block rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div class="flex items-center justify-between mb-2">
                 <h2 class="text-xl font-semibold text-zinc-900">Economic Indicators Dashboard</h2>
                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +168,7 @@
                      viewBox="0 0 24 24"
                      stroke-width="1.5"
                      stroke="currentColor"
-                     class="h-6 w-6 text-zinc-500">
+                     class="h-6 w-6 text-zinc-500 group-hover:text-lime-600 transition">
                     <path stroke-linecap="round"
                           stroke-linejoin="round"
                           d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819" />
@@ -184,11 +185,10 @@
                 colours and stress score help highlight when the combined picture is moving into riskier territory. Explore the summary
                 or dive into each indicator for deeper charts and context.
             </p>
-            <a href="{{ route('economic.dashboard') }}"
-               class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 hover:underline">
+            <div class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 group-hover:underline">
                 Open Economic Dashboard
-            </a>
-        </div>
+            </div>
+        </a>
     </section>
 
     <!-- Blog posts -->

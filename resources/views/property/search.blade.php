@@ -7,8 +7,8 @@
         <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Property Search</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
-                Use this page to explore Land Registry sale records for England &amp; Wales.
-                There are currently in excess of<span class="text-lime-700"> 30,600,000</span> records in this table.
+                Use this page to explore <span class="font-bold">Land Registry</span> sale records for England &amp; Wales.
+                There are currently in excess of<span class="text-lime-700"> 30m</span> records in this table.
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 You can either search for a specific postcode to see every sale in that postcode, or search for a
@@ -27,7 +27,7 @@
 
             {{-- Search by postcode (specific properties) --}}
             <div class="rounded border border-zinc-200 bg-white/80 p-6">
-                <h2 class="text-base font-semibold mb-2">Search by postcode</h2>
+                <h2 class="text-base font-semibold mb-2"><i class="fa-solid fa-magnifying-glass-chart text-lime-600"></i> Search by postcode</h2>
                 <p class="text-xs text-zinc-600 mb-4">
                     Enter a full postcode to see every sale in that postcode from 1995 onwards. This is best when you
                     want to look at a specific street or a small cluster of properties.
@@ -35,7 +35,6 @@
 
                 <form method="GET" action="{{ route('property.search') }}" class="space-y-3">
                     <div>
-                        <label for="postcode" class="block text-sm font-medium mb-1">Postcode</label>
                         <input
                             id="postcode"
                             name="postcode"
@@ -51,7 +50,7 @@
 
                     <button
                         type="submit"
-                        class="bg-zinc-700 hover:bg-zinc-500 text-white px-4 py-2 rounded-md text-sm font-medium transition cursor-pointer">
+                        class="standard-button">
                         Search postcode
                     </button>
                 </form>
@@ -59,13 +58,12 @@
 
             {{-- Search by area (summary dashboards) --}}
             <div class="rounded border border-zinc-200 bg-white/80 p-6">
-                <h2 class="text-base font-semibold mb-2">Search by area</h2>
+                <h2 class="text-base font-semibold mb-2"><i class="fa-solid fa-magnifying-glass-location text-lime-600"></i> Search by area</h2>
                 <p class="text-xs text-zinc-600 mb-4">
                     Start typing the name of a locality, town/city, district or county in England &amp; Wales. Choose one
                     of the suggestions to go straight to an area dashboard showing prices, sales and property types.
                 </p>
 
-                <label for="district-search" class="block text-sm font-medium mb-1">Area name</label>
                 <div class="relative">
                     <input
                         id="district-search"

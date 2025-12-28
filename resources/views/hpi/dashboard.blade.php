@@ -10,6 +10,7 @@
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 <span class="font-semibold">House Price Index for UK and England, Wales, Scotland & Northern Ireland.</span>
             </p>
+            <p class="mt-2 text-sm leading-6 text-gray-700">All data provided by Gov.uk from the various nations and presented here without modification.</p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 Data covers the period from 1969 to 2025 (October).  Next Update expected January 2026.
             </p>
@@ -21,7 +22,7 @@
 
   <div class="grid md:grid-cols-5 gap-4">
     @foreach($nations as $n)
-      <div class="border rounded-lg p-4 bg-white shadow-sm">
+      <div class="border rounded-lg p-4 shadow-sm {{ $n->twelve_m_change > 0 ? 'bg-lime-50' : ($n->twelve_m_change < 0 ? 'bg-rose-50' : 'bg-white') }}">
         <div class="text-xs text-neutral-500">{{ $n->RegionName }}</div>
         <div class="text-2xl font-semibold">£{{ number_format($n->AveragePrice,0) }}</div>
         <div class="text-xs">
@@ -97,23 +98,23 @@
       });
 
       const yearsInData = Array.from(yearMap.keys());
-      if (yearsInData.length === 0) return { labels: [], values: [], colors: [] };
+      if (yearsInData.length === 0) return { labels: [], values: [], pointColors: [] };
 
       const minYear = Math.max(FIRST_YEAR, Math.min(...yearsInData));
       const maxYear = Math.max(...yearsInData);
 
       const labels = [];
       const values = [];
-      const colors = [];
+      const pointColors = [];
 
       for (let y = minYear; y <= maxYear; y++) {
         labels.push(String(y));
         const entry = yearMap.get(y);
         const val = entry ? entry.value : null;
         values.push(val);
-        colors.push(val == null ? 'rgba(0,0,0,0)' : (val >= 0 ? POS : NEG));
+        pointColors.push(val == null ? 'rgba(0,0,0,0)' : (val >= 0 ? POS : NEG));
       }
-      return { labels, values, colors };
+      return { labels, values, pointColors };
     }
 
     series.forEach((s, i) => {
@@ -121,36 +122,50 @@
       if (!el) return;
       const ctx = el.getContext('2d');
 
-      const { labels, values, colors } = buildYearly(s);
+      const { labels, values, pointColors } = buildYearly(s);
       if (!labels.length) return;
 
       new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels,
           datasets: [{
             label: '12m % change',
             data: values,
-            backgroundColor: colors,
-            hoverBackgroundColor: colors,
-            borderColor: colors,
-            hoverBorderColor: colors,
-            borderWidth: 1,
-            borderSkipped: false,
-            spanGaps: true
+            borderColor: POS,
+            backgroundColor: 'transparent',
+            spanGaps: true,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: pointColors,
+            pointBorderColor: pointColors,
+            borderWidth: 2.5,
+            tension: 0.35,
+            cubicInterpolationMode: 'monotone',
+            fill: false,
+            segment: {
+              // colour each segment by the direction of the ending point
+              borderColor: (ctx) => {
+                const y = ctx?.p1?.parsed?.y;
+                if (y == null) return 'rgba(0,0,0,0.2)';
+                return y >= 0 ? POS : NEG;
+              }
+            }
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           layout: { padding: { right: 10 } },
-          datasets: {
-            bar: { categoryPercentage: 0.9, barPercentage: 0.9 } // use full width so long timelines still fit
-          },
           scales: {
             y: {
               title: { display: true, text: '%' },
-              beginAtZero: true
+              // keep zero line visible, but allow negatives
+              beginAtZero: true,
+              grid: {
+                color: (ctx) => (ctx.tick && ctx.tick.value === 0 ? '#111827' : 'rgba(0,0,0,0.12)'),
+                lineWidth: (ctx) => (ctx.tick && ctx.tick.value === 0 ? 2 : 1)
+              }
             },
             x: {
               ticks: {
@@ -181,6 +196,9 @@
                 }
               }
             }
+          },
+          elements: {
+            point: { hitRadius: 6 }
           }
         }
       });
