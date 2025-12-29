@@ -68,6 +68,47 @@ class UltraLondonController extends Controller
                         ->get();
                 });
 
+                // Average price by property type (D/S/T/F) per year
+                $avgPriceByType = Cache::remember($keyBase . 'avgPriceByType', $ttl, function () use ($baseAll) {
+                    return (clone $baseAll)
+                        ->selectRaw("lr.YearDate as year, LEFT(lr.PropertyType, 1) as type, ROUND(AVG(lr.Price)) as avg_price")
+                        ->whereNotNull('lr.PropertyType')
+                        ->whereRaw("LEFT(lr.PropertyType, 1) IN ('D','S','T','F')")
+                        ->groupBy('lr.YearDate', 'type')
+                        ->orderBy('lr.YearDate')
+                        ->get();
+                });
+
+                // New build vs existing (% of sales) per year
+                $newBuildPct = Cache::remember($keyBase . 'newBuildPct', $ttl, function () use ($baseAll) {
+                    return (clone $baseAll)
+                        ->selectRaw(
+                            "lr.YearDate as year, " .
+                            "ROUND(100 * SUM(CASE WHEN lr.NewBuild = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN lr.NewBuild = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+                        )
+                        ->whereNotNull('lr.NewBuild')
+                        ->whereIn('lr.NewBuild', ['Y','N'])
+                        ->groupBy('lr.YearDate')
+                        ->orderBy('lr.YearDate')
+                        ->get();
+                });
+
+                // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+                $tenurePct = Cache::remember($keyBase . 'tenurePct', $ttl, function () use ($baseAll) {
+                    return (clone $baseAll)
+                        ->selectRaw(
+                            "lr.YearDate as year, " .
+                            "ROUND(100 * SUM(CASE WHEN lr.Duration = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN lr.Duration = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+                        )
+                        ->whereNotNull('lr.Duration')
+                        ->whereIn('lr.Duration', ['F','L'])
+                        ->groupBy('lr.YearDate')
+                        ->orderBy('lr.YearDate')
+                        ->get();
+                });
+
                 // 90th percentile (decile threshold) per year
                 $p90 = Cache::remember($keyBase . 'p90', $ttl, function () use ($baseAll) {
                     $deciles = (clone $baseAll)
@@ -154,6 +195,53 @@ class UltraLondonController extends Controller
                         ->get();
                 });
 
+                // Average price by property type (D/S/T/F) per year
+                $avgPriceByType = Cache::remember($keyBase . 'avgPriceByType', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw("`YearDate` as year, LEFT(`PropertyType`, 1) as type, ROUND(AVG(`Price`)) as avg_price")
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('PropertyType')
+                        ->whereRaw("LEFT(`PropertyType`, 1) IN ('D','S','T','F')")
+                        ->groupBy('YearDate', 'type')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // New build vs existing (% of sales) per year
+                $newBuildPct = Cache::remember($keyBase . 'newBuildPct', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+                        )
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('NewBuild')
+                        ->whereIn('NewBuild', ['Y','N'])
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+                $tenurePct = Cache::remember($keyBase . 'tenurePct', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+                        )
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('Duration')
+                        ->whereIn('Duration', ['F','L'])
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
                 // Prime indicator – 90th percentile (approx via top decile threshold)
                 $p90 = Cache::remember($keyBase . 'p90', $ttl, function () use ($district) {
                     $deciles = DB::table('land_registry')
@@ -226,6 +314,9 @@ class UltraLondonController extends Controller
                 'avgPrice' => $avgPrice,
                 'sales' => $sales,
                 'propertyTypes' => $propertyTypes,
+                'avgPriceByType' => $avgPriceByType,
+                'newBuildPct'    => $newBuildPct,
+                'tenurePct'      => $tenurePct,
                 'p90' => $p90,
                 'top5' => $top5,
                 'topSalePerYear' => $topSalePerYear,

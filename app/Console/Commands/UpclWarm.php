@@ -140,6 +140,44 @@ class UpclWarm extends Command
             ->get();
         Cache::put($keyBaseAll.'propertyTypes', $propertyTypesAll, $ttl);
 
+        // Average price by property type (D/S/T/F) per year
+        $avgPriceByTypeAll = (clone $baseAll)
+            ->selectRaw("lr.YearDate as year, LEFT(lr.PropertyType, 1) as type, ROUND(AVG(lr.Price)) as avg_price")
+            ->whereNotNull('lr.PropertyType')
+            ->whereRaw("LEFT(lr.PropertyType, 1) IN ('D','S','T','F')")
+            ->groupBy('lr.YearDate', 'type')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'avgPriceByType', $avgPriceByTypeAll, $ttl);
+
+        // New build vs existing (% of sales) per year
+        $newBuildPctAll = (clone $baseAll)
+            ->selectRaw(
+                "lr.YearDate as year, " .
+                "ROUND(100 * SUM(CASE WHEN lr.NewBuild = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                "ROUND(100 * SUM(CASE WHEN lr.NewBuild = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+            )
+            ->whereNotNull('lr.NewBuild')
+            ->whereIn('lr.NewBuild', ['Y','N'])
+            ->groupBy('lr.YearDate')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'newBuildPct', $newBuildPctAll, $ttl);
+
+        // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+        $tenurePctAll = (clone $baseAll)
+            ->selectRaw(
+                "lr.YearDate as year, " .
+                "ROUND(100 * SUM(CASE WHEN lr.Duration = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                "ROUND(100 * SUM(CASE WHEN lr.Duration = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+            )
+            ->whereNotNull('lr.Duration')
+            ->whereIn('lr.Duration', ['F','L'])
+            ->groupBy('lr.YearDate')
+            ->orderBy('lr.YearDate')
+            ->get();
+        Cache::put($keyBaseAll.'tenurePct', $tenurePctAll, $ttl);
+
         // P90
         $decilesAll = (clone $baseAll)
             ->selectRaw('lr.YearDate, lr.Price, NTILE(10) OVER (PARTITION BY lr.YearDate ORDER BY lr.Price) as decile');
@@ -221,6 +259,50 @@ class UpclWarm extends Command
             ->orderBy('YearDate')
             ->get();
         Cache::put($keyBase . 'propertyTypes', $propertyTypes, $ttl);
+
+        // Average price by property type (D/S/T/F) per year
+        $avgPriceByType = DB::table('land_registry')
+            ->selectRaw("`YearDate` as year, LEFT(`PropertyType`, 1) as type, ROUND(AVG(`Price`)) as avg_price")
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('PropertyType')
+            ->whereRaw("LEFT(`PropertyType`, 1) IN ('D','S','T','F')")
+            ->groupBy('YearDate', 'type')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'avgPriceByType', $avgPriceByType, $ttl);
+
+        // New build vs existing (% of sales) per year
+        $newBuildPct = DB::table('land_registry')
+            ->selectRaw(
+                "`YearDate` as year, " .
+                "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+            )
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('NewBuild')
+            ->whereIn('NewBuild', ['Y','N'])
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'newBuildPct', $newBuildPct, $ttl);
+
+        // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+        $tenurePct = DB::table('land_registry')
+            ->selectRaw(
+                "`YearDate` as year, " .
+                "ROUND(100 * SUM(CASE WHEN `Duration` = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                "ROUND(100 * SUM(CASE WHEN `Duration` = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+            )
+            ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+            ->where('PPDCategoryType', 'A')
+            ->whereNotNull('Duration')
+            ->whereIn('Duration', ['F','L'])
+            ->groupBy('YearDate')
+            ->orderBy('YearDate')
+            ->get();
+        Cache::put($keyBase . 'tenurePct', $tenurePct, $ttl);
 
         // 90th percentile threshold per year via NTILE window
         $deciles = DB::table('land_registry')
