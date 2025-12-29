@@ -81,6 +81,59 @@ class PrimeLondonController extends Controller
                         ->get();
                 });
 
+                // Average price by property type by year (D/S/T/F)
+                $avgPriceByType = Cache::remember($keyBase . 'avgPriceByType', $ttl, function () use ($applyAllPcl) {
+                    return DB::table('land_registry')
+                        ->selectRaw("`YearDate` as year, LEFT(`PropertyType`, 1) as type, ROUND(AVG(`Price`)) as avg_price")
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('PropertyType')
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->whereRaw("LEFT(`PropertyType`, 1) IN ('D','S','T','F')")
+                        ->when(true, $applyAllPcl)
+                        ->groupBy('YearDate', 'type')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // New build vs existing (% of sales) per year
+                $newBuildPct = Cache::remember($keyBase . 'newBuildPct', $ttl, function () use ($applyAllPcl) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+                        )
+                        ->where('PPDCategoryType', 'A')
+                        ->when(true, $applyAllPcl)
+                        ->whereNotNull('NewBuild')
+                        ->whereIn('NewBuild', ['Y', 'N'])
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+                $tenurePct = Cache::remember($keyBase . 'tenurePct', $ttl, function () use ($applyAllPcl) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+                        )
+                        ->where('PPDCategoryType', 'A')
+                        ->when(true, $applyAllPcl)
+                        ->whereNotNull('Duration')
+                        ->whereIn('Duration', ['F','L'])
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
                 // 90th percentile (decile threshold) per year via window function
                 $p90 = Cache::remember($keyBase . 'p90', $ttl, function () use ($applyAllPcl) {
                     $deciles = DB::table('land_registry')
@@ -183,6 +236,59 @@ class PrimeLondonController extends Controller
                         ->get();
                 });
 
+                // Average price by property type by year (D/S/T/F)
+                $avgPriceByType = Cache::remember($keyBase . 'avgPriceByType', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw("`YearDate` as year, LEFT(`PropertyType`, 1) as type, ROUND(AVG(`Price`)) as avg_price")
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('PropertyType')
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->whereRaw("LEFT(`PropertyType`, 1) IN ('D','S','T','F')")
+                        ->groupBy('YearDate', 'type')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // New build vs existing (% of sales) per year
+                $newBuildPct = Cache::remember($keyBase . 'newBuildPct', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'Y' THEN 1 ELSE 0 END) / COUNT(*), 1) as new_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `NewBuild` = 'N' THEN 1 ELSE 0 END) / COUNT(*), 1) as existing_pct"
+                        )
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('NewBuild')
+                        ->whereIn('NewBuild', ['Y', 'N'])
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
+                // Freehold vs Leasehold (% of sales) per year (Duration: F/L)
+                $tenurePct = Cache::remember($keyBase . 'tenurePct', $ttl, function () use ($district) {
+                    return DB::table('land_registry')
+                        ->selectRaw(
+                            "`YearDate` as year, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'F' THEN 1 ELSE 0 END) / COUNT(*), 1) as free_pct, " .
+                            "ROUND(100 * SUM(CASE WHEN `Duration` = 'L' THEN 1 ELSE 0 END) / COUNT(*), 1) as lease_pct"
+                        )
+                        ->whereRaw("SUBSTRING_INDEX(`Postcode`, ' ', 1) LIKE CONCAT(?, '%')", [$district])
+                        ->where('PPDCategoryType', 'A')
+                        ->whereNotNull('Duration')
+                        ->whereIn('Duration', ['F','L'])
+                        ->whereNotNull('Price')
+                        ->where('Price', '>', 0)
+                        ->groupBy('YearDate')
+                        ->orderBy('YearDate')
+                        ->get();
+                });
+
                 // Prime indicator – 90th percentile (approx via top decile threshold)
                 $p90 = Cache::remember($keyBase . 'p90', $ttl, function () use ($district) {
                     $deciles = DB::table('land_registry')
@@ -255,6 +361,9 @@ class PrimeLondonController extends Controller
                 'avgPrice'       => $avgPrice,
                 'sales'          => $sales,
                 'propertyTypes'  => $propertyTypes,
+                'avgPriceByType' => $avgPriceByType,
+                'newBuildPct'    => $newBuildPct,
+                'tenurePct'      => $tenurePct,
                 'p90'            => $p90,
                 'top5'           => $top5,
                 'topSalePerYear' => $topSalePerYear,

@@ -68,6 +68,22 @@
         </ul>
     </section>
 
+    {{-- Liceenses --}}
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900">License Notes</h2>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            Unless explicitly stated below, all data used on this site is published under the Open Government Licence v3.0.
+        </p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">Contains HM Land Registry data © Crown copyright and database right 2020. Licensed under the Open Government Licence v3.0.</p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            Energy Performance Certificate (EPC) data for England and Wales is sourced from the official Energy Performance of Buildings Register. EPC information is displayed on a property‑by‑property, user‑requested basis and reflects the same records that are publicly available via the official register. This site does not publish or redistribute bulk address‑level EPC datasets. EPC records may be removed or unavailable where they are no longer publicly disclosed on the register.
+        </p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            Scottish EPC data is sourced from the Scottish Government via statistics.gov.scot. Non‑address data fields within the Scottish Domestic Energy Performance Certificates dataset (all fields other than address and postcode information) are licensed under the Open Government Licence v3.0. Scottish EPC information on this site is displayed on a property‑by‑property, user‑requested basis and reflects records available via the official Scottish EPC Register.
+        </p>
+    </section>
+
+
     {{-- Contact --}}
     <section class="mb-10 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Contact</h2>

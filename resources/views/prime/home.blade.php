@@ -77,27 +77,45 @@
                 @endif
 
                 <div class="flex flex-col gap-4 md:grid md:grid-cols-2">
-                    <!-- Property Types (stacked bar) -->
+                    <!-- Number of Sales (line) -->
                     <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
-                        <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
-                        <canvas id="pt_{{ $district }}" class="w-full h-full"></canvas>
+                        <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
+                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
-
                     <!-- Average Price (line) -->
                     <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Average Price of property in {{ $__label }}</h3>
                         <canvas id="ap_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
-                    <!-- Number of Sales (line) -->
+
+                    <!-- Property Types (stacked bar) -->
                     <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
-                        <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
-                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
+                        <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
+                        <canvas id="pt_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- Average Price by Property Type (line) -->
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Average Price by Property Type in {{ $__label }}</h3>
+                        <canvas id="apt_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- New Build vs Existing (% stacked bar) -->
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">New Build vs Existing (% of sales) in {{ $__label }}</h3>
+                        <canvas id="nb_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- Freehold vs Leasehold (% stacked bar) -->
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Freehold vs Leasehold (% of sales) in {{ $__label }}</h3>
+                        <canvas id="dur_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
-                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $__label }}</h3>
+                    <div class="rounded-lg border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72 col-span-2">
+                        <h3 class="font-semibold mb-2">Top 3 Sales each year in {{ $__label }} (hover over dot to see detail)</h3>
                         <canvas id="ts_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
@@ -188,11 +206,32 @@
                 Price: Number(r.Price),
                 rn: Number(r.rn)
             }));
+            // Expected from controller: [{ year: 2020, type: 'D', avg_price: 1234567 }, ...]
+            const avgPriceByType = (data.avgPriceByType || []).map(r => ({
+                year: Number(r.year),
+                type: r.type,
+                avg_price: Number(r.avg_price)
+            }));
+            // Expected from controller: [{ year: 2020, new_pct: 12.3, existing_pct: 87.7 }, ...]
+            const newBuildPct = (data.newBuildPct || []).map(r => ({
+                year: Number(r.year),
+                new_pct: Number(r.new_pct),
+                existing_pct: Number(r.existing_pct)
+            }));
+            // Expected from controller: [{ year: 2020, free_pct: 12.3, lease_pct: 87.7 }, ...]
+            const tenurePct = (data.tenurePct || []).map(r => ({
+                year: Number(r.year),
+                free_pct: Number(r.free_pct),
+                lease_pct: Number(r.lease_pct)
+            }));
 
             const years = [...new Set([
                 ...avgPrice.map(r => r.year),
                 ...sales.map(r => r.year),
                 ...propertyTypes.map(r => r.year),
+                ...avgPriceByType.map(r => r.year),
+                ...newBuildPct.map(r => r.year),
+                ...tenurePct.map(r => r.year),
                 ...p90.map(r => r.year),
                 ...top5.map(r => r.year),
                 ...topSalePerYear.map(r => r.year),
@@ -432,6 +471,241 @@
                 });
 
                 ptCtx.style.backgroundColor = '#ffffff';
+            }
+
+            // Average Price by Property Type (line)
+            const aptCtx = document.getElementById(`apt_${district}`);
+            if (aptCtx) {
+                const aptId = `apt_${district}`;
+                if (window.__upclCharts[aptId]) {
+                    window.__upclCharts[aptId].destroy();
+                }
+
+                if (!avgPriceByType.length) {
+                    const card = aptCtx.parentElement;
+                    const note = document.createElement('p');
+                    note.className = 'mt-2 text-xs text-neutral-500';
+                    note.textContent = 'No per-property-type average price series found (controller needs to provide avgPriceByType).';
+                    card.appendChild(note);
+                    window.__renderedDistricts.add(district);
+                } else {
+                    // Build year -> type -> avg map
+                    const yearTypeAvg = new Map();
+                    avgPriceByType.forEach(r => {
+                        if (!yearTypeAvg.has(r.year)) yearTypeAvg.set(r.year, new Map());
+                        yearTypeAvg.get(r.year).set(r.type, r.avg_price);
+                    });
+
+                    const typeOrder = ['D','S','T','F'];
+                    const presentTypes = typeOrder.filter(t => avgPriceByType.some(r => r.type === t));
+
+                    const datasets = presentTypes.map((t, i) => ({
+                        label: `${TYPE_LABELS[t] || t} Avg (£)`,
+                        data: years.map(y => (yearTypeAvg.get(y)?.get(t)) ?? null),
+                        pointRadius: 2,
+                        tension: 0.2,
+                        borderWidth: 2,
+                        borderColor: baseColors[i % baseColors.length],
+                        backgroundColor: baseColors[i % baseColors.length]
+                    }));
+
+                    window.__upclCharts[aptId] = new Chart(aptCtx, {
+                        type: 'line',
+                        plugins: [whiteBgPlugin],
+                        data: {
+                            labels: years,
+                            datasets
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: {
+                                    top: 12,
+                                    right: 12,
+                                    bottom: 24,
+                                    left: 8
+                                }
+                            },
+                            plugins: {
+                                legend: { display: true },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => `${ctx.dataset.label}: ${fmtGBP(ctx.parsed.y)}`
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    ticks: { callback: (v) => fmtGBP(v) }
+                                }
+                            }
+                        }
+                    });
+
+                    aptCtx.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // New Build vs Existing (% stacked bar)
+            const nbCtx = document.getElementById(`nb_${district}`);
+            if (nbCtx) {
+                const nbId = `nb_${district}`;
+                if (window.__upclCharts[nbId]) {
+                    window.__upclCharts[nbId].destroy();
+                }
+
+                if (!newBuildPct.length) {
+                    const card = nbCtx.parentElement;
+                    const note = document.createElement('p');
+                    note.className = 'mt-2 text-xs text-neutral-500';
+                    note.textContent = 'No new-build % series found (controller/warmer needs to provide newBuildPct).';
+                    card.appendChild(note);
+                } else {
+                    const nbByYear = new Map(newBuildPct.map(r => [r.year, r]));
+                    const newData = years.map(y => (nbByYear.get(y)?.new_pct) ?? null);
+                    const exData  = years.map(y => (nbByYear.get(y)?.existing_pct) ?? null);
+
+                    window.__upclCharts[nbId] = new Chart(nbCtx, {
+                        type: 'bar',
+                        plugins: [whiteBgPlugin],
+                        data: {
+                            labels: years,
+                            datasets: [
+                                {
+                                    label: 'New Build %',
+                                    data: newData,
+                                    backgroundColor: baseColors[3] || '#34d399',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0,0,0,0.1)'
+                                },
+                                {
+                                    label: 'Existing %',
+                                    data: exData,
+                                    backgroundColor: baseColors[0] || '#60a5fa',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0,0,0,0.1)'
+                                }
+                            ]
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: {
+                                    top: 12,
+                                    right: 12,
+                                    bottom: 24,
+                                    left: 8
+                                }
+                            },
+                            plugins: {
+                                legend: { display: true },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => {
+                                            const v = ctx.parsed.y;
+                                            return `${ctx.dataset.label}: ${v == null ? 'n/a' : v.toFixed(1)}%`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { stacked: true },
+                                y: {
+                                    stacked: true,
+                                    min: 0,
+                                    max: 100,
+                                    ticks: { callback: (v) => v + '%' }
+                                }
+                            }
+                        }
+                    });
+
+                    nbCtx.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Freehold vs Leasehold (% stacked bar)
+            const durCtx = document.getElementById(`dur_${district}`);
+            if (durCtx) {
+                const durId = `dur_${district}`;
+                if (window.__upclCharts[durId]) {
+                    window.__upclCharts[durId].destroy();
+                }
+
+                if (!tenurePct.length) {
+                    const card = durCtx.parentElement;
+                    const note = document.createElement('p');
+                    note.className = 'mt-2 text-xs text-neutral-500';
+                    note.textContent = 'No tenure % series found (controller/warmer needs to provide tenurePct).';
+                    card.appendChild(note);
+                } else {
+                    const tByYear = new Map(tenurePct.map(r => [r.year, r]));
+                    const freeData = years.map(y => (tByYear.get(y)?.free_pct) ?? null);
+                    const leaseData = years.map(y => (tByYear.get(y)?.lease_pct) ?? null);
+
+                    window.__upclCharts[durId] = new Chart(durCtx, {
+                        type: 'bar',
+                        plugins: [whiteBgPlugin],
+                        data: {
+                            labels: years,
+                            datasets: [
+                                {
+                                    label: 'Freehold %',
+                                    data: freeData,
+                                    backgroundColor: baseColors[2] || '#fbbf24',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0,0,0,0.1)'
+                                },
+                                {
+                                    label: 'Leasehold %',
+                                    data: leaseData,
+                                    backgroundColor: baseColors[1] || '#f472b6',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(0,0,0,0.1)'
+                                }
+                            ]
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: {
+                                    top: 12,
+                                    right: 12,
+                                    bottom: 24,
+                                    left: 8
+                                }
+                            },
+                            plugins: {
+                                legend: { display: true },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => {
+                                            const v = ctx.parsed.y;
+                                            return `${ctx.dataset.label}: ${v == null ? 'n/a' : v.toFixed(1)}%`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { stacked: true },
+                                y: {
+                                    stacked: true,
+                                    min: 0,
+                                    max: 100,
+                                    ticks: { callback: (v) => v + '%' }
+                                }
+                            }
+                        }
+                    });
+
+                    durCtx.style.backgroundColor = '#ffffff';
+                }
             }
 
             // Top Sale Marker (scatter)

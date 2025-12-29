@@ -63,7 +63,7 @@
 
                 <button
                     type="submit"
-                    class="bg-zinc-700 hover:bg-zinc-500 text-white font-medium px-4 py-2 rounded-md transition cursor-pointer">
+                    class="standard-button mt-0 h-[42px] inline-flex items-center justify-center">
                     Search
                 </button>
             </div>
@@ -187,17 +187,17 @@
                     <tbody>
                         @foreach($results as $row)
                             <tr class="odd:bg-white even:bg-zinc-50">
-                                <td class="px-3 py-2 align-top border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->address }}</td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->postcode }}</td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->current_energy_rating }}</td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->potential_energy_rating }}</td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->property_type }}</td>
-                                <td class="px-3 py-2 align-top border-b text-right">
+                                <td class="px-3 py-2 align-middle border-b">{{ optional(\Carbon\Carbon::parse($row->lodgement_date))->format('d M Y') }}</td>
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->address }}</td>
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->postcode }}</td>
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->current_energy_rating }}</td>
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->potential_energy_rating }}</td>
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->property_type }}</td>
+                                <td class="px-3 py-2 align-middle border-b text-right">
                                     {{ $row->total_floor_area ? number_format($row->total_floor_area * 10.7639, 0) : '' }}
                                 </td>
-                                <td class="px-3 py-2 align-top border-b">{{ $row->local_authority_label }}</td>
-                                <td class="px-3 py-2 align-top border-b text-center">
+                                <td class="px-3 py-2 align-middle border-b">{{ $row->local_authority_label }}</td>
+                                <td class="px-3 py-2 align-middle border-b text-center">
                                     @if(function_exists('route') && Route::has('epc.show'))
                                         <a
                                             href="{{ route('epc.show', ['lmk' => $row->lmk_key, 'r' => base64_encode($cleanReturnUrl)]) }}"
@@ -205,9 +205,7 @@
                                             title="View report"
                                             aria-label="View EPC report for {{ $row->address }}, {{ $row->postcode }}"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-8 w-8 border p-2 bg-zinc-800 text-white" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
-                                            </svg>
+                                            <i class="fa-solid fa-magnifying-glass-arrow-right fa-xl leading-none align-middle pt-3"></i>
                                             <span class="sr-only">View</span>
                                         </a>
                                     @else
