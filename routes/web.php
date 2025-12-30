@@ -85,7 +85,7 @@ Route::get('/wage-growth', [\App\Http\Controllers\WageGrowthController::class, '
 Route::get('/hpi-overview', [HpiDashboardController::class, 'overview'])->name('hpi.overview');
 Route::get('/economic-dashboard', [\App\Http\Controllers\EconomicDashboardController::class, 'index'])->name('economic.dashboard');
 Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mortgages.home');
-Route::get('/repossessions/overview', [RepossessionsController::class, 'overview'])->name('repossessions.overview');
+Route::get('/repossessions/local-authority/{slug}',[RepossessionsController::class, 'localAuthority'])->name('repossessions.local-authority');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
 Route::get('/arrears', [MlarArrearsController::class, 'index'])->name('arrears.index');
 

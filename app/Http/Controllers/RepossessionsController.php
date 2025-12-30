@@ -4,8 +4,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\RepoLaQuarterly as Repo;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class RepossessionsController extends Controller
 {
@@ -18,228 +20,273 @@ class RepossessionsController extends Controller
      * - filters: year, quarter (for quarterly), year_from/year_to (for yearly),
      *            county (county_ua), region, type, action
      */
-    public function index(Request $request)
-    {
-        /* -------------------- 1) Validate & read query params -------------------- */
-        $validated = $request->validate([
-            'period'     => 'nullable|in:quarterly,yearly',
-            'by'         => 'nullable|in:type,action',
-            'year'       => 'nullable|integer',
-            'quarter'    => 'nullable|in:Q1,Q2,Q3,Q4',
-            'year_from'  => 'nullable|integer',
-            'year_to'    => 'nullable|integer',
-            'county'     => 'nullable|string',
-            'region'     => 'nullable|string',
-            'type'       => 'nullable|string',
-            'action'     => 'nullable|string',
-            'per_page'   => 'nullable|integer|min:10|max:500',
-            'stage'      => 'nullable|string',
-        ]);
+public function index(Request $request)
+{
+    // Charts + data view (no searchable dashboard)
 
-        $period = $validated['period'] ?? 'quarterly';           // 'quarterly' | 'yearly'
-        $by     = $validated['by']     ?? 'type';                // 'type' | 'action'
-        $byCol  = $by === 'action' ? 'possession_action' : 'possession_type';
-        $stage  = isset($validated['stage']) ? trim($validated['stage']) : null;
-        $stageNorm = $stage ? strtolower(preg_replace('/\s+/', ' ', $stage)) : null;
-        $stageLike = $stageNorm ? "%{$stageNorm}%" : null;
+    // Full available range
+    $minYear = (int) (Repo::query()->min('year') ?? 0);
+    $maxYear = (int) (Repo::query()->max('year') ?? 0);
 
-        $actionNorm = isset($validated['action']) && $validated['action'] !== ''
-            ? strtolower(preg_replace('/\s+/', ' ', trim($validated['action'])))
-            : null;
-        $typeNorm = isset($validated['type']) && $validated['type'] !== ''
-            ? strtolower(preg_replace('/\s+/', ' ', trim($validated['type'])))
-            : null;
+    // 1) Total repossessions per year (full range)
+    $yearlyTotals = Repo::query()
+        ->selectRaw('year, SUM(value) AS total')
+        ->groupBy('year')
+        ->orderBy('year')
+        ->get();
 
-        // Data for dropdowns (distinct lists)
-        $years    = Repo::query()->select('year')->distinct()->orderBy('year')->pluck('year');
-        $regions  = Repo::query()->selectRaw("DISTINCT TRIM(region) AS region")->orderBy('region')->pluck('region');
-        $counties = Repo::query()
-            ->selectRaw("DISTINCT TRIM(REPLACE(county_ua,' UA','')) AS county")
-            ->orderBy('county')
-            ->pluck('county');
-        $types    = Repo::query()->select('possession_type')->distinct()->orderBy('possession_type')->pluck('possession_type');
-        $actions  = Repo::query()->select('possession_action')->distinct()->orderBy('possession_action')->pluck('possession_action');
+    $yearLabels = $yearlyTotals->pluck('year')->values();
+    $yearTotalValues = $yearlyTotals->pluck('total')->map(fn ($v) => (int) $v)->values();
 
-        // Defaults for period selection
-        [$latestYear, $latestQuarter] = Repo::latestPeriod(); // e.g. [2025, 'Q2']
-        $perPage = $validated['per_page'] ?? 100;
+    // 2) Possession type per year (fixed categories)
+    $typeOrder = [
+        'Accelerated_Landlord',
+        'Mortgage',
+        'Private_Landlord',
+        'Social_Landlord',
+    ];
 
-        /* -------------------- 2) Build the grouped query -------------------- */
-        if ($period === 'yearly') {
-            // Year range defaults: latest year if none given
-            $maxYear = (int) ($years->max() ?? $latestYear);
-            $minYear = (int) ($years->min() ?? $latestYear);
-            $yearFrom = (int) ($validated['year_from'] ?? $maxYear);
-            $yearTo   = (int) ($validated['year_to']   ?? $yearFrom);
+    $typeRows = Repo::query()
+        ->selectRaw('year, possession_type, SUM(value) AS total')
+        ->whereIn('possession_type', $typeOrder)
+        ->groupBy('year', 'possession_type')
+        ->orderBy('year')
+        ->get();
 
-            // Ensure from <= to and within data range
-            if ($yearFrom > $yearTo) {
-                [$yearFrom, $yearTo] = [$yearTo, $yearFrom];
-            }
-            $yearFrom = max($minYear, $yearFrom);
-            $yearTo   = min($maxYear, $yearTo);
-
-            $query = Repo::query()
-                ->selectRaw("year, county_ua, {$byCol} AS reason, SUM(value) AS cases")
-                ->whereBetween('year', [$yearFrom, $yearTo])
-                ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
-                ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
-                    $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
-                })
-                ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
-                    $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
-                })
-                ->when($stageLike, function ($q) use ($stageLike) {
-                    $q->where(function ($qq) use ($stageLike) {
-                        $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
-                           ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
-                    });
-                })
-                ->groupBy('year','county_ua',$byCol)
-                ->orderBy('year')->orderBy('county_ua')->orderBy('reason');
-            
-            $meta = [
-                'period'     => 'yearly',
-                'by'         => $by,
-                'year_from'  => $yearFrom,
-                'year_to'    => $yearTo,
-                'quarters'   => ['Q1','Q2','Q3','Q4'], // for UI consistency
-            ];
-        } else {
-            // Quarterly (default): use latest if not provided
-            $year    = (int) ($validated['year'] ?? $latestYear);
-            $quarter = (string) ($validated['quarter'] ?? $latestQuarter);
-
-            $query = Repo::query()
-                ->selectRaw("county_ua, {$byCol} AS reason, SUM(value) AS cases")
-                ->where('year', $year)
-                ->where('quarter', $quarter)
-                ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
-                ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
-                    $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
-                })
-                ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
-                    $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
-                })
-                ->when($stageLike, function ($q) use ($stageLike) {
-                    $q->where(function ($qq) use ($stageLike) {
-                        $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
-                           ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
-                    });
-                })
-                ->groupBy('county_ua',$byCol)
-                ->orderBy('county_ua')->orderBy('reason');
-
-            $meta = [
-                'period'   => 'quarterly',
-                'by'       => $by,
-                'year'     => $year,
-                'quarter'  => $quarter,
-                'quarters' => ['Q1','Q2','Q3','Q4'],
-            ];
-        }
-
-        /* -------------------- 3) Execute (with pagination) -------------------- */
-        $rows = $query->paginate($perPage)->withQueryString();
-
-        /* -------------------- 4) Totals (for header chips/cards) -------------- */
-        // Build an ungrouped base query using the same filters (no SELECT/GROUP BY here)
-        $base = Repo::query();
-
-        if ($period === 'yearly') {
-            $base->whereBetween('year', [$yearFrom, $yearTo])
-                 ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
-                 ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                 ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
-                     $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
-                 })
-                 ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
-                     $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
-                 })
-                 ->when($stageLike, function ($q) use ($stageLike) {
-                     $q->where(function ($qq) use ($stageLike) {
-                         $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
-                            ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
-                     });
-                 });
-        } else {
-            $base->where('year', $year)
-                 ->where('quarter', $quarter)
-                 ->when($validated['county'] ?? null, fn($q,$v)=>$q->whereRaw("TRIM(REPLACE(county_ua,' UA','')) = ?", [$v]))
-                 ->when($validated['region'] ?? null, fn($q,$v)=>$q->where('region',$v))
-                 ->when(($by === 'type') && $typeNorm,   function ($q) use ($typeNorm) {
-                     $q->whereRaw('LOWER(TRIM(possession_type)) = ?', [$typeNorm]);
-                 })
-                 ->when(($by === 'action') && $actionNorm, function ($q) use ($actionNorm) {
-                     $q->whereRaw('LOWER(TRIM(possession_action)) = ?', [$actionNorm]);
-                 })
-                 ->when($stageLike, function ($q) use ($stageLike) {
-                     $q->where(function ($qq) use ($stageLike) {
-                         $qq->whereRaw('LOWER(TRIM(possession_action)) LIKE ?', [$stageLike])
-                            ->orWhereRaw('LOWER(TRIM(possession_type)) LIKE ?', [$stageLike]);
-                     });
-                 });
-        }
-
-        // Total cases for the current filters (sum of raw values)
-        $totalCases = (clone $base)->sum('value');
-
-        // Totals by reason (type/action) for chips and chart
-        $byReason = (clone $base)
-            ->selectRaw("{$byCol} AS reason, SUM(value) AS total_cases")
-            ->groupBy('reason')
-            ->orderBy('reason')
-            ->get();
-
-        /* -------------------- 5) Send to the view ----------------------------- */
-        return view('repossessions.index', [
-            'rows'      => $rows,       // paginated grouped results
-            'meta'      => $meta,       // period/by + selected filters
-            'years'     => $years,      // for selects
-            'regions'   => $regions,
-            'counties'  => $counties,
-            'types'     => $types,
-            'actions'   => $actions,
-            'totals'    => [
-                'all'     => (int) ($totalCases ?? 0),
-                'byReason'=> $byReason,
-            ],
-        ]);
+    // Build series arrays aligned to year labels
+    $typeSeries = [];
+    foreach ($typeOrder as $t) {
+        $typeSeries[$t] = array_fill(0, $yearLabels->count(), 0);
     }
-    /**
-     * Economic Indicators: Repossessions Overview
-     */
-    public function overview()
+
+    $yearIndex = $yearLabels->flip(); // year => index
+    foreach ($typeRows as $r) {
+        $y = (int) $r->year;
+        $t = (string) $r->possession_type;
+        if (!$yearIndex->has($y) || !isset($typeSeries[$t])) {
+            continue;
+        }
+        $typeSeries[$t][$yearIndex[$y]] = (int) $r->total;
+    }
+
+    // 3) Possession action per year (many categories)
+    // Keep readable: top actions overall + "Other"
+    $topN = 8;
+
+    $actionTotals = Repo::query()
+        ->selectRaw('possession_action, SUM(value) AS total')
+        ->whereNotNull('possession_action')
+        ->whereRaw("TRIM(possession_action) <> ''")
+        ->groupBy('possession_action')
+        ->orderByDesc('total')
+        ->get();
+
+    $topActions = $actionTotals->take($topN)->pluck('possession_action')
+        ->map(fn ($s) => (string) $s)
+        ->values()
+        ->all();
+
+    $actionRows = Repo::query()
+        ->selectRaw('year, possession_action, SUM(value) AS total')
+        ->whereNotNull('possession_action')
+        ->whereRaw("TRIM(possession_action) <> ''")
+        ->groupBy('year', 'possession_action')
+        ->orderBy('year')
+        ->get();
+
+    $actionSeries = [];
+    foreach ($topActions as $a) {
+        $actionSeries[$a] = array_fill(0, $yearLabels->count(), 0);
+    }
+    $actionSeries['Other'] = array_fill(0, $yearLabels->count(), 0);
+
+    foreach ($actionRows as $r) {
+        $y = (int) $r->year;
+        if (!$yearIndex->has($y)) {
+            continue;
+        }
+        $idx = $yearIndex[$y];
+        $a = (string) $r->possession_action;
+        $val = (int) $r->total;
+
+        if (in_array($a, $topActions, true)) {
+            $actionSeries[$a][$idx] = $val;
+        } else {
+            $actionSeries['Other'][$idx] += $val;
+        }
+    }
+
+    // 4) Top 20 Local Authorities by actions
+    $topLocalAuthorities = Repo::query()
+        ->selectRaw("TRIM(local_authority) AS local_authority, SUM(value) AS total")
+        ->whereNotNull('local_authority')
+        ->whereRaw("TRIM(local_authority) <> ''")
+        ->groupByRaw('TRIM(local_authority)')
+        ->orderByDesc('total')
+        ->limit(20)
+        ->get();
+
+    $topLaNames = $topLocalAuthorities->pluck('local_authority')->values()->all();
+
+    // Breakdown by who raised the actions (possession_type)
+    $laTypeRows = Repo::query()
+        ->selectRaw("TRIM(local_authority) AS local_authority, possession_type, SUM(value) AS total")
+        ->whereIn('possession_type', $typeOrder)
+        ->whereNotNull('local_authority')
+        ->whereRaw("TRIM(local_authority) <> ''")
+        ->whereIn(DB::raw('TRIM(local_authority)'), $topLaNames)
+        ->groupByRaw('TRIM(local_authority), possession_type')
+        ->get();
+
+    // Pivot into table-friendly rows
+    $laBreakdown = [];
+    foreach ($topLocalAuthorities as $row) {
+        $name = (string) $row->local_authority;
+        $laBreakdown[$name] = [
+            'local_authority' => $name,
+            'total' => (int) $row->total,
+        ];
+        foreach ($typeOrder as $t) {
+            $laBreakdown[$name][$t] = 0;
+        }
+    }
+
+    foreach ($laTypeRows as $r) {
+        $name = (string) $r->local_authority;
+        $t = (string) $r->possession_type;
+        if (!isset($laBreakdown[$name]) || !array_key_exists($t, $laBreakdown[$name])) {
+            continue;
+        }
+        $laBreakdown[$name][$t] = (int) $r->total;
+    }
+
+    // Preserve Top‑20 ordering
+    $laBreakdownRows = collect($topLaNames)
+        ->map(fn ($n) => $laBreakdown[$n] ?? null)
+        ->filter()
+        ->values();
+
+    // 5) Bottom 20 Local Authorities by actions (least actions)
+    $bottomLocalAuthorities = Repo::query()
+        ->selectRaw("TRIM(local_authority) AS local_authority, SUM(value) AS total")
+        ->whereNotNull('local_authority')
+        ->whereRaw("TRIM(local_authority) <> ''")
+        ->groupByRaw('TRIM(local_authority)')
+        ->orderBy('total')
+        ->limit(20)
+        ->get();
+
+    $bottomLaNames = $bottomLocalAuthorities->pluck('local_authority')->values()->all();
+
+    $bottomLaTypeRows = Repo::query()
+        ->selectRaw("TRIM(local_authority) AS local_authority, possession_type, SUM(value) AS total")
+        ->whereIn('possession_type', $typeOrder)
+        ->whereNotNull('local_authority')
+        ->whereRaw("TRIM(local_authority) <> ''")
+        ->whereIn(DB::raw('TRIM(local_authority)'), $bottomLaNames)
+        ->groupByRaw('TRIM(local_authority), possession_type')
+        ->get();
+
+    // Pivot into table-friendly rows (least actions)
+    $bottomLaBreakdown = [];
+    foreach ($bottomLocalAuthorities as $row) {
+        $name = (string) $row->local_authority;
+        $bottomLaBreakdown[$name] = [
+            'local_authority' => $name,
+            'total' => (int) $row->total,
+        ];
+        foreach ($typeOrder as $t) {
+            $bottomLaBreakdown[$name][$t] = 0;
+        }
+    }
+
+    foreach ($bottomLaTypeRows as $r) {
+        $name = (string) $r->local_authority;
+        $t = (string) $r->possession_type;
+        if (!isset($bottomLaBreakdown[$name]) || !array_key_exists($t, $bottomLaBreakdown[$name])) {
+            continue;
+        }
+        $bottomLaBreakdown[$name][$t] = (int) $r->total;
+    }
+
+    $la_breakdown_least_rows = collect($bottomLaNames)
+        ->map(fn ($n) => $bottomLaBreakdown[$n] ?? null)
+        ->filter()
+        ->values();
+
+    // Latest / YoY for header chips
+    $latest = $yearlyTotals->last();
+    $previous = $yearlyTotals->count() > 1 ? $yearlyTotals[$yearlyTotals->count() - 2] : null;
+
+    $yoy = null;
+    if ($latest && $previous) {
+        $yoy = (int) $latest->total - (int) $previous->total;
+    }
+
+    return view('repossessions.index', [
+        'meta' => [
+            'min_year' => $minYear,
+            'max_year' => $maxYear,
+        ],
+
+        'latest'   => $latest,
+        'previous' => $previous,
+        'yoy'      => $yoy,
+
+        'year_labels'   => $yearLabels,
+        'year_totals'   => $yearTotalValues,
+        'type_series'   => $typeSeries,
+        'action_series' => $actionSeries,
+
+        'la_breakdown_rows'     => $laBreakdownRows,
+        'la_breakdown_least_rows' => $la_breakdown_least_rows,
+    ]);
+}
+
+    public function localAuthority(string $slug)
     {
-        // Load full series grouped by year (sum of cases per year)
-        $yearly = Repo::query()
+        // Resolve slug back to authority name
+        $authority = DB::table('repo_la_quarterlies')
+            ->selectRaw('DISTINCT TRIM(local_authority) AS local_authority')
+            ->whereNotNull('local_authority')
+            ->whereRaw("TRIM(local_authority) <> ''")
+            ->get()
+            ->first(fn ($r) => Str::slug($r->local_authority) === $slug);
+
+        abort_if(! $authority, 404);
+
+        $name = $authority->local_authority;
+
+        // Yearly totals
+        $yearly = DB::table('repo_la_quarterlies')
             ->selectRaw('year, SUM(value) AS total')
+            ->whereRaw('TRIM(local_authority) = ?', [$name])
             ->groupBy('year')
             ->orderBy('year')
             ->get();
 
-        // Latest year
-        $latest = $yearly->last();
-        $previous = $yearly->count() > 1 ? $yearly[$yearly->count() - 2] : null;
+        // By possession type
+        $byType = DB::table('repo_la_quarterlies')
+            ->selectRaw('year, possession_type, SUM(value) AS total')
+            ->whereRaw('TRIM(local_authority) = ?', [$name])
+            ->groupBy('year', 'possession_type')
+            ->orderBy('year')
+            ->get();
 
-        $yoy = null;
-        if ($latest && $previous) {
-            $yoy = (int)$latest->total - (int)$previous->total;
-        }
+        // By possession action
+        $byAction = DB::table('repo_la_quarterlies')
+            ->selectRaw('year, possession_action, SUM(value) AS total')
+            ->whereRaw('TRIM(local_authority) = ?', [$name])
+            ->groupBy('year', 'possession_action')
+            ->orderBy('year')
+            ->get();
 
-        // Prepare chart arrays
-        $labels = $yearly->pluck('year')->values()->toJson();
-        $values = $yearly->pluck('total')->values()->toJson();
-
-        return view('repossessions.overview', [
-            'yearly'  => $yearly,
-            'latest'  => $latest,
-            'previous'=> $previous,
-            'yoy'     => $yoy,
-            'labels'  => $labels,
-            'values'  => $values,
+        return view('repossessions.local-authority', [
+            'local_authority' => $name,
+            'yearly'          => $yearly,
+            'byType'          => $byType,
+            'byAction'        => $byAction,
         ]);
     }
+
 }

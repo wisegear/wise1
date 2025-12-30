@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
+<div class="mx-auto max-w-7xl px-4 py-8 md:py-10">
 
     {{-- Hero --}}
     <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
