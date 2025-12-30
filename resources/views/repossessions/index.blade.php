@@ -54,7 +54,7 @@
             <input
                 id="laSearch"
                 type="text"
-                placeholder="Start typing a local authority name…"
+                placeholder="Start typing a local authority name, e.g. Birmingham, Manchester, Leeds"
                 autocomplete="off"
                 class="w-full rounded-md border border-lime-300 px-4 py-3 text-sm bg-white shadow
                        focus:border-lime-500 focus:ring focus:ring-lime-300"
