@@ -123,7 +123,6 @@
 
     @if($mapLat && $mapLong)
         <div class="mb-6">
-            <h2 class="text-base font-semibold mb-2">Approximate location (postcode centroid)</h2>
             <div id="property-map" class="w-full h-100 rounded-md border border-zinc-200 relative overflow-hidden">
                 <div id="property-map-loading" class="absolute inset-0 flex items-center justify-center text-xs text-zinc-400 bg-zinc-50">
                     Loading map…
@@ -229,7 +228,7 @@
             </thead>
             <tbody>
                 @foreach($results as $row)
-                <tr class="border-t bg-white">
+                <tr class="border-t {{ ($row->PPDCategoryType ?? null) === 'B' ? 'bg-rose-50' : 'bg-white' }}">
                     <td class="px-3 py-2">{{ \Carbon\Carbon::parse($row->Date)->format('d-m-Y') }}</td>
                     <td class="px-3 py-2">£{{ number_format($row->Price) }}</td>
                     <td class="px-3 py-2">
@@ -543,7 +542,9 @@
             @endif
         </div>
     </details>
-
+    <div>
+        <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-rose-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.</p>
+    </div>
     <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-base font-semibold mb-3">Price History of this property</h2>

@@ -189,7 +189,7 @@
                     </thead>
                     <tbody>
                         @foreach($results as $row)
-                            <tr class="border-t">
+                            <tr class="border-t {{ ($row->PPDCategoryType ?? null) === 'B' ? 'bg-rose-50' : '' }}">
                                 <td class="px-3 py-2 whitespace-nowrap">
                                     {{ optional($row->Date)->format('d-m-Y') }}
                                 </td>
@@ -256,7 +256,7 @@
                                             'street'   => $row->Street ?? '',
                                             'saon'     => $row->SAON ?? ''
                                         ]) }}"
-                                        class="bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded inline-flex items-center"
+                                        class="bg-lime-700 hover:bg-zinc-500 text-white p-2 rounded inline-flex items-center"
                                         title="View property details"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentcolor" viewBox="0 0 20 20" width="16" height="16">

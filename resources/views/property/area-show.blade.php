@@ -1,10 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-semibold mb-2">
-        {{ ucfirst($type) }}: {{ $areaName }}
-    </h1>
+<div class="max-w-7xl mx-auto px-4">
+
+    {{-- Hero / summary card --}}
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
+        <div class="max-w-6xl">
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900"><span class="text-lime-600">{{ ucfirst($type) }}</span>: {{ ucfirst(strtolower($areaName)) }}</h1>
+            <p class="mt-2 text-sm leading-6 text-gray-700">Similiar to an individual property search this page gives you a clear overview of a specific area in England/Wales.</p>
+        </div>
+        <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+            <img src="{{ asset('assets/images/site/area.svg') }}" alt="Area" class="w-32 h-auto">
+        </div>
+    </section>
 
     @if($summary)
         <div class="mt-4 grid gap-4 grid-cols-1 md:grid-cols-4 text-sm">
