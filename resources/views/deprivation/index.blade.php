@@ -663,6 +663,5 @@
       });
     });
   </script>
-  <p class="text-xs text-zinc-500">Postcode search covers England (IMD), Scotland (SIMD) and Wales (WIMD).</p>
 </div>
 @endsection

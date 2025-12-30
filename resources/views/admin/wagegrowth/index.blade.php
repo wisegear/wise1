@@ -26,11 +26,11 @@
                     <input type="date" name="date" class="border rounded p-2 w-full" required>
                 </div>
                 <div>
-                    <label class="block text-sm text-zinc-700 mb-1">Single-Month YoY (%)</label>
+                    <label class="block text-sm text-zinc-700 mb-1">Regular Pay, YoY Single %</label>
                     <input type="number" step="0.01" name="single_month_yoy" class="border rounded p-2 w-full">
                 </div>
                 <div>
-                    <label class="block text-sm text-zinc-700 mb-1">3-Month Avg YoY (%)</label>
+                    <label class="block text-sm text-zinc-700 mb-1">Regular Pay, YoY 3m AVG %</label>
                     <input type="number" step="0.01" name="three_month_avg_yoy" class="border rounded p-2 w-full">
                 </div>
                 <div>
@@ -55,8 +55,8 @@
                 <thead>
                     <tr class="bg-gray-100 text-left">
                         <th class="p-2 border">Date</th>
-                        <th class="p-2 border">Single-Month YoY (%)</th>
-                        <th class="p-2 border">3-Month Avg YoY (%)</th>
+                        <th class="p-2 border">Regular Pay, YoY Single %</th>
+                        <th class="p-2 border">Regular Pay, YoY 3m AVG %</th>
                         <th class="p-2 border">Delete</th>
                     </tr>
                 </thead>
