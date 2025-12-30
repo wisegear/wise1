@@ -543,7 +543,8 @@
         </div>
     </details>
     <div>
-        <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-rose-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.</p>
+        <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-rose-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.
+        If you want to see more detail about a specific area and or property type go back and use the area search option.</p>
     </div>
     <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
