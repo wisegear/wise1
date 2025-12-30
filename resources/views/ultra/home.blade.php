@@ -77,6 +77,19 @@
                 @endif
 
                 <div class="flex flex-col gap-3 sm:gap-4 md:grid md:grid-cols-2">
+
+                    <!-- Number of Sales (line) -->
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
+                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- Average Price (line) -->
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
+                        <h3 class="font-semibold mb-2">Average Price of property in {{ $__label }}</h3>
+                        <canvas id="ap_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
                     <!-- Property Types (stacked bar) -->
                     <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Property Types in {{ $__label }}</h3>
@@ -89,24 +102,6 @@
                         <canvas id="apt_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
-                    <!-- Average Price (line) -->
-                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
-                        <h3 class="font-semibold mb-2">Average Price of property in {{ $__label }}</h3>
-                        <canvas id="ap_{{ $district }}" class="w-full h-full"></canvas>
-                    </div>
-
-                    <!-- Number of Sales (line) -->
-                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
-                        <h3 class="font-semibold mb-2">Number of Sales in {{ $__label }}</h3>
-                        <canvas id="sc_{{ $district }}" class="w-full h-full"></canvas>
-                    </div>
-
-                    <!-- Top Sale Marker (scatter) -->
-                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72 col-span-2">
-                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $__label }}</h3>
-                        <canvas id="ts_{{ $district }}" class="w-full h-full"></canvas>
-                    </div>
-
                     <!-- New Build vs Existing (% stacked bar) -->
                     <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">New Build vs Existing (% of sales) in {{ $__label }}</h3>
@@ -117,6 +112,12 @@
                     <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72">
                         <h3 class="font-semibold mb-2">Freehold vs Leasehold (% of sales) in {{ $__label }}</h3>
                         <canvas id="dur_{{ $district }}" class="w-full h-full"></canvas>
+                    </div>
+
+                    <!-- Top Sale Marker (scatter) -->
+                    <div class="rounded-xl border p-4 bg-white overflow-hidden h-56 sm:h-60 md:h-64 lg:h-72 col-span-2">
+                        <h3 class="font-semibold mb-2">Top Sale Marker in {{ $__label }}</h3>
+                        <canvas id="ts_{{ $district }}" class="w-full h-full"></canvas>
                     </div>
 
                     <!-- Average + Prime Indicators (line) -->
