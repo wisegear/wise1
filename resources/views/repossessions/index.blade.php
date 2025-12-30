@@ -79,7 +79,7 @@
     <div class="grid grid-cols-1 gap-6">
         {{-- Possession type (yearly) --}}
         <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div class="mb-2 text-sm font-medium text-gray-700">Possession actions and who raised them</div>
+            <div class="mb-2 text-sm font-medium text-gray-700">Who is raising actions?</div>
             <div class="h-80">
                 <canvas id="reposTypeChart"></canvas>
             </div>
