@@ -104,7 +104,7 @@
 
     {{-- Total cases (yearly) --}}
     <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm mb-6">
-        <div class="mb-2 text-sm font-medium text-gray-700">Total nunber of claims</div>
+        <div class="mb-2 text-sm font-medium text-gray-700">Total number of actions</div>
         <div class="h-80">
             <canvas id="laTotalChart"></canvas>
         </div>
