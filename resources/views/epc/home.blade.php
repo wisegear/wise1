@@ -23,7 +23,7 @@
                     Note that the data quality of the EPC reports is poor so bear that in mind when you are reviewing the reports themselves.
                 @endif
             </p>
-            <div class="mt-2 flex flex-wrap gap-2">
+            <div class="mt-4 flex flex-wrap gap-2">
                 <a href="/epc/search" class="standard-button inline-flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-magnifying-glass-chart"></i>
                   Search England & Wales</a>
@@ -77,8 +77,8 @@
     <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Certificates issued by year --}}
         <div class="border rounded-lg bg-white p-4 shadow">
-            <h2 class="text-lg font-semibold mb-2">Certificates issued by year</h2>
-            <p class="mb-2 text-sm text-gray-600">
+            <h2 class="text-lg font-semibold">Certificates issued by year</h2>
+            <p class="mb-2 text-xs text-gray-600">
                 Number of EPC certificates lodged each year for the selected nation.
             </p>
             <div class="w-full h-72">
@@ -88,8 +88,8 @@
 
         {{-- Tenure by year --}}
         <div class="border rounded-lg bg-white p-4 shadow">
-            <h2 class="text-lg font-semibold mb-2">Tenure by year</h2>
-            <p class="mb-2 text-sm text-gray-600">
+            <h2 class="text-lg font-semibold">Tenure by year</h2>
+            <p class="mb-2 text-xs text-gray-600">
                 Split of EPCs by tenure (owner-occupied, private rented, social rented) each year.
             </p>
             <div class="w-full h-72">
@@ -97,6 +97,32 @@
             </div>
         </div>
     </div>
+
+  {{-- Habitable rooms distribution by year (stacked) --}}
+  <div class="mb-8 border rounded-lg bg-white p-4 shadow">
+      <h2 class="text-lg font-semibold">Habitable rooms distribution by year</h2>
+      <p class="mb-2 text-xs text-gray-600 mb-2">
+          Count of habitable room number each year.  Bedrooms, living/dining, office/study, playroom, kitchens may be counted if large enough
+      </p>
+      <div class="w-full h-72">
+          <canvas id="roomsDistByYearChart" class="w-full h-full"></canvas>
+      </div>
+  </div>
+
+  {{-- Construction age band distribution --}}
+  <div class="mb-8 border rounded-lg bg-white p-4 shadow">
+      <h2 class="text-lg font-semibold">Construction age distribution</h2>
+      <p class="mb-2 text-xs text-gray-600">
+          @if(($nation ?? 'ew') === 'scotland')
+              Distribution of EPCs by construction age band (excluding 2008 onwards).
+          @else
+              Distribution of EPCs by estimated construction year bucket (bad inputs removed; anything after 2025 ignored).
+          @endif
+      </p>
+      <div class="w-full h-72">
+          <canvas id="ageDistChart" class="w-full h-full"></canvas>
+      </div>
+  </div>
 
     @php
         // Normalised tenure labels consistent with controller and warmer
@@ -171,7 +197,10 @@
               maintainAspectRatio: false,
               plugins: {
                 legend: {
-                  position: 'bottom'
+                  position: 'top',
+                  labels: {
+                    padding: 10
+                  }
                 }
               },
               scales: {
@@ -181,6 +210,137 @@
                 y: {
                   beginAtZero: true,
                   title: { display: true, text: 'Certificates' },
+                  ticks: {
+                    callback: function (value) {
+                      return value.toLocaleString();
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        // Habitable rooms (raw data for charts)
+        const roomsRaw = @json($roomsByYear ?? []);
+
+        // Habitable rooms distribution by year (stacked bar)
+        const roomsDistCanvas = document.getElementById('roomsDistByYearChart');
+        if (roomsDistCanvas) {
+          const ctxRoomsDist = roomsDistCanvas.getContext('2d');
+
+          // Years and room buckets (numeric, sorted)
+          const yearsDist = [...new Set(roomsRaw.map(r => r.yr))].sort();
+          // Bucket rooms: keep 1–5, group 6+ into a single "6+" bucket
+          const bucketLabel = (n) => (n >= 6 ? '6+' : String(n));
+
+          // Discover buckets present in the data, but only 1–5 and 6+
+          const bucketSet = new Set();
+          roomsRaw.forEach(r => {
+            const n = Number(r.rooms);
+            if (!Number.isFinite(n) || n <= 0) return;
+            bucketSet.add(bucketLabel(n));
+          });
+
+          // Order buckets: 1,2,3,4,5,6+
+          const bucketOrder = ['1','2','3','4','5','6+'];
+          const roomBuckets = bucketOrder.filter(b => bucketSet.has(b));
+
+          // Build datasets: one per bucket
+          const datasets = roomBuckets.map((bucket) => ({
+            label: bucket,
+            data: yearsDist.map(y => {
+              const rows = roomsRaw.filter(r => r.yr === y);
+              if (bucket === '6+') {
+                return rows
+                  .filter(r => Number(r.rooms) >= 6)
+                  .reduce((sum, r) => sum + (Number(r.cnt) || 0), 0);
+              }
+              const target = Number(bucket);
+              return rows
+                .filter(r => Number(r.rooms) === target)
+                .reduce((sum, r) => sum + (Number(r.cnt) || 0), 0);
+            }),
+            borderWidth: 1,
+            stack: 'rooms'
+          }));
+
+          new Chart(ctxRoomsDist, {
+            type: 'bar',
+            data: {
+              labels: yearsDist,
+              datasets
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    padding: 10
+                  }
+                }
+              },
+              scales: {
+                x: { stacked: true, title: { display: true, text: 'Year' } },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  title: { display: true, text: 'Certificates' },
+                  ticks: {
+                    callback: function (value) {
+                      return value.toLocaleString();
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+        // Construction age distribution
+        const ageDistCanvas = document.getElementById('ageDistChart');
+        const ageDistRaw = @json($ageDist ?? []);
+        if (ageDistCanvas && Array.isArray(ageDistRaw) && ageDistRaw.length) {
+          const ctxAge = ageDistCanvas.getContext('2d');
+          const labels = ageDistRaw.map(r => r.band);
+          const data = ageDistRaw.map(r => Number(r.cnt) || 0);
+
+          new Chart(ctxAge, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Certificates',
+                data,
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      const v = Number(context.parsed.y) || 0;
+                      return `Certificates: ${v.toLocaleString()}`;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  title: { display: false },
+                  ticks: {
+                    maxRotation: 0,
+                    minRotation: 0
+                  }
+                },
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Count' },
                   ticks: {
                     callback: function (value) {
                       return value.toLocaleString();
@@ -223,7 +383,7 @@
 
     <div class="mb-8 border rounded-lg bg-white p-4 shadow">
         <h2 class="text-lg font-semibold">Actual Energy ratings by year (A–G, % of certificates)</h2>
-        <p class="mb-2 text-sm text-zinc-700">For clarity, yes the A category is so small you can hardly see it.</p>
+        <p class="mb-2 text-xs text-zinc-700">For clarity, yes the A category is so small you can hardly see it.</p>
         <div class="w-full h-72">
             <canvas id="ratingByYearChart" class="w-full h-full"></canvas>
         </div>
@@ -320,7 +480,7 @@
 
     <div class="mb-8 border rounded-lg bg-white p-4 shadow">
         <h2 class="text-lg font-semibold">Potential energy ratings by year (A–G, % of certificates)</h2>
-        <p class="mb-2 text-sm text-zinc-700">This data show the potential energy ratings if every property completed the recomendations made in the EPC.</p>
+        <p class="mb-2 text-xs text-zinc-700">This data show the potential energy ratings if every property completed the recomendations made in the EPC.</p>
         <div class="w-full h-72">
             <canvas id="potentialByYearChart" class="w-full h-full"></canvas>
         </div>

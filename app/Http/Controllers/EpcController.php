@@ -13,7 +13,7 @@ class EpcController extends Controller
      * EPC Dashboard
      *
      * Shows high‑level stats and a few quick charts/tables backed by simple,
-     * index‑friendly queries. All queries read from epc_certificates only.
+     * index‑friendly queries. Reads from epc_certificates (E&W) or epc_certificates_scotland.
      */
     public function home()
     {
@@ -28,6 +28,8 @@ class EpcController extends Controller
                 'dateCol'      => 'LODGEMENT_DATE',
                 'currentCol'   => 'CURRENT_ENERGY_RATING',
                 'potentialCol' => 'POTENTIAL_ENERGY_RATING',
+                'roomsCol'     => 'NUMBER_HABITABLE_ROOMS',
+                'ageCol'       => 'CONSTRUCTION_AGE_BAND',
                 'since'        => Carbon::create(2015, 1, 1),
               ]
             : [
@@ -37,6 +39,8 @@ class EpcController extends Controller
                 'dateCol'      => 'lodgement_date',
                 'currentCol'   => 'current_energy_rating',
                 'potentialCol' => 'potential_energy_rating',
+                'roomsCol'     => 'number_habitable_rooms',
+                'ageCol'       => 'construction_age_band',
                 'since'        => Carbon::create(2008, 1, 1),
               ];
 
@@ -109,18 +113,47 @@ class EpcController extends Controller
                 ->get();
         });
 
-        // 6) Tenure by year: owner‑occupied, rented (private), rented (social)
+        // 6) Tenure by year: normalise variants into 3 buckets
+        // EPC tenure values can vary (e.g. "Rented (private)" vs "Rental (private)").
         $tenureLabels = ['Owner-occupied','Rented (private)','Rented (social)'];
 
         $tenureByYear = Cache::remember($ck('tenureByYear'), $ttl, function () use ($cfg, $tenureLabels) {
+            // Normalise common variants into our 3 labels. Anything else is ignored.
+            $tenureCase = "CASE\n"
+                . "  WHEN tenure IN ('Owner-occupied','Owner occupied','Owner Occupied','Owner-Occupied') THEN 'Owner-occupied'\n"
+                . "  WHEN tenure IN ('Rented (private)','Rental (private)','Private rented','Private Rented','Rented - private','Rental - private') THEN 'Rented (private)'\n"
+                . "  WHEN tenure IN ('Rented (social)','Rental (social)','Social rented','Social Rented','Rented - social','Rental - social') THEN 'Rented (social)'\n"
+                . "  ELSE NULL\n"
+                . "END";
+
             return DB::table($cfg['table'])
-                ->selectRaw("{$cfg['yearExpr']} as yr, tenure, COUNT(*) as cnt")
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$tenureCase} as tenure, COUNT(*) as cnt")
                 ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
                 ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
-                ->whereIn('tenure', $tenureLabels)
-                ->groupBy('yr','tenure')
-                ->orderBy('yr','asc')
+                ->whereNotNull('tenure')
+                ->groupBy('yr', 'tenure')
+                ->orderBy('yr', 'asc')
                 ->orderByRaw("FIELD(tenure, '" . implode("','", $tenureLabels) . "')")
+                ->get();
+        });
+
+        // 7) Habitable rooms by year (for charting)
+        // Keep it simple + safe: only numeric values in a sensible range.
+        $roomsByYear = Cache::remember($ck('roomsByYear'), $ttl, function () use ($cfg) {
+            // Build a numeric expression that works for both tables.
+            // Scotland columns are uppercase strings; E&W is typically numeric already.
+            $roomsExpr = ($cfg['table'] === 'epc_certificates_scotland')
+                ? "CAST(NULLIF({$cfg['roomsCol']}, '') AS UNSIGNED)"
+                : "CAST({$cfg['roomsCol']} AS UNSIGNED)";
+
+            return DB::table($cfg['table'])
+                ->selectRaw("{$cfg['yearExpr']} as yr, {$roomsExpr} as rooms, COUNT(*) as cnt")
+                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
+                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
+                ->whereRaw("{$roomsExpr} BETWEEN 1 AND 20")
+                ->groupBy('yr', 'rooms')
+                ->orderBy('yr', 'asc')
+                ->orderBy('rooms', 'asc')
                 ->get();
         });
 
@@ -140,13 +173,106 @@ class EpcController extends Controller
                 ->get();
         });
 
+        // 8) Construction age band distribution (nation-specific rules)
+        $ageDist = Cache::remember($ck('ageDist:v2'), $ttl, function () use ($cfg) {
+            // Scotland: show the official bands including "2008 onwards"
+            if ($cfg['table'] === 'epc_certificates_scotland') {
+                $labels = [
+                    'before 1919',
+                    '1919-1929',
+                    '1930-1949',
+                    '1950-1964',
+                    '1965-1975',
+                    '1976-1983',
+                    '1984-1991',
+                    '1992-1998',
+                    '1999-2002',
+                    '2003-2007',
+                    '2008 onwards',
+                ];
+
+                return DB::table($cfg['table'])
+                    ->selectRaw("{$cfg['ageCol']} as band, COUNT(*) as cnt")
+                    ->whereNotNull($cfg['ageCol'])
+                    ->whereIn($cfg['ageCol'], $labels)
+                    ->groupBy('band')
+                    ->orderByRaw("FIELD(band, '" . implode("','", $labels) . "')")
+                    ->get();
+            }
+
+            // England & Wales: bucket numeric/parsable years into broad ranges
+            // Ignore:
+            // - anything starting with "England and Wales:"
+            // - INVALID!, NO DATA!, Not applicable
+            // - anything > 2025 (bad inputs)
+            //
+            // Buckets:
+            //   < 1900
+            //   1900–1949
+            //   1950–1999
+            //   2000–2009
+            //   2010–2019
+            //   2020–2025
+            $col = $cfg['ageCol'];
+            $valExpr = "TRIM(CASE WHEN {$col} LIKE 'England and Wales:%' THEN SUBSTRING({$col}, LOCATE(':', {$col}) + 1) ELSE {$col} END)";
+
+            $yearExpr = "CASE\n"
+                . "  WHEN {$col} IS NULL THEN NULL\n"
+                . "  WHEN {$valExpr} IN ('INVALID!', 'NO DATA!', 'Not applicable') THEN NULL\n"
+                // "before 1900" style -> treat as 1899 so it lands in < 1900
+                . "  WHEN LOWER({$valExpr}) LIKE 'before %' THEN CAST(REGEXP_REPLACE(LOWER({$valExpr}), '[^0-9]', '') AS UNSIGNED) - 1\n"
+                // "1900-1929" style -> take first year
+                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}\\s*-\\s*[0-9]{4}$' THEN CAST(SUBSTRING_INDEX(REPLACE({$valExpr}, ' ', ''), '-', 1) AS UNSIGNED)\n"
+                // "2007 onwards" style -> take the year
+                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}\\s*onwards$' THEN CAST(REGEXP_REPLACE({$valExpr}, '[^0-9]', '') AS UNSIGNED)\n"
+                // plain "1900" style
+                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}$' THEN CAST({$valExpr} AS UNSIGNED)\n"
+                . "  ELSE NULL\n"
+                . "END";
+
+            $bucketExpr = "CASE\n"
+                . "  WHEN y IS NULL THEN NULL\n"
+                . "  WHEN y > 2025 THEN NULL\n"
+                . "  WHEN y < 1900 THEN '< 1900'\n"
+                . "  WHEN y BETWEEN 1900 AND 1949 THEN '1900–1949'\n"
+                . "  WHEN y BETWEEN 1950 AND 1999 THEN '1950–1999'\n"
+                . "  WHEN y BETWEEN 2000 AND 2009 THEN '2000–2009'\n"
+                . "  WHEN y BETWEEN 2010 AND 2019 THEN '2010–2019'\n"
+                . "  WHEN y BETWEEN 2020 AND 2025 THEN '2020–2025'\n"
+                . "  ELSE NULL\n"
+                . "END";
+
+            $order = [
+                '< 1900',
+                '1900–1949',
+                '1950–1999',
+                '2000–2009',
+                '2010–2019',
+                '2020–2025',
+            ];
+
+            return DB::query()
+                ->fromSub(function ($q) use ($cfg, $yearExpr) {
+                    $q->from($cfg['table'])
+                        ->selectRaw("{$yearExpr} as y")
+                        ->whereNotNull($cfg['ageCol']);
+                }, 't')
+                ->selectRaw("{$bucketExpr} as band, COUNT(*) as cnt")
+                ->havingRaw("band IS NOT NULL")
+                ->groupBy('band')
+                ->orderByRaw("FIELD(band, '" . implode("','", $order) . "')")
+                ->get();
+        });
+
         return view('epc.home', [
             'stats'            => $stats,
             'byYear'           => $byYear,
             'ratingByYear'     => $ratingByYear,
             'potentialByYear'  => $potentialByYear,
             'tenureByYear'     => $tenureByYear,
+            'roomsByYear'      => $roomsByYear,
             'ratingDist'       => $ratingDist ?? collect(),
+            'ageDist'          => $ageDist ?? collect(),
             'nation'           => $nation,
         ]);
     }
@@ -240,15 +366,15 @@ class EpcController extends Controller
 
         $resultsQuery = DB::table('epc_certificates_scotland')
             ->select([
-                DB::raw("REPORT_REFERENCE_NUMBER as report_reference_number"),
-                DB::raw("BUILDING_REFERENCE_NUMBER as building_reference_number"),
-                DB::raw("POSTCODE as postcode"),
-                DB::raw("LODGEMENT_DATE as lodgement_date"),
-                DB::raw("CURRENT_ENERGY_RATING as current_energy_rating"),
-                DB::raw("POTENTIAL_ENERGY_RATING as potential_energy_rating"),
-                DB::raw("PROPERTY_TYPE as property_type"),
-                DB::raw("TOTAL_FLOOR_AREA as total_floor_area"),
-                DB::raw("LOCAL_AUTHORITY_LABEL as local_authority_label"),
+                DB::raw('REPORT_REFERENCE_NUMBER as report_reference_number'),
+                DB::raw('BUILDING_REFERENCE_NUMBER as building_reference_number'),
+                DB::raw('POSTCODE as postcode'),
+                DB::raw('LODGEMENT_DATE as lodgement_date'),
+                DB::raw('CURRENT_ENERGY_RATING as current_energy_rating'),
+                DB::raw('POTENTIAL_ENERGY_RATING as potential_energy_rating'),
+                DB::raw('PROPERTY_TYPE as property_type'),
+                DB::raw('TOTAL_FLOOR_AREA as total_floor_area'),
+                DB::raw('LOCAL_AUTHORITY_LABEL as local_authority_label'),
                 $addressExpr,
             ])
             ->where('POSTCODE', $postcode)
