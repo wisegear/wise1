@@ -30,6 +30,21 @@
         </p>
     </section>
 
+    {{-- No fees --}}
+    <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900">No fees, no catch</h2>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            This site is completely free to use. There are no subscriptions, paywalls, hidden features, premium tiers,
+            referral links or upsells, and no plans to add them. I don’t sell data, collect payments, or gate access
+            behind accounts. Everything you see here is available to everyone, in full, at no cost.
+        </p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">
+            The project is funded entirely out of my own pocket and built because I wanted a clean, independent place
+            to explore UK property data without noise or incentives. If it’s useful, great. If not, you haven’t lost
+            anything except a few minutes.
+        </p>
+    </section>
+
     {{-- Sources --}}
     <section class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Data sources</h2>
