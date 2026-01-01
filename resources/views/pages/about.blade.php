@@ -69,7 +69,7 @@
             <li><span class="font-medium">Keep it faithful</span> — I ingest the raw government CSVs and import them almost as‑is into MySQL. The site shows the real series, not a model or forecast.</li>
             <li><span class="font-medium">Aggregate clearly</span> — monthly data can be rolled up to quarterly or yearly where that makes trends easier to read. Anything that is year‑to‑date is marked as year‑to‑date.</li>
             <li><span class="font-medium">Warm and cache heavy work</span> — large queries, for example Land Registry history by postcode district or deprivation lookups, get pre‑computed and cached so pages load fast even on big datasets.</li>
-            <li><span class="font-medium">Reproducible</span> — built with Laravel 11, MySQL and Tailwind. Queries are plain and auditable and can be re‑run locally.</li>
+            <li><span class="font-medium">Reproducible</span> — built with Laravel 12, MySQL and Tailwind. Queries are plain and auditable and can be re‑run locally.</li>
         </ul>
     </section>
 
