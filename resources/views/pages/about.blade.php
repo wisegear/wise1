@@ -111,7 +111,7 @@
     {{-- Thanks --}}
     <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900">Thanks</h2>
-        <p class="mt-3 text-sm leading-6 text-gray-800">Special thanks to Bob for his help testing the site and suggesting improvements.</p>
+        <p class="mt-3 text-sm leading-6 text-gray-800">Special thanks to Bob for his help testing the site and suggesting improvements.  Thank you to everyone on LinkedIn as well.</p>
         <p class="mt-3 text-sm leading-6 text-gray-800">A big thanks to Jeffrey for pointing out all my query errors! And also to, Cache, Cache more and Cache again!</p>
     </section>
 
