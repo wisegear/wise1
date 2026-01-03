@@ -204,7 +204,7 @@
                         {{ $post->title }}
                     </h2>
                     <div class="mt-1 text-xs text-zinc-500">
-                        {{ $post->date->startOfDay()->diffForHumans(now()->startOfDay()) }}
+                        {{ $post->date->startOfDay()->diffForHumans() }}
                     </div>
                     <div class="mt-2 text-sm">
                         {{ $post->summary }}
