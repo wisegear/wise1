@@ -204,7 +204,7 @@
                         {{ $post->title }}
                     </h2>
                     <div class="mt-1 text-xs text-zinc-500">
-                        {{ $post->date->startOfDay()->diffForHumans() }}
+                        {{ $post->date->startOfDay()->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW]) }}
                     </div>
                     <div class="mt-2 text-sm">
                         {{ $post->summary }}
