@@ -24,7 +24,7 @@
 
     <div class="flex-grow max-w-7xl mx-auto">
         <!-- Split into 2, one for articles and another for whatever -->
-        <main class="my-10 md:my-20 flex gap-20">
+        <main class="my-10 md:my-20 flex gap-10">
             <div class="md:w-8/12">
                 <div>
                     @foreach($posts as $post)
