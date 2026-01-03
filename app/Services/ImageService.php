@@ -32,14 +32,22 @@ class ImageService
              ->save(public_path($path . $smallImageName), 50);
 
         // Medium image: 800x300, 75% quality
-        Image::read(public_path($path . $imageName))
-             ->cover(800, 300, 'center')
-             ->save(public_path($path . $mediumImageName), 75);
+        // No cropping. Force the image into the exact 800x300 frame (may squish if aspect ratio differs).
+        // Prevent upscaling beyond the source.
+        $medium = Image::read(public_path($path . $imageName));
+        if ($medium->width() > 800 || $medium->height() > 300) {
+            $medium->resize(800, 300);
+        }
+        $medium->save(public_path($path . $mediumImageName), 75);
 
         // Large image: 1200x400, 75% quality
-        Image::read(public_path($path . $imageName))
-             ->cover(1200, 400, 'center')
-             ->save(public_path($path . $largeImageName), 75);
+        // No cropping. Force the image into the exact 1200x400 frame (may squish if aspect ratio differs).
+        // Prevent upscaling beyond the source.
+        $large = Image::read(public_path($path . $imageName));
+        if ($large->width() > 1200 || $large->height() > 400) {
+            $large->resize(1200, 400);
+        }
+        $large->save(public_path($path . $largeImageName), 75);
 
         // Return only the original image's file name (not the full path)
         return $imageName;

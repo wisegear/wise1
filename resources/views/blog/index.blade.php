@@ -31,8 +31,15 @@
                         <article class="mb-10 transition-colors duration-200 hover:bg-zinc-100 p-4 rounded-xl">
                             <!-- Post image -->
                             <div class="max-w-3xl mx-auto mb-4">
-                                <img src="{{ '/assets/images/uploads/' . 'medium_' . $post->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
-                            </div>  
+                                <div class="w-full max-w-[800px] h-[290px] mx-auto overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                                    <img
+                                        src="{{ asset('assets/images/uploads/medium_' . $post->original_image) }}"
+                                        alt="{{ $post->title }}"
+                                        class="w-full h-full object-contain"
+                                        loading="lazy"
+                                    >
+                                </div>
+                            </div>
                             <div class="flex justify-between items-center mb-2">
                                 <div class="flex items-center">
                                     <p class="text-zinc-400 text-sm border-l pl-4">

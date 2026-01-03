@@ -13,7 +13,7 @@
 
             <!-- Post image -->
             <div class="max-w-4xl mx-auto">
-                <img src="{{ '/assets/images/uploads/' . 'large_' . $page->original_image }}" class="rounded-lg border border-zinc-200 mx-auto" alt="blog-post-picture">
+                <img src="{{ '/assets/images/uploads/' . 'large_' . $page->original_image }}" class="rounded-lg border border-zinc-200 mx-auto h-[200px] md:h-[400px]" alt="blog-post-picture">
             </div>      
             
             <!-- page body -->
