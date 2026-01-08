@@ -299,7 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Total stock (Scotland)',
                     data: years.map(y => national[y].total_stock),
-                    pointRadius: 0
+                    pointRadius: 3,
+                    pointHoverRadius: 5
                 }]
             },
             options
@@ -329,7 +330,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     label: 'Total stock',
                     data: years.map(y => rows[y]?.total_stock ?? 0),
-                    pointRadius: 0
+                    pointRadius: 3,
+                    pointHoverRadius: 5
                 }]
             },
             options
@@ -348,7 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ].map(([k,l]) => ({
                     label: l,
                     data: years.map(y => rows[y]?.[k] ?? 0),
-                    pointRadius: 0
+                    pointRadius: 3,
+                    pointHoverRadius: 5
                 }))
             },
             options
@@ -367,7 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ].map(([k,l]) => ({
                     label: l,
                     data: years.map(y => rows[y]?.[k] ?? 0),
-                    pointRadius: 0
+                    pointRadius: 3,
+                    pointHoverRadius: 5
                 }))
             },
             options
