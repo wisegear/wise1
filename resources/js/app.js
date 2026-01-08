@@ -281,6 +281,46 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Social Housing dropdown toggle functionality (desktop) - mirrors others
+document.addEventListener('DOMContentLoaded', () => {
+  const shBtn  = document.getElementById('socialHousingMenuButton');
+  const shMenu = document.getElementById('socialHousingDropdown');
+
+  if (!shBtn || !shMenu) return; // IDs missing in Blade
+
+  window._registerDropdownPair(shBtn, shMenu);
+
+  const openMenu = () => {
+    window._closeAllDropdownsExcept(shMenu);
+    window._animateOpen(shMenu);
+    shBtn.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeMenu = () => {
+    window._animateClose(shMenu, () => {});
+    shBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  shBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isHidden = shMenu.classList.contains('hidden');
+    isHidden ? openMenu() : closeMenu();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    const open = !shMenu.classList.contains('hidden');
+    if (!open) return;
+    if (!shMenu.contains(e.target) && !shBtn.contains(e.target)) closeMenu();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+});
+
 // Mobile navigation toggles
 document.addEventListener('DOMContentLoaded', () => {
   // Mobile main nav toggle
@@ -362,6 +402,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (willOpen) { window._closeAllDropdownsExcept(ecoMobileMenu); window._animateOpen(ecoMobileMenu); }
       else { window._animateClose(ecoMobileMenu); }
       ecoMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+  }
+
+  // Mobile Social Housing submenu toggle
+  const shMobileBtn = document.getElementById('mobileSocialHousingBtn');
+  const shMobileMenu = document.getElementById('mobileSocialHousingMenu');
+
+  if (shMobileBtn && shMobileMenu) {
+    window._registerDropdownPair(shMobileBtn, shMobileMenu);
+    shMobileBtn.addEventListener('click', () => {
+      const willOpen = shMobileMenu.classList.contains('hidden');
+      if (willOpen) { window._closeAllDropdownsExcept(shMobileMenu); window._animateOpen(shMobileMenu); }
+      else { window._animateClose(shMobileMenu); }
+      shMobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
     });
   }
 });

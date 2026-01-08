@@ -23,6 +23,7 @@ use App\Http\Controllers\MlarArrearsController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\Admin\DataUpdateController;
 use App\Http\Controllers\PropertyAreaController;
+use App\Http\Controllers\LocalAuthorityController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -88,6 +89,9 @@ Route::get('/approvals', [MortgageApprovalController::class, 'home'])->name('mor
 Route::get('/repossessions/local-authority/{slug}',[RepossessionsController::class, 'localAuthority'])->name('repossessions.local-authority');
 Route::get('/repossessions', [RepossessionsController::class, 'index'])->name('repossessions.index');
 Route::get('/arrears', [MlarArrearsController::class, 'index'])->name('arrears.index');
+
+Route::get('/social-housing-scotland', [LocalAuthorityController::class, 'scotland'])->name('localauthority.scotland');
+Route::get('/social-housing-england', [LocalAuthorityController::class, 'england'])->name('localauthority.england');
 
 // Deprivation Routes
 Route::get('/deprivation', [DeprivationController::class, 'index'])->name('deprivation.index');
