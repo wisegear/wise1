@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Mobile Economic Indicators submenu toggle
+  // Mobile Economic Indicators submenu toggle check
   const ecoMobileBtn = document.getElementById('mobileIndicatorsBtn');
   const ecoMobileMenu = document.getElementById('mobileIndicatorsMenu');
 
