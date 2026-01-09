@@ -25,13 +25,14 @@ class WarmAllCountyCaches extends Command
         $ttl = now()->addDays(45);
 
         // Fetch the counties list from the fact table (distinct non-empty)
+        // IMPORTANT: TRIM() so cache keys match controller usage
         $counties = DB::table('land_registry')
-            ->select('County')
+            ->selectRaw('TRIM(County) AS county')
             ->whereNotNull('County')
-            ->where('County', '!=', '')
+            ->whereRaw("TRIM(County) <> ''")
             ->distinct()
-            ->orderBy('County')
-            ->pluck('County');
+            ->orderBy('county')
+            ->pluck('county');
 
         if ($limit > 0) {
             $counties = $counties->take($limit);
@@ -42,6 +43,7 @@ class WarmAllCountyCaches extends Command
         $bar->start();
 
         foreach ($counties as $county) {
+            $county = trim((string) $county);
             // PRICE HISTORY (Yearly AVG)
             if ($only === 'all' || $only === 'price') {
                 $price = DB::table('land_registry')

@@ -25,12 +25,12 @@ class WarmAllDistrictCaches extends Command
 
         // Distinct non-empty districts
         $districts = DB::table('land_registry')
-            ->select('District')
+            ->selectRaw('TRIM(District) AS district')
             ->whereNotNull('District')
-            ->where('District', '!=', '')
+            ->whereRaw("TRIM(District) <> ''")
             ->distinct()
-            ->orderBy('District')
-            ->pluck('District');
+            ->orderBy('district')
+            ->pluck('district');
 
         if ($limit > 0) {
             $districts = $districts->take($limit);
@@ -49,34 +49,36 @@ class WarmAllDistrictCaches extends Command
 
         if ($only === 'all' || $only === 'price') {
             $priceRows = DB::table('land_registry')
-                ->select('District', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                ->selectRaw('TRIM(District) AS district, YearDate as year, ROUND(AVG(Price)) as avg_price')
                 ->where('PPDCategoryType', $ppd)
                 ->whereNotNull('District')
-                ->where('District', '!=', '')
-                ->groupBy('District', 'YearDate')
-                ->orderBy('District')
+                ->whereRaw("TRIM(District) <> ''")
+                ->groupBy('district', 'YearDate')
+                ->orderBy('district')
                 ->orderBy('YearDate')
                 ->get()
-                ->groupBy('District');
+                ->groupBy('district');
             foreach ($priceRows as $district => $rows) {
+                $district = trim((string) $district);
                 Cache::put('district:priceHistory:v2:cat' . $ppd . ':' . $district, $rows, $ttl);
                 $bar->setMessage('Price: ' . $district);
                 $bar->advance();
             }
             // Additionally warm per-property-type district price history (v3)
             $priceRowsByType = DB::table('land_registry')
-                ->select('District', 'PropertyType', 'YearDate as year', DB::raw('ROUND(AVG(Price)) as avg_price'))
+                ->selectRaw('TRIM(District) AS district, PropertyType, YearDate as year, ROUND(AVG(Price)) as avg_price')
                 ->where('PPDCategoryType', $ppd)
                 ->whereNotNull('District')
-                ->where('District', '!=', '')
-                ->groupBy('District', 'PropertyType', 'YearDate')
-                ->orderBy('District')
+                ->whereRaw("TRIM(District) <> ''")
+                ->groupBy('district', 'PropertyType', 'YearDate')
+                ->orderBy('district')
                 ->orderBy('PropertyType')
                 ->orderBy('YearDate')
                 ->get()
-                ->groupBy('District');
+                ->groupBy('district');
 
             foreach ($priceRowsByType as $district => $rows) {
+                $district = trim((string) $district);
                 // Group rows by PropertyType within each district
                 $rowsByType = $rows->groupBy('PropertyType');
 
@@ -90,34 +92,36 @@ class WarmAllDistrictCaches extends Command
 
         if ($only === 'all' || $only === 'sales') {
             $salesRows = DB::table('land_registry')
-                ->select('District', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                ->selectRaw('TRIM(District) AS district, YearDate as year, COUNT(*) as total_sales')
                 ->where('PPDCategoryType', $ppd)
                 ->whereNotNull('District')
-                ->where('District', '!=', '')
-                ->groupBy('District', 'YearDate')
-                ->orderBy('District')
+                ->whereRaw("TRIM(District) <> ''")
+                ->groupBy('district', 'YearDate')
+                ->orderBy('district')
                 ->orderBy('YearDate')
                 ->get()
-                ->groupBy('District');
+                ->groupBy('district');
             foreach ($salesRows as $district => $rows) {
+                $district = trim((string) $district);
                 Cache::put('district:salesHistory:v2:cat' . $ppd . ':' . $district, $rows, $ttl);
                 $bar->setMessage('Sales: ' . $district);
                 $bar->advance();
             }
             // Additionally warm per-property-type district sales history (v3)
             $salesRowsByType = DB::table('land_registry')
-                ->select('District', 'PropertyType', 'YearDate as year', DB::raw('COUNT(*) as total_sales'))
+                ->selectRaw('TRIM(District) AS district, PropertyType, YearDate as year, COUNT(*) as total_sales')
                 ->where('PPDCategoryType', $ppd)
                 ->whereNotNull('District')
-                ->where('District', '!=', '')
-                ->groupBy('District', 'PropertyType', 'YearDate')
-                ->orderBy('District')
+                ->whereRaw("TRIM(District) <> ''")
+                ->groupBy('district', 'PropertyType', 'YearDate')
+                ->orderBy('district')
                 ->orderBy('PropertyType')
                 ->orderBy('YearDate')
                 ->get()
-                ->groupBy('District');
+                ->groupBy('district');
 
             foreach ($salesRowsByType as $district => $rows) {
+                $district = trim((string) $district);
                 $rowsByType = $rows->groupBy('PropertyType');
 
                 foreach ($rowsByType as $type => $series) {
@@ -130,15 +134,16 @@ class WarmAllDistrictCaches extends Command
         if ($only === 'all' || $only === 'types') {
             $map = [ 'D' => 'Detached', 'S' => 'Semi-Detached', 'T' => 'Terraced', 'F' => 'Flat', 'O' => 'Other' ];
             $typeRows = DB::table('land_registry')
-                ->select('District', 'PropertyType', DB::raw('COUNT(*) as property_count'))
+                ->selectRaw('TRIM(District) AS district, PropertyType, COUNT(*) as property_count')
                 ->where('PPDCategoryType', $ppd)
                 ->whereNotNull('District')
-                ->where('District', '!=', '')
-                ->groupBy('District', 'PropertyType')
-                ->orderBy('District')
+                ->whereRaw("TRIM(District) <> ''")
+                ->groupBy('district', 'PropertyType')
+                ->orderBy('district')
                 ->get()
-                ->groupBy('District');
+                ->groupBy('district');
             foreach ($typeRows as $district => $rows) {
+                $district = trim((string) $district);
                 $mapped = $rows->map(function ($row) use ($map) {
                     return [ 'label' => $map[$row->PropertyType] ?? $row->PropertyType, 'value' => (int) $row->property_count ];
                 });
