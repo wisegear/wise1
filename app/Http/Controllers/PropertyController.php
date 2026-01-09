@@ -166,6 +166,20 @@ class PropertyController extends Controller
         // =========================================================
         $postcode = strtoupper(trim((string) $request->query('postcode', '')));
 
+        // Helper: normalise a postcode to the standard spaced form used by ONSPD `pcds`.
+        // Input may be "WR53EU" or "WR5 3EU" → output "WR5 3EU".
+        $toPcds = function (string $pc) {
+            $pc = strtoupper(trim($pc));
+            $pc = preg_replace('/\s+/', '', $pc);
+            if ($pc === '' || strlen($pc) < 5) {
+                return null;
+            }
+            // Insert a space before the last 3 characters
+            return substr($pc, 0, -3) . ' ' . substr($pc, -3);
+        };
+
+        $coordsByPostcode = [];
+
         $results = null;
 
         if ($postcode !== '') {
@@ -241,6 +255,39 @@ class PropertyController extends Controller
                 ->orderBy($sort, $dir)
                 ->Paginate(15)
                 ->appends(['postcode' => $postcode, 'sort' => $sort, 'dir' => $dir]); // keep query on pagination links
+
+            // -----------------------------------------------------
+            // ONSPD: Bulk fetch coordinates for the current page
+            // (prevents per-row ONSPD lookups in the Blade).
+            // -----------------------------------------------------
+            $pagePostcodes = $results->getCollection()
+                ->pluck('Postcode')
+                ->filter()
+                ->map(fn ($pc) => $toPcds((string) $pc))
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($pagePostcodes->isNotEmpty()) {
+                // If multiple ONSPD rows exist historically, take the latest by `dointr`.
+                // We do this by ordering desc and keeping the first seen per `pcds`.
+                $rows = DB::table('onspd')
+                    ->select(['pcds', 'lat', 'long', 'dointr'])
+                    ->whereIn('pcds', $pagePostcodes)
+                    ->orderBy('pcds')
+                    ->orderByDesc('dointr')
+                    ->get();
+
+                foreach ($rows as $row) {
+                    $pcds = (string) $row->pcds;
+                    if (!isset($coordsByPostcode[$pcds])) {
+                        $coordsByPostcode[$pcds] = [
+                            'lat' => $row->lat !== null ? (float) $row->lat : null,
+                            'lng' => $row->long !== null ? (float) $row->long : null,
+                        ];
+                    }
+                }
+            }
         }
 
         // =========================================================
@@ -260,7 +307,7 @@ class PropertyController extends Controller
         // 3) RENDER: pass both search results (if any) and all
         //    cached aggregates for charts to the Blade view
         // =========================================================
-        return view('property.search', compact('postcode', 'results', 'records'))
+        return view('property.search', compact('postcode', 'results', 'records', 'coordsByPostcode'))
             ->with(['sort' => $sort ?? 'Date', 'dir' => $dir ?? 'desc']);
     }
 
@@ -312,6 +359,46 @@ class PropertyController extends Controller
         if ($records->isEmpty()) {
             abort(404, 'Property not found');
         }
+
+        // -----------------------------------------------------
+        // ONSPD: Fetch centroid coordinates for this postcode
+        // Use indexed `pcds` lookup (avoid REPLACE/UPPER scans).
+        // -----------------------------------------------------
+        $toPcds = function (?string $pc) {
+            $pc = strtoupper(trim((string) $pc));
+            $pc = preg_replace('/\s+/', '', $pc);
+            if ($pc === '' || strlen($pc) < 5) {
+                return null;
+            }
+            return substr($pc, 0, -3) . ' ' . substr($pc, -3);
+        };
+
+        $pcds = $toPcds($postcode);
+        $mapLat = null;
+        $mapLong = null;
+
+        if ($pcds) {
+            $coordCacheKey = 'onspd:coords:pcds:' . $pcds;
+            $coords = Cache::remember($coordCacheKey, now()->addDays(90), function () use ($pcds) {
+                return DB::table('onspd')
+                    ->select(['lat', 'long'])
+                    ->where('pcds', $pcds)
+                    ->first();
+            });
+
+            if ($coords) {
+                $mapLat = $coords->lat !== null ? (float) $coords->lat : null;
+                $mapLong = $coords->long !== null ? (float) $coords->long : null;
+            }
+        }
+
+        // -----------------------------------------------------
+        // Deprivation (IMD) placeholders
+        // Resolved in controller in future; for now ensure Blade variables exist.
+        // -----------------------------------------------------
+        $depr = null;
+        $deprMsg = null;
+        $lsoaLink = null;
 
         // Build address (PAON, SAON, Street, Locality, Postcode, TownCity, District, County)
         $first = $records->first();
@@ -698,6 +785,12 @@ class PropertyController extends Controller
             'epcMatches' => $epcMatches,
             'propertyTypeCode' => $propertyTypeCode,
             'propertyTypeLabel' => $propertyTypeLabel,
+            'pcds' => $pcds,
+            'mapLat' => $mapLat,
+            'mapLong' => $mapLong,
+            'depr' => $depr,
+            'deprMsg' => $deprMsg,
+            'lsoaLink' => $lsoaLink,
         ]);
 
 

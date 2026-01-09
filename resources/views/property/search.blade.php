@@ -287,6 +287,11 @@
     @endif
 </div>
 
+{{-- Bulk postcode coordinates (from controller) to avoid per-row ONSPD lookups --}}
+<script>
+    window.propertyCoordsByPostcode = @json($coordsByPostcode ?? []);
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById('district-search');

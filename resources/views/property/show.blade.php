@@ -98,28 +98,7 @@
     </div>
 </div>
 
-    @php
-        // Map coordinates from postcode via ONSPD (postcode centroid)
-        $mapLat = null;
-        $mapLong = null;
-        $pcInputForMap = trim((string)($postcode ?? ''));
-
-        if ($pcInputForMap !== '') {
-            $pcKeyMap = strtoupper(str_replace(' ', '', $pcInputForMap));
-            $pcRowMap = DB::table('onspd')
-                ->select(['lat', 'long'])
-                ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKeyMap])
-                ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKeyMap])
-                ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKeyMap])
-                ->orderByDesc('dointr')
-                ->first();
-
-            if ($pcRowMap) {
-                $mapLat = $pcRowMap->lat;
-                $mapLong = $pcRowMap->long;
-            }
-        }
-    @endphp
+    {{-- Map coordinates from postcode via ONSPD (postcode centroid) are now set in the controller as $mapLat and $mapLong --}}
 
     @if($mapLat && $mapLong)
         <div class="mb-6">
@@ -377,108 +356,8 @@
         </div>
     </details>
 
-    {{-- Deprivation (IMD 2019) — collapsible panel resolved by postcode via ONSPD --}}
-    @php
-        $depr = null; $deprMsg = null; $lsoaLink = null;
-        $pcInput = trim((string)($postcode ?? ''));
-
-        // Helper to standardize UK postcode to ONS PCDS format (e.g., "WR5 3EU")
-        $stdPostcode = function($s) {
-            $s = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string)$s));
-            if ($s === '') return '';
-            if (strlen($s) <= 3) return $s; // not a real pc, but avoid crash
-            return substr($s, 0, -3) . ' ' . substr($s, -3);
-        };
-
-        if ($pcInput !== '') {
-            $pcStd = $stdPostcode($pcInput);           // e.g. "WR5 3EU"
-            $pcKey = strtoupper(str_replace(' ', '', $pcInput)); // legacy key
-            $cacheKey = 'imd:pcstd:' . ($pcStd ?: $pcKey);
-
-            $depr = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addDays(30), function () use ($pcStd, $pcKey) {
-                // Resolve postcode → LSOA21/LSOA11 using indexed PCDS first
-                $pcRow = null;
-                if (!empty($pcStd)) {
-                    $pcRow = DB::table('onspd')
-                        ->select(['lsoa21','lsoa11','lat','long'])
-                        ->where('pcds', $pcStd)
-                        ->where(function($q){ $q->whereNull('doterm')->orWhere('doterm', ''); })
-                        ->orderByDesc('dointr')
-                        ->first();
-                }
-                if (!$pcRow) {
-                    // Fallback to normalized matching if oddly formatted
-                    $pcRow = DB::table('onspd')
-                        ->select(['lsoa21','lsoa11','lat','long'])
-                        ->whereRaw("REPLACE(UPPER(pcds),' ','') = ?", [$pcKey])
-                        ->orWhereRaw("REPLACE(UPPER(pcd2),' ','') = ?", [$pcKey])
-                        ->orWhereRaw("REPLACE(UPPER(pcd),' ','')  = ?", [$pcKey])
-                        ->orderByDesc('dointr')
-                        ->first();
-                }
-
-                if (!$pcRow) return ['error' => 'Postcode not found in ONSPD.'];
-
-                $lsoa11 = $pcRow->lsoa11; $lsoa21 = $pcRow->lsoa21;
-
-                // Bridge 2011→2021 if needed
-                if (!$lsoa21 && $lsoa11) {
-                    $map = DB::table('lsoa_2011_to_2021')->select('LSOA21CD')->where('LSOA11CD', $lsoa11)->first();
-                    $lsoa21 = $map->LSOA21CD ?? null;
-                }
-
-                if (!$lsoa21) return ['error' => 'No LSOA mapping found for this postcode.'];
-                if (substr($lsoa21, 0, 1) !== 'E') return ['error' => 'This postcode resolves to a non‑English LSOA (IMD is England‑only).'];
-
-                $geo = DB::table('lsoa21_ruc_geo')->select('LSOA21NM','LAT','LONG')->where('LSOA21CD', $lsoa21)->first();
-
-                // Single query: get overall decile & rank via conditional aggregation on normalized cols
-                $imd = DB::table('imd2019 as t')
-                    ->selectRaw(
-                        "MAX(CASE WHEN t.measurement_norm='decile' AND t.iod_norm LIKE 'a. index of multiple deprivation%' THEN t.Value END) AS decile_val,\n" .
-                        "MAX(CASE WHEN t.measurement_norm='rank'   AND t.iod_norm LIKE 'a. index of multiple deprivation%' THEN t.Value END) AS rank_val"
-                    )
-                    ->whereRaw('t.FeatureCode = ?', [$lsoa11])
-                    ->first();
-
-                // Cached total LSOAs (max rank)
-                $totalRank = \Illuminate\Support\Facades\Cache::rememberForever('imd.total_rank', function () {
-                    $n = (int) (DB::table('imd2019')
-                        ->where('measurement_norm', 'rank')
-                        ->where('iod_norm', 'like', 'a. index of multiple deprivation%')
-                        ->max('Value') ?? 0);
-                    return $n ?: 32844;
-                });
-
-                $rank = (int)($imd->rank_val ?? 0);
-                $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $totalRank)) * 100))) : null;
-
-                return [
-                    'lsoa21' => $lsoa21,
-                    'lsoa11' => $lsoa11,
-                    'name'   => $geo->LSOA21NM ?? $lsoa21,
-                    'decile' => $imd->decile_val ?? null,
-                    'rank'   => $rank ?: null,
-                    'pct'    => $pct,
-                    'total'  => $totalRank,
-                    'lat'    => $geo->LAT ?? $pcRow->lat,
-                    'long'   => $geo->LONG ?? $pcRow->long,
-                ];
-            });
-
-            if (isset($depr['error'])) { $deprMsg = $depr['error']; $depr = null; }
-            if ($depr) { $lsoaLink = route('deprivation.show', $depr['lsoa21']); }
-        }
-
-        // Badge style for decile
-        $badgeClass = function($d){
-            $d = (int)($d ?? 0);
-            if ($d >= 8) return 'bg-emerald-100 text-emerald-800';
-            if ($d >= 5) return 'bg-amber-100 text-amber-800';
-            if ($d >= 1) return 'bg-rose-100 text-rose-800';
-            return 'bg-zinc-100 text-zinc-700';
-        };
-    @endphp
+    {{-- Deprivation data is now fully resolved in the controller --}}
+    {{-- Expected variables: $depr (array|null), $deprMsg (string|null), $lsoaLink (string|null) --}}
 
     <details class="my-8 group">
         <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
