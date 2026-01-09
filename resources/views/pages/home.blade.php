@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-10">
 
     <div class="text-sm text-center font-bold pb-10 text-rose-500">
-        Land registry update for November 2025 is currently running, property searches will not function until complete.  Will take about an hour.  Started 18:00
+        Land registry update for November 2025 is currently running, property searches will not function until complete.  Will take a couple of hours.  Started 18:00
     </div>
     {{-- Hero --}}
     <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
