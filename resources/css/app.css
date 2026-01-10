@@ -10,10 +10,21 @@
 
 .standard-button {
 
-  @apply rounded p-2  bg-lime-700 text-white text-xs hover:bg-lime-500 cursor-pointer;
+  @apply rounded p-2 bg-lime-700 text-white text-xs hover:bg-lime-500 cursor-pointer;
 
 }
 
+.inner-button {
+
+  @apply rounded p-2 bg-zinc-200 text-black text-xs hover:bg-zinc-300 cursor-pointer border border-zinc-400 font-semibold;
+
+}
+
+.inner-small-button {
+
+  @apply rounded p-1 bg-zinc-200 text-black text-xs hover:bg-zinc-300 cursor-pointer border border-zinc-400;
+
+}
 
 /* Wise1text Styles */
 

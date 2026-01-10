@@ -9,13 +9,10 @@
             <p class="mt-2 text-sm leading-6 text-gray-700">Note that the current year in the charts below is only a part year therefore more data to come before the year is complete.</p>  
             <p class="mt-2 text-sm leading-6 text-gray-700">All property data includes <span class="text-lime-600 font-bold">Category A</span> sales only, these are sales at market value on an arms length basis.  <span class="text-rose-500 font-bold">Category B</span> sales are not included as they are transactions for a variety of reasons not neccessairly at 
                 arms length therefore skew the data so are excluded. Read more about this <a href="/blog/category-a-vs-category-b-property-sales-what-the-land-registry-is-actually-telling-you" class="text-lime-600 hover:text-lime-700">Here.</a>All data provided from the Land Registry.</p>     
-            <div class="mt-2 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
-                <a href="/property/search" class="standard-button bg-lime-600! hover:bg-lime-700! inline-flex items-center gap-2">
-                    <span><i class="fa-solid fa-magnifying-glass-chart"></i> Property Search</span>
-                </a>
-                <a href="/property/outer-prime-london" class="standard-button">Outer Prime London</a>
-                <a href="/property/prime-central-london" class="standard-button">Prime Central London</a>
-                <a href="/property/ultra-prime-central-london" class="standard-button">Ultra Prime Central London</a>
+            <div class="mt-4 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
+                <a href="/property/outer-prime-london" class="inner-button">Outer Prime London</a>
+                <a href="/property/prime-central-london" class="inner-button">Prime Central London</a>
+                <a href="/property/ultra-prime-central-london" class="inner-button">Ultra Prime Central London</a>
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">

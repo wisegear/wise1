@@ -40,9 +40,9 @@
   </div>
 
   <div class="flex gap-4 mb-6">
-    <button type="button" data-section="change" class="standard-button filter-btn">12m Change</button>
-    <button type="button" data-section="types" class="standard-button filter-btn">Property Types</button>
-    <button type="button" data-section="movers" class="standard-button filter-btn">Movers / Losers</button>
+    <button type="button" data-section="change" class="inner-button filter-btn">12m Change</button>
+    <button type="button" data-section="types" class="inner-button filter-btn">Property Types</button>
+    <button type="button" data-section="movers" class="inner-button filter-btn">Movers / Losers</button>
   </div>
   <div id="section-change">
   <h2 class="text-xl font-semibold mt-8">12‑Month Change by Nation &amp; UK</h2>
@@ -219,13 +219,13 @@
   {{-- UK wide property-type chart (index 0) --}}
   @if(isset($typePriceSeries[0]))
     <div class="rounded-lg border bg-white p-4 mb-6">
-      <div class="mb-2 text-sm text-neutral-600">{{ $typePriceSeries[0]['name'] }}</div>
-      <div class="mb-2 flex flex-wrap gap-2 text-xs">
-        <button type="button" data-action="showAll" class="px-2 py-1 rounded border bg-lime-600 text-white">All</button>
-        <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Detached</button>
-        <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Semi-detached</button>
-        <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Terraced</button>
-        <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Flat</button>
+      <div class="mb-2 text-lg font-bold text-neutral-600">{{ $typePriceSeries[0]['name'] }}</div>
+      <div class="mb-4 flex flex-wrap gap-2 text-xs">
+        <button type="button" data-action="showAll" class="inner-small-button">All</button>
+        <button type="button" data-action="focus" data-type="Detached" class="inner-small-button">Detached</button>
+        <button type="button" data-action="focus" data-type="SemiDetached" class="inner-small-button">Semi-detached</button>
+        <button type="button" data-action="focus" data-type="Terraced" class="inner-small-button">Terraced</button>
+        <button type="button" data-action="focus" data-type="Flat" class="inner-small-button">Flat</button>
       </div>
       <div class="h-64">
         <canvas id="typePriceChart0" aria-label="{{ $typePriceSeries[0]['name'] }} property type prices" class="w-full h-full"></canvas>
@@ -238,13 +238,13 @@
     @foreach($typePriceSeries as $i => $s)
       @continue($i === 0)
       <div class="rounded-lg border bg-white p-4">
-        <div class="mb-2 text-sm text-neutral-600">{{ $s['name'] }}</div>
-        <div class="mb-2 flex flex-wrap gap-2 text-xs">
-          <button type="button" data-action="showAll" class="px-2 py-1 rounded border bg-lime-600 text-white">All</button>
-          <button type="button" data-action="focus" data-type="Detached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Detached</button>
-          <button type="button" data-action="focus" data-type="SemiDetached" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Semi-detached</button>
-          <button type="button" data-action="focus" data-type="Terraced" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Terraced</button>
-          <button type="button" data-action="focus" data-type="Flat" class="px-2 py-1 rounded border bg-lime-600 text-white cursor-pointer">Flat</button>
+        <div class="mb-2 text-lg font-bold text-neutral-600">{{ $s['name'] }}</div>
+        <div class="mb-4 flex flex-wrap gap-2 text-xs">
+          <button type="button" data-action="showAll" class="inner-small-button">All</button>
+          <button type="button" data-action="focus" data-type="Detached" class="inner-small-button">Detached</button>
+          <button type="button" data-action="focus" data-type="SemiDetached" class="inner-small-button">Semi-detached</button>
+          <button type="button" data-action="focus" data-type="Terraced" class="inner-small-button">Terraced</button>
+          <button type="button" data-action="focus" data-type="Flat" class="inner-small-button">Flat</button>
         </div>
         <div class="h-56">
           <canvas id="typePriceChart{{ $i }}" aria-label="{{ $s['name'] }} property type prices" class="w-full h-full"></canvas>
@@ -303,7 +303,7 @@
               responsive: true,
               maintainAspectRatio: false,
               scales: {
-                y: { title: { display: true, text: '£' }, ticks: { callback: (v) => '£' + new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(v) } },
+                y: { title: { display: false }, ticks: { callback: (v) => '£' + new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(v) } },
                 x: {
                   ticks: {
                     callback: function(value){
