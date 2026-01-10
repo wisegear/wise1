@@ -41,21 +41,45 @@
 
 {{-- Hero / summary card --}}
 <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
-  <div class="max-w-3xl">
-    <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
-      Northern Ireland Deprivation (NIMDM 2017)
-    </h1>
-    <p class="mt-2 text-sm leading-6 text-gray-700">
-      Small Area <strong>{{ $sa }}</strong>
-      @if(!empty($row->SOA2001name) || !empty($row->LGD2014name))
-        — {{ $row->SOA2001name ?? '—' }}, {{ $row->LGD2014name ?? '—' }}
-      @endif
-      .
-      Rankings are relative across Northern Ireland
-      (1 = most deprived, {{ number_format($totalDisplay) }} = least).
-    </p>
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 w-full">
+    <div class="max-w-3xl">
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+        Northern Ireland Index of Deprivation
+      </h1>
+            <div class="mt-1">
+                <span class="inline-flex items-center rounded-full bg-zinc-200 text-zinc-700 text-xs px-2 py-1 ring-1 ring-inset ring-zinc-200 mb-2">
+                    Dataset: NIDM 2017
+                </span>
+            </div>
+      <p class="mt-2 text-sm leading-6 text-gray-700">
+        Small Area <strong>{{ $sa }}</strong>
+        @if(!empty($row->SOA2001name) || !empty($row->LGD2014name))
+          — {{ $row->SOA2001name ?? '—' }}, {{ $row->LGD2014name ?? '—' }}
+        @endif
+        .
+        Rankings are relative across Northern Ireland
+        (1 = most deprived, {{ number_format($totalDisplay) }} = least).
+      </p>
+
+      <p class="text-xs text-zinc-600 mt-4">
+        Decile colours:
+        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-300 text-zinc-900">1–3</span>
+        higher deprivation ·
+        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-orange-300 text-zinc-900">4–7</span>
+        mid ·
+        <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-emerald-300 text-zinc-900">8–10</span>
+        lower deprivation.
+      </p>
+    </div>
+
+    <div class="mt-4 md:mt-0 md:ml-8 flex-shrink-0">
+      <img
+        src="{{ asset('assets/images/site/deprivation2.svg') }}"
+        alt="Deprivation illustration"
+        class="h-24 md:h-40 w-auto opacity-90"
+      >
+    </div>
   </div>
-  {{-- NIMDM doesn't provide a sample postcode, so we skip that block --}}
 </section>
 
 {{-- Map full width --}}
@@ -163,7 +187,11 @@
 
 {{-- Domain breakdown --}}
 <section class="rounded border border-gray-200 bg-white/80 p-6 shadow-sm">
-  <h3 class="text-base font-semibold text-gray-900 mb-4">Domain breakdown (ranks)</h3>
+  <h3 class="text-base font-semibold text-gray-900 mb-4">Domain breakdown         Small Area {{ $sa }}
+        @if(!empty($row->SOA2001name) || !empty($row->LGD2014name))
+          — {{ $row->SOA2001name ?? '—' }}, {{ $row->LGD2014name ?? '—' }}
+        @endif
+        </h3>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @foreach($domains as $d)
