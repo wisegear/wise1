@@ -3,34 +3,46 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
 
-    {{-- Hero / summary card --}}
+    {{-- PREPARE DATA: Extract series data --}}
     @php
         $hp = $seriesData['LPMVTVX'] ?? null;   // House purchase
         $re = $seriesData['LPMB4B3'] ?? null;   // Remortgaging
         $tt = $seriesData['LPMB3C8'] ?? null;   // Total approvals
         $os = $seriesData['LPMB4B4'] ?? null;   // Other secured
 
+        // Helper function to format dates consistently
         $formatMonth = function($d) {
-            try { return \Illuminate\Support\Carbon::parse($d)->isoFormat('MMM YYYY'); }
-            catch (\Throwable $e) { return (string) $d; }
+            try {
+                return \Illuminate\Support\Carbon::parse($d)->isoFormat('MMM YYYY');
+            } catch (\Throwable $e) {
+                return (string) $d;
+            }
         };
     @endphp
 
+    {{-- HERO SECTION: Latest mortgage approvals statistics --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-3xl">
-            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Mortgage Approvals</h1>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+                Mortgage Approvals
+            </h1>
+            
+            {{-- Display latest month --}}
             @if(!empty($latestPeriod))
                 <p class="mt-2 text-sm leading-6 text-gray-700">
                     Latest month: <span class="font-medium">{{ $formatMonth($latestPeriod) }}</span>
                 </p>
             @endif
 
+            {{-- Grid showing all approval categories with month-on-month changes --}}
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+                {{-- House purchase approvals --}}
                 <div>
                     <div class="text-xs uppercase tracking-wide text-gray-500">House purchase</div>
                     <div class="mt-1 text-lg font-semibold">
                         @if($hp && $hp['latest'])
                             {{ number_format((int) $hp['latest']->value) }}
+                            {{-- Show month-on-month change with color coding --}}
                             @if(!is_null($hp['delta']))
                                 <span class="{{ $hp['delta'] >= 0 ? 'text-emerald-700' : 'text-rose-700' }} text-sm font-medium">
                                     ({{ $hp['delta'] >= 0 ? '+' : '' }}{{ number_format($hp['delta']) }})
@@ -41,6 +53,8 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Remortgaging approvals --}}
                 <div>
                     <div class="text-xs uppercase tracking-wide text-gray-500">Remortgaging</div>
                     <div class="mt-1 text-lg font-semibold">
@@ -56,6 +70,8 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Other secured lending --}}
                 <div>
                     <div class="text-xs uppercase tracking-wide text-gray-500">Other secured</div>
                     <div class="mt-1 text-lg font-semibold">
@@ -71,6 +87,8 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Total approvals --}}
                 <div>
                     <div class="text-xs uppercase tracking-wide text-gray-500">Total approvals</div>
                     <div class="mt-1 text-lg font-semibold">
@@ -87,16 +105,25 @@
                     </div>
                 </div>
             </div>
-                <p class="mt-4 text-sm text-zinc-500">Other secured - This refers to anything not a purchase or remortgage.  These could be further advances from the same lender, 
-                    a 2nd charge loan, debt consolidation, internal refinancing with the same lender or something else. </p>
+
+            {{-- Explanation of "Other secured" category --}}
+            <p class="mt-4 text-sm text-zinc-500">
+                Other secured - This refers to anything not a purchase or remortgage. These could be further advances from the same lender, 
+                a 2nd charge loan, debt consolidation, internal refinancing with the same lender or something else.
+            </p>
         </div>
+
+        {{-- Hero image --}}
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/approvals.svg') }}" alt="Mortgage approvals" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/approvals.svg') }}" 
+                 alt="Mortgage approvals" 
+                 class="w-64 h-auto">
         </div>
     </section>
 
-    {{-- Combined chart --}}
+    {{-- PREPARE CHART DATA --}}
     @php
+        // Main chart data (all time periods)
         $labels     = $tt['labels'] ?? collect();
         $dataTotal  = $tt['values'] ?? collect();
         $dataHP     = $hp['values'] ?? collect();
@@ -107,15 +134,20 @@
         $labelsHP = $hp['labels'] ?? collect();
         $labelsRe = $re['labels'] ?? collect();
 
-        // Always show the most recent 24 months (last two years) per series
+        // Extract last 24 months for detailed charts
         $hpLabels24 = collect($labelsHP)->take(-24)->values();
         $hpData24   = collect($dataHP)->take(-24)->values();
         $reLabels24 = collect($labelsRe)->take(-24)->values();
         $reData24   = collect($dataRe)->take(-24)->values();
     @endphp
+
+    {{-- MAIN CHART: Combined approvals over time --}}
     <section class="mb-6">
         <div class="border p-4 bg-white rounded-lg shadow">
-            <div class="mb-2 text-sm font-medium text-gray-700">Approvals over time</div>
+            <div class="mb-2 text-sm font-medium text-gray-700">
+                Approvals over time
+            </div>
+            
             @if(($labels instanceof \Illuminate\Support\Collection ? $labels->isEmpty() : empty($labels)))
                 <p class="text-sm text-gray-500">No data available yet.</p>
             @else
@@ -126,10 +158,14 @@
         </div>
     </section>
 
-    {{-- House purchase & Remortgaging: last 24 months --}}
+    {{-- 24-MONTH DETAILED CHARTS: House purchase & Remortgaging side-by-side --}}
     <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {{-- House purchase 24-month chart --}}
         <div class="border p-4 bg-white rounded-lg shadow">
-            <div class="mb-2 text-sm font-medium text-gray-700">Mortgage Aprovals over the last 24 months</div>
+            <div class="mb-2 text-sm font-medium text-gray-700">
+                Mortgage Approvals over the last 24 months
+            </div>
+            
             @if(($hpLabels24 instanceof \Illuminate\Support\Collection ? $hpLabels24->isEmpty() : empty($hpLabels24)))
                 <p class="text-sm text-gray-500">No recent data available.</p>
             @else
@@ -138,8 +174,13 @@
                 </div>
             @endif
         </div>
+
+        {{-- Remortgaging 24-month chart --}}
         <div class="border p-4 bg-white rounded-lg shadow">
-            <div class="mb-2 text-sm font-medium text-gray-700">Remortgaging over the last 24 months</div>
+            <div class="mb-2 text-sm font-medium text-gray-700">
+                Remortgaging over the last 24 months
+            </div>
+            
             @if(($reLabels24 instanceof \Illuminate\Support\Collection ? $reLabels24->isEmpty() : empty($reLabels24)))
                 <p class="text-sm text-gray-500">No recent data available.</p>
             @else
@@ -150,8 +191,8 @@
         </div>
     </section>
 
-    {{-- Yearly totals (all years) --}}
-    <div class="overflow-hidden bg-white shadow-sm">
+    {{-- YEARLY TOTALS TABLE: Historical data by year --}}
+    <div class="overflow-hidden bg-white shadow-sm rounded-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 text-left text-gray-600">
@@ -163,10 +204,13 @@
                         <th class="border-b border-gray-200 px-4 py-2">Total approvals</th>
                     </tr>
                 </thead>
+                
                 <tbody>
                     @forelse(($yearTable ?? []) as $y)
                         <tr class="hover:bg-gray-50">
-                            <td class="border-b border-gray-100 px-4 py-2 font-medium">{{ $y['year'] }}</td>
+                            <td class="border-b border-gray-100 px-4 py-2 font-medium">
+                                {{ $y['year'] }}
+                            </td>
                             <td class="border-b border-gray-100 px-4 py-2">
                                 {{ isset($y['LPMVTVX']) ? number_format((int)$y['LPMVTVX']) : '—' }}
                             </td>
@@ -182,38 +226,52 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">No yearly data to display.</td>
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                                No yearly data to display.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
-
 </div>
 
-{{-- Chart.js --}}
+{{-- Chart.js library for rendering mortgage approval charts --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 (function() {
+    // Data from Laravel controller passed as JSON
     const labels = @json($labels ?? []);
     const total  = @json($dataTotal ?? []);
     const hp     = @json($dataHP ?? []);
     const re     = @json($dataRe ?? []);
     const other  = @json($dataOther ?? []);
 
-    // Last 24 months (per series)
+    // Last 24 months data (per series)
     const hpLabels24 = @json($hpLabels24 ?? []);
     const hp24       = @json($hpData24 ?? []);
     const reLabels24 = @json($reLabels24 ?? []);
     const re24       = @json($reData24 ?? []);
 
+    // === MAIN COMBINED CHART (All time periods) ===
     const el = document.getElementById('approvalsChart');
     if (!el) return;
+    
     const ctx = el.getContext('2d');
-    if (window._approvalsChart) { window._approvalsChart.destroy(); }
-    if (el.parentElement) { el.height = el.parentElement.clientHeight; }
+    
+    // Destroy existing chart instance if it exists (prevents memory leaks)
+    if (window._approvalsChart) {
+        window._approvalsChart.destroy();
+    }
+    
+    // Set canvas height to match parent container
+    if (el.parentElement) {
+        el.height = el.parentElement.clientHeight;
+    }
 
+    // Create main combined chart
     window._approvalsChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -226,7 +284,7 @@
                     backgroundColor: 'rgba(54, 162, 235, 0.15)',
                     borderWidth: 2,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 0,      // No points on main chart
                     fill: false
                 },
                 {
@@ -236,7 +294,7 @@
                     backgroundColor: 'rgba(16, 185, 129, 0.10)',
                     borderWidth: 1.5,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 0,      // No points on main chart
                     fill: false
                 },
                 {
@@ -246,7 +304,7 @@
                     backgroundColor: 'rgba(139, 92, 246, 0.10)',
                     borderWidth: 1.5,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 0,      // No points on main chart
                     fill: false
                 },
                 {
@@ -256,7 +314,7 @@
                     backgroundColor: 'rgba(234, 179, 8, 0.10)',
                     borderWidth: 1.5,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 0,      // No points on main chart
                     fill: false
                 },
             ]
@@ -267,8 +325,14 @@
             maintainAspectRatio: false,
             animation: false,
             plugins: {
-                legend: { display: true, position: 'bottom' },
-                decimation: { enabled: true, algorithm: 'min-max' },
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                decimation: {
+                    enabled: true,
+                    algorithm: 'min-max'
+                },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
@@ -288,10 +352,10 @@
                         autoSkip: true,
                         includeBounds: true,
                         maxTicksLimit: 14,
+                        // Show only year on x-axis (labels are "YYYY-MM")
                         callback: function(value, index) {
                             const scale = this;
                             const raw = (scale.getLabelForValue ? scale.getLabelForValue(value) : (labels[index] ?? value));
-                            // labels are "YYYY-MM"; show year only on axis
                             return String(raw).slice(0, 4);
                         }
                     }
@@ -310,16 +374,32 @@
         }
     });
 
-    // House purchase (24 months)
+    // === HOUSE PURCHASE 24-MONTH CHART ===
     const hpEl = document.getElementById('hpChart');
     if (hpEl && hpLabels24.length && hp24.length) {
         const hpCtx = hpEl.getContext('2d');
-        if (window._hpChart) { window._hpChart.destroy(); }
-        if (hpEl.parentElement) { hpEl.height = hpEl.parentElement.clientHeight; }
+        
+        if (window._hpChart) {
+            window._hpChart.destroy();
+        }
+        
+        if (hpEl.parentElement) {
+            hpEl.height = hpEl.parentElement.clientHeight;
+        }
+
+        // Format labels for display: "Jan 24", "Feb 24", etc.
+        const hpFormattedLabels = hpLabels24.map(label => {
+            const [year, month] = String(label).split('-');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = parseInt(month, 10) - 1;
+            const shortYear = year ? year.slice(-2) : '';
+            return monthNames[monthIndex] ? `${monthNames[monthIndex]} ${shortYear}` : label;
+        });
+
         window._hpChart = new Chart(hpCtx, {
             type: 'line',
             data: {
-                labels: hpLabels24,
+                labels: hpFormattedLabels,
                 datasets: [{
                     label: 'House purchase',
                     data: hp24,
@@ -327,7 +407,11 @@
                     backgroundColor: 'rgba(16, 185, 129, 0.10)',
                     borderWidth: 2,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 3,              // Show points on 24-month chart
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: 'rgb(16, 185, 129)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
                     fill: false
                 }]
             },
@@ -335,25 +419,57 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
-                plugins: { legend: { display: false }, decimation: { enabled: true, algorithm: 'min-max' } },
+                plugins: {
+                    legend: { display: false },
+                    decimation: { enabled: true, algorithm: 'min-max' }
+                },
                 scales: {
-                    x: { ticks: { autoSkip: true, maxTicksLimit: 12 } },
-                    y: { beginAtZero: true, grace: '5%', ticks: { callback: (v) => Number(v).toLocaleString() } }
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,     // Angle labels for better fit
+                            minRotation: 45,
+                            maxTicksLimit: 12    // Show max 12 labels
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grace: '5%',
+                        ticks: {
+                            callback: (v) => Number(v).toLocaleString()
+                        }
+                    }
                 }
             }
         });
     }
 
-    // Remortgaging (24 months)
+    // === REMORTGAGING 24-MONTH CHART ===
     const reEl = document.getElementById('reChart');
     if (reEl && reLabels24.length && re24.length) {
         const reCtx = reEl.getContext('2d');
-        if (window._reChart) { window._reChart.destroy(); }
-        if (reEl.parentElement) { reEl.height = reEl.parentElement.clientHeight; }
+        
+        if (window._reChart) {
+            window._reChart.destroy();
+        }
+        
+        if (reEl.parentElement) {
+            reEl.height = reEl.parentElement.clientHeight;
+        }
+
+        // Format labels for display: "Jan 24", "Feb 24", etc.
+        const reFormattedLabels = reLabels24.map(label => {
+            const [year, month] = String(label).split('-');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthIndex = parseInt(month, 10) - 1;
+            const shortYear = year ? year.slice(-2) : '';
+            return monthNames[monthIndex] ? `${monthNames[monthIndex]} ${shortYear}` : label;
+        });
+
         window._reChart = new Chart(reCtx, {
             type: 'line',
             data: {
-                labels: reLabels24,
+                labels: reFormattedLabels,
                 datasets: [{
                     label: 'Remortgaging',
                     data: re24,
@@ -361,7 +477,11 @@
                     backgroundColor: 'rgba(139, 92, 246, 0.10)',
                     borderWidth: 2,
                     tension: 0.1,
-                    pointRadius: 0,
+                    pointRadius: 3,              // Show points on 24-month chart
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: 'rgb(139, 92, 246)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
                     fill: false
                 }]
             },
@@ -369,10 +489,26 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: false,
-                plugins: { legend: { display: false }, decimation: { enabled: true, algorithm: 'min-max' } },
+                plugins: {
+                    legend: { display: false },
+                    decimation: { enabled: true, algorithm: 'min-max' }
+                },
                 scales: {
-                    x: { ticks: { autoSkip: true, maxTicksLimit: 12 } },
-                    y: { beginAtZero: true, grace: '5%', ticks: { callback: (v) => Number(v).toLocaleString() } }
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,     // Angle labels for better fit
+                            minRotation: 45,
+                            maxTicksLimit: 12    // Show max 12 labels
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grace: '5%',
+                        ticks: {
+                            callback: (v) => Number(v).toLocaleString()
+                        }
+                    }
                 }
             }
         });
