@@ -23,7 +23,7 @@
 
     {{-- HERO SECTION --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900">Market Stress Dashboard</h1>
         <p class="text-sm text-zinc-700 mt-2">
             Overview of key UK economic indicators that influence the housing market: borrowing costs, affordability,
@@ -31,7 +31,7 @@
             time, the property market historically weakens.
         </p>
         <p class="text-sm mt-2 text-zinc-700">More information on calculations here:  <a class="text-lime-700 text-sm hover:text-lime-500" href="/blog/introducing-the-property-market-economic-indicators-dashboard"> Blog Post</a></p>
-
+        <p class="text-sm mt-2 text-zinc-700">Note that updates can be sporadic, some are monthly, others quarterly, they may be one period behind and the data can still take some time beyond the month or quarter end before being available.</p>
         </div>
 
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
