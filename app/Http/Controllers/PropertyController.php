@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\LandRegistry;
 use Illuminate\Support\Facades\Cache;
 use App\Services\EpcMatcher;
@@ -393,12 +394,333 @@ class PropertyController extends Controller
         }
 
         // -----------------------------------------------------
-        // Deprivation (IMD) placeholders
-        // Resolved in controller in future; for now ensure Blade variables exist.
+        // Deprivation (IMD) — resolve via ONSPD → LSOA (England/Wales)
         // -----------------------------------------------------
         $depr = null;
         $deprMsg = null;
         $lsoaLink = null;
+
+        // Helper: check if a DB table exists
+        $tableExists = function (string $table): bool {
+            return Schema::hasTable($table);
+        };
+
+        // Helper: check if a column exists on a table
+        $hasColumn = function (string $table, string $column): bool {
+            return Schema::hasColumn($table, $column);
+        };
+
+        // Helper: fetch IMD row for an LSOA from whichever table/column exists
+        $resolveImdForLsoa = function (string $lsoa) use ($tableExists, $hasColumn) {
+            // Candidate tables (adjust if yours differs)
+            $tables = [
+                'imd2025',   // England (IoD/IMD 2025)
+                'wimd2019',  // Wales (WIMD 2019)
+            ];
+
+            // Candidate key columns
+            $keyCols = [
+                // England IMD 2025
+                'LSOA_Code_2021',
+
+                // Wales WIMD 2019
+                'LSOA_code',
+
+                // Common variants
+                'lsoa21cd', 'lsoa21', 'LSOA21CD',
+                'lsoa11cd', 'lsoa11', 'LSOA11CD',
+                'lsoa_code', 'lsoa', 'LSOA',
+            ];
+
+            // Candidate data columns (we'll also auto-detect below from information_schema)
+            $rankCols   = [
+                // common
+                'Index_of_Multiple_Deprivation_Rank',
+                'rank', 'Rank', 'imd_rank', 'IMD_RANK', 'wimd_rank', 'WIMD_RANK',
+                // likely overall fields
+                'Overall_Rank', 'overall_rank', 'IMD_Rank', 'IMD_rank', 'WIMD_Rank', 'WIMD_rank',
+                // versioned fields
+                'IMD_Rank_2025', 'IMD_rank_2025', 'Rank_2025',
+                'WIMD_Rank_2019', 'WIMD_rank_2019', 'Rank_2019',
+            ];
+            $decileCols = [
+                'Index_of_Multiple_Deprivation_Decile',
+                'decile', 'Decile', 'imd_decile', 'IMD_DECILE', 'wimd_decile', 'WIMD_DECILE',
+                'Overall_Decile', 'overall_decile', 'IMD_Decile', 'IMD_decile', 'WIMD_Decile', 'WIMD_decile',
+                'IMD_Decile_2025', 'IMD_decile_2025', 'Decile_2025',
+                'WIMD_Decile_2019', 'WIMD_decile_2019', 'Decile_2019',
+            ];
+            $nameCols   = ['LSOA_Name_2021', 'name', 'lsoa_name', 'lsoa21nm', 'LSOA21NM', 'lsoa11nm', 'LSOA11NM', 'LSOA_Name', 'LSOA_name'];
+
+            foreach ($tables as $table) {
+                if (!$tableExists($table)) {
+                    continue;
+                }
+
+                // Cache column list for this table so we can auto-detect rank/decile/name columns
+                $cols = Cache::remember('depr:cols:' . $table, now()->addDays(90), function () use ($table) {
+                    try {
+                        $dbName = DB::getDatabaseName();
+                        return DB::table('information_schema.columns')
+                            ->where('table_schema', $dbName)
+                            ->where('table_name', $table)
+                            ->orderBy('ordinal_position')
+                            ->pluck('column_name')
+                            ->map(fn ($c) => (string) $c)
+                            ->toArray();
+                    } catch (\Throwable $e) {
+                        return [];
+                    }
+                });
+
+                $pickCol = function (array $preferred) use ($cols) {
+                    if (empty($cols)) return null;
+                    // 1) exact match priority
+                    foreach ($preferred as $p) {
+                        if (in_array($p, $cols, true)) return $p;
+                    }
+                    // 2) case-insensitive exact match
+                    $lc = array_map('strtolower', $cols);
+                    foreach ($preferred as $p) {
+                        $idx = array_search(strtolower($p), $lc, true);
+                        if ($idx !== false) return $cols[$idx];
+                    }
+                    // 3) contains match (try to find an overall/imd/wimd rank/decile)
+                    foreach ($preferred as $p) {
+                        $needle = strtolower($p);
+                        foreach ($cols as $c) {
+                            if (str_contains(strtolower($c), $needle)) {
+                                return $c;
+                            }
+                        }
+                    }
+                    return null;
+                };
+
+                // Prefer "overall" columns first if present, then fall back
+                $autoRankCol = $pickCol([
+                    'Index_of_Multiple_Deprivation_Rank',
+                    'overall_rank', 'Overall_Rank',
+                    'imd_rank', 'IMD_RANK',
+                    'wimd_rank', 'WIMD_RANK',
+                    'rank', 'Rank'
+                ]);
+                $autoDecileCol = $pickCol([
+                    'Index_of_Multiple_Deprivation_Decile',
+                    'overall_decile', 'Overall_Decile',
+                    'imd_decile', 'IMD_DECILE',
+                    'wimd_decile', 'WIMD_DECILE',
+                    'decile', 'Decile'
+                ]);
+                $autoNameCol = $pickCol(['LSOA_Name_2021', 'lsoa_name', 'LSOA_Name', 'lsoa21nm', 'LSOA21NM', 'name']);
+
+                // Prefer explicit mappings for known tables
+                $forced = null;
+                if ($table === 'imd2025') {
+                    $forced = [
+                        'key' => 'LSOA_Code_2021',
+                        'name' => 'LSOA_Name_2021',
+                        'rank' => 'Index_of_Multiple_Deprivation_Rank',
+                        'decile' => 'Index_of_Multiple_Deprivation_Decile',
+                    ];
+                } elseif ($table === 'wimd2019') {
+                    $forced = [
+                        'key' => 'LSOA_code',
+                        'name' => 'LSOA_name',
+                        // WIMD dataset provided here includes an overall field `WIMD_2019`.
+                        // We treat it as an overall rank and derive decile from rank/total.
+                        'rank' => 'WIMD_2019',
+                        'decile' => null,
+                    ];
+                }
+
+                $keyCol = null;
+                if ($forced && $hasColumn($table, $forced['key'])) {
+                    $keyCol = $forced['key'];
+                } else {
+                    foreach ($keyCols as $c) {
+                        if ($hasColumn($table, $c)) {
+                            $keyCol = $c;
+                            break;
+                        }
+                    }
+                }
+
+                if (!$keyCol) {
+                    continue;
+                }
+
+                // Build a select list based on what actually exists
+                $select = [$keyCol];
+
+                // If we have explicit mappings, set them up first
+                $rankCol = null;
+                $decileCol = null;
+                $nameCol = null;
+
+                if ($forced) {
+                    if (!empty($forced['rank']) && $hasColumn($table, $forced['rank'])) {
+                        $rankCol = $forced['rank'];
+                        $select[] = $rankCol;
+                    }
+                    if (!empty($forced['decile']) && $hasColumn($table, $forced['decile'])) {
+                        $decileCol = $forced['decile'];
+                        $select[] = $decileCol;
+                    }
+                    if (!empty($forced['name']) && $hasColumn($table, $forced['name'])) {
+                        $nameCol = $forced['name'];
+                        $select[] = $nameCol;
+                    }
+                }
+
+                // If not forced, use auto-detection / fallbacks
+                if (!$rankCol) {
+                    $rankCol = $autoRankCol;
+                    if (!$rankCol) {
+                        foreach ($rankCols as $c) {
+                            if ($hasColumn($table, $c)) {
+                                $rankCol = $c;
+                                break;
+                            }
+                        }
+                    }
+                    if ($rankCol) {
+                        $select[] = $rankCol;
+                    }
+                }
+
+                if (!$decileCol) {
+                    $decileCol = $autoDecileCol;
+                    if (!$decileCol) {
+                        foreach ($decileCols as $c) {
+                            if ($hasColumn($table, $c)) {
+                                $decileCol = $c;
+                                break;
+                            }
+                        }
+                    }
+                    if ($decileCol) {
+                        $select[] = $decileCol;
+                    }
+                }
+
+                if (!$nameCol) {
+                    $nameCol = $autoNameCol;
+                    if (!$nameCol) {
+                        foreach ($nameCols as $c) {
+                            if ($hasColumn($table, $c)) {
+                                $nameCol = $c;
+                                break;
+                            }
+                        }
+                    }
+                    if ($nameCol) {
+                        $select[] = $nameCol;
+                    }
+                }
+
+                $row = DB::table($table)
+                    ->select($select)
+                    ->where($keyCol, trim((string) $lsoa))
+                    ->first();
+
+                if ($row) {
+                    // Total rows (for % calc) — cache it because COUNT(*) can be expensive
+                    $total = Cache::remember('imd:total:' . $table, now()->addDays(90), function () use ($table) {
+                        return (int) DB::table($table)->count();
+                    });
+
+                    $rank = $rankCol ? (int) ($row->{$rankCol} ?? 0) : 0;
+                    $decile = $decileCol ? (int) ($row->{$decileCol} ?? 0) : 0;
+
+                    // For Wales (wimd2019), decile is not present in this dataset — derive from rank/total
+                    if ($table === 'wimd2019' && $decile === 0 && $rank > 0 && $total > 0) {
+                        $decile = (int) max(1, min(10, ceil(($rank / $total) * 10)));
+                    }
+
+                    // If decile is missing but rank exists, derive decile from rank/total (fallback for other tables)
+                    if ($decile === 0 && $rank > 0 && $total > 0) {
+                        $decile = (int) max(1, min(10, ceil(($rank / $total) * 10)));
+                    }
+
+                    $pct = null;
+                    if ($rank > 0 && $total > 0) {
+                        $pct = round(($rank / $total) * 100, 1);
+                    }
+
+                    $name = $nameCol ? (string) ($row->{$nameCol} ?? '') : '';
+
+                    return [
+                        'table' => $table,
+                        'rank' => $rank ?: null,
+                        'decile' => $decile ?: null,
+                        'name' => $name !== '' ? $name : null,
+                        'total' => $total ?: null,
+                        'pct' => $pct,
+                    ];
+                }
+            }
+
+            return null;
+        };
+
+        // Resolve the postcode to an LSOA via ONSPD.
+        // Show deprivation if it looks like an English (E01...) or Welsh (W01...) LSOA code.
+        if ($pcds) {
+            $onspdRow = Cache::remember('onspd:row:pcds:' . $pcds, now()->addDays(90), function () use ($pcds) {
+                return DB::table('onspd')->where('pcds', $pcds)->first();
+            });
+
+            if (!$onspdRow) {
+                $deprMsg = 'Unable to resolve this postcode to ONSPD.';
+            } else {
+                $lsoa = $onspdRow->lsoa21 ?? $onspdRow->lsoa21cd ?? $onspdRow->LSOA21CD ?? null;
+                if (!$lsoa) {
+                    $lsoa = $onspdRow->lsoa11 ?? $onspdRow->lsoa11cd ?? $onspdRow->LSOA11CD ?? null;
+                }
+
+                // England LSOAs typically start with E01; Wales typically start with W01
+                $lsoa = $lsoa ? trim((string) $lsoa) : null;
+                $isEngland = $lsoa && str_starts_with($lsoa, 'E01');
+                $isWales   = $lsoa && str_starts_with($lsoa, 'W01');
+
+                if (!$lsoa || (!$isEngland && !$isWales)) {
+                    $deprMsg = 'Unable to resolve this postcode to an English or Welsh LSOA.';
+                } else {
+                    $tableHint = $isEngland ? 'imd2025' : 'wimd2019';
+                    $imd = Cache::remember('depr:lsoa:' . $tableHint . ':' . $lsoa, now()->addDays(90), function () use ($resolveImdForLsoa, $lsoa) {
+                        return $resolveImdForLsoa((string) $lsoa);
+                    });
+
+                    if (!$imd) {
+                        $deprMsg = 'LSOA found, but no deprivation record could be located in the database.';
+                    } else {
+                        $depr = [
+                            'lsoa21' => (string) $lsoa,
+                            'name' => $imd['name'] ?? null,
+                            'rank' => $imd['rank'] ?? null,
+                            'decile' => $imd['decile'] ?? null,
+                            'pct' => $imd['pct'] ?? null,
+                            'total' => $imd['total'] ?? null,
+                            // Reuse postcode centroid for map link
+                            'lat' => $mapLat,
+                            'long' => $mapLong,
+                        ];
+
+                    // Link to the deprivation detail page
+                    if ($isEngland) {
+                        $lsoaLink = route('deprivation.show', ['lsoa21cd' => (string) $lsoa]);
+                    } elseif ($isWales) {
+                        $lsoaLink = route('deprivation.wales.show', ['lsoa' => (string) $lsoa]);
+                    } else {
+                        $lsoaLink = null;
+                    }
+                    }
+                }
+            }
+        } else {
+            $deprMsg = 'Postcode missing; cannot resolve deprivation.';
+        }
 
         // Build address (PAON, SAON, Street, Locality, Postcode, TownCity, District, County)
         $first = $records->first();

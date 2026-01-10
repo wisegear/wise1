@@ -358,6 +358,17 @@
 
     {{-- Deprivation data is now fully resolved in the controller --}}
     {{-- Expected variables: $depr (array|null), $deprMsg (string|null), $lsoaLink (string|null) --}}
+    @php
+        $badgeClass = function ($decile) {
+            $d = (int) ($decile ?? 0);
+            if ($d <= 0) return 'bg-zinc-100 text-zinc-800 border-zinc-200';
+            if ($d <= 2) return 'bg-rose-100 text-rose-800 border-rose-200';
+            if ($d <= 4) return 'bg-amber-100 text-amber-800 border-amber-200';
+            if ($d <= 6) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            if ($d <= 8) return 'bg-lime-100 text-lime-800 border-lime-200';
+            return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        };
+    @endphp
 
     <details class="my-8 group">
         <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
