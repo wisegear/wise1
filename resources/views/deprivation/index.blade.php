@@ -7,7 +7,7 @@
   {{-- Hero / summary card --}}
   <section class="relative overflow-hidden rounded border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
     <div class="max-w-4xl">
-      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Deprivation Index</h1>
+      <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-600">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">
         Quick view of the most and least deprived areas using <strong>IMD 2025</strong> (England), <strong>SIMD 2020</strong> (Scotland), <strong>WIMD 2019</strong> (Wales) and <strong>NIMDM 2017</strong> (Northern Ireland). 
         Use the postcode box to jump straight to a specific place (England / Scotland / Wales).  Northern Ireland is not available by postcode search due to no free matching file being available.  There is a new search by area 
@@ -19,8 +19,10 @@
         $wimdLastWarm = Cache::get('wimd:last_warm');
         $nimdmLastWarm = Cache::get('nimdm:last_warm');
       @endphp
+
+      <p class="text-sm text-zinc-600 my-4">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places. </p>
    
-      <p class="mt-8 text-xs text-gray-600">
+      <p class="text-xs text-zinc-600">
         Decile colours: <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-rose-300 text-zinc-900">1–3</span> higher deprivation ·
         <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-orange-300 text-zinc-900">4–7</span> mid ·
         <span class="inline-block align-middle rounded px-1.5 py-0.5 text-[11px] bg-emerald-300 text-zinc-900">8–10</span> lower deprivation.
@@ -47,7 +49,7 @@
           <div class="flex flex-row items-center gap-2 w-full">
             <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
                    class="flex-grow h-10 rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
-            <button class="standard-button h-10 inline-flex items-center justify-center mt-0">
+            <button class="border text-sm text-white p-2 bg-zinc-700 hover:bg-zinc-500 cursor-pointer h-10 inline-flex items-center justify-center mt-0">
               Search
             </button>
           </div>
@@ -139,7 +141,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -193,7 +195,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -254,7 +256,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -308,7 +310,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->data_zone }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -369,7 +371,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -423,7 +425,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->lsoa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -484,7 +486,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->sa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>
@@ -538,7 +540,7 @@
                     </td>
                     <td class="px-3 py-2 text-xs text-zinc-600">{{ $r->sa_code }}</td>
                     <td class="px-3 py-2">
-                      <span class="inline-flex items-center rounded-lg px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
+                      <span class="inline-flex items-center rounded px-2 py-1 text-xs {{ $badge }}">{{ $r->decile ?? 'N/A' }}</span>
                     </td>
                     <td class="px-3 py-2">
                       <div class="font-medium">{{ number_format((int)$r->rank) }}</div>

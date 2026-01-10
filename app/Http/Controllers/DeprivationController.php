@@ -410,13 +410,13 @@ class DeprivationController extends Controller
         $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
 
         $domains = [
-            ['label' => 'Income',     'rank' => $row->income_rank ?? null],
-            ['label' => 'Employment', 'rank' => $row->employment_rank ?? null],
-            ['label' => 'Health',     'rank' => $row->health_rank ?? null],
-            ['label' => 'Education',  'rank' => $row->education_rank ?? null],
-            ['label' => 'Access',     'rank' => $row->access_rank ?? null],
-            ['label' => 'Crime',      'rank' => $row->crime_rank ?? null],
-            ['label' => 'Housing',    'rank' => $row->housing_rank ?? null],
+            ['label' => 'Income',     'rank' => $row->income_rank     !== null ? (int) str_replace(',', '', $row->income_rank)     : null],
+            ['label' => 'Employment', 'rank' => $row->employment_rank !== null ? (int) str_replace(',', '', $row->employment_rank) : null],
+            ['label' => 'Health',     'rank' => $row->health_rank     !== null ? (int) str_replace(',', '', $row->health_rank)     : null],
+            ['label' => 'Education',  'rank' => $row->education_rank  !== null ? (int) str_replace(',', '', $row->education_rank)  : null],
+            ['label' => 'Access',     'rank' => $row->access_rank     !== null ? (int) str_replace(',', '', $row->access_rank)     : null],
+            ['label' => 'Crime',      'rank' => $row->crime_rank      !== null ? (int) str_replace(',', '', $row->crime_rank)      : null],
+            ['label' => 'Housing',    'rank' => $row->housing_rank    !== null ? (int) str_replace(',', '', $row->housing_rank)    : null],
         ];
 
         return view('deprivation.scotland_show', [
