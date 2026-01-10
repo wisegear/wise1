@@ -166,9 +166,31 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @foreach($domains as $d)
       <div class="rounded border p-4">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-2">
           <div class="font-medium text-gray-900">{{ $d['label'] }}</div>
-          <div class="text-xs text-gray-500">Rank</div>
+
+          <div class="flex items-center gap-2">
+            @php
+              $domainDecile = match ($d['label']) {
+                'Income'     => $row->income_decile ?? null,
+                'Employment' => $row->employment_decile ?? null,
+                'Health'     => $row->health_decile ?? null,
+                'Education'  => $row->education_decile ?? null,
+                'Access'     => $row->access_decile ?? null,
+                'Crime'      => $row->crime_decile ?? null,
+                'Housing'    => $row->housing_decile ?? null,
+                default      => null,
+              };
+            @endphp
+
+            @if(!is_null($domainDecile))
+              <span class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                Decile {{ $domainDecile }}
+              </span>
+            @endif
+
+            <span class="text-xs text-gray-500">Rank</span>
+          </div>
         </div>
         <div class="mt-1 text-sm text-gray-800">
           {{ $d['rank'] ? number_format($d['rank']) : 'N/A' }} <span class="text-xs text-gray-500">/ {{ number_format($totalDisplay) }}</span>
