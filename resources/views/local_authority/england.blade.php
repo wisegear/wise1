@@ -10,9 +10,8 @@
                 English Council Housing Stock Figures
             </h1>
             <p class="mt-3 text-sm text-zinc-500">
-                This is the most accurate official data I can provide.  Couple of issues.  Some council such as Glasgow don't show, the reason for that is because all of their housing
-                was transferred to housing associations in the early 2000s, so they appear to have no stock to report as official data does not track housing associations.  Some other anoomalies
-                exist such as fife combining all it's tenement and four in a block into a single figure in 2009 showing a blip then changing it back in 2010.  I will update if and when I can find better data.
+                This is the most accurate official data I can provide.  The data can be split down by larger regions rather than smaller ones.  This as always is due to the data and/or quality of it. I am
+                working on getting more granular data in future updates.
             </p>
 
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">

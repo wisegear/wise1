@@ -197,7 +197,7 @@
         </details>
 
         <div class="flex justify-end">
-            <button type="submit" class="standard-button">
+            <button type="submit" class="inner-button">
                 View Results
             </button>
         </div>

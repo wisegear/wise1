@@ -61,7 +61,7 @@
                 @if($hasA && !$hasB)
                     <p class="text-sm text-zinc-600 leading-relaxed">
                         All transactions shown for this property are
-                        <span class="font-semibold text-rose-500">Category A</span> sales. This means all sales were at
+                        <span class="font-semibold text-lime-600">Category A</span> sales. This means all sales were at
                         market value in an arms length transaction.
                     </p>
                 @elseif($hasB && !$hasA)
@@ -144,7 +144,7 @@
         <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2a7 7 0 00-7 7c0 5.25 7 12 7 12s7-6.75 7-12a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
             </svg>
@@ -153,7 +153,7 @@
         <a href="https://www.google.com/search?q={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
@@ -164,10 +164,7 @@
         <a href="{{ $rightmoveUrl }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md text-white px-3 py-1.5 shadow-sm transition"
-           style="background-color:#00AEEF;"
-           onmouseover="this.style.backgroundColor='#0099d6';"
-           onmouseout="this.style.backgroundColor='#00AEEF';"
+           class="inline-flex items-center gap-2 inner-button"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M4.5 4.5h15a1 1 0 011 1v9a1 1 0 01-1 1H8.414L4.5 19.914V5.5a1 1 0 011-1z"/>
@@ -180,7 +177,7 @@
         <a href="{{ $zooplaUrl }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 shadow-sm transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
@@ -337,7 +334,7 @@
                                                     title="View EPC report"
                                                     aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded" aria-hidden="true">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-lime-600 hover:bg-lime-700 text-white p-2 rounded" aria-hidden="true">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
                                                     </svg>
                                                     <span class="sr-only">View</span>
@@ -433,8 +430,8 @@
         </div>
     </details>
     <div>
-        <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-rose-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.
-        If you want to see more detail about a specific area and or property type go back and use the area search option.</p>
+        <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-blue-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.
+        <span class="font-semibold">If you want to see more detail about a specific area and or property type go back and use the <a class="text-lime-600 hover:underline" href="../property/search">search by area</a> option</span>.</p>
     </div>
     <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
@@ -1009,7 +1006,6 @@ const commonBarOptions = {
       data: {
           labels: districtNorm.labels,
           datasets: [{
-              label: 'Count',
               data: districtNorm.data,
               backgroundColor: districtCols,
               borderColor: solidize(districtCols),
@@ -1031,7 +1027,6 @@ new Chart(ctxLocalityTypes, {
     data: {
         labels: localityNorm.labels,
         datasets: [{
-            label: 'Count',
             data: localityNorm.data,
             backgroundColor: localityCols,
             borderColor: solidize(localityCols),
@@ -1053,7 +1048,6 @@ new Chart(ctxTownTypes, {
     data: {
         labels: townNorm.labels,
         datasets: [{
-            label: 'Count',
             data: townNorm.data,
             backgroundColor: townCols,
             borderColor: solidize(townCols),
@@ -1075,7 +1069,6 @@ new Chart(ctxCountyTypes, {
     data: {
         labels: countyNorm.labels,
         datasets: [{
-            label: 'Count',
             data: countyNorm.data,
             backgroundColor: countyCols,
             borderColor: solidize(countyCols),

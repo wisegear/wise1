@@ -11,7 +11,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/mortgage-calculator.svg') }}" alt="EPC Dashboard" class="w-42 h-auto">
+            <img src="{{ asset('assets/images/site/mortgage-calculator.svg') }}" alt="Mortgage-Caclulator" class="w-42 h-auto">
         </div>
 </section>    
 
@@ -39,7 +39,7 @@
             </div>
 
             <div>
-                <button type="submit" class="standard-button">
+                <button type="submit" class="inner-button">
                     Calculate
                 </button>
             </div>

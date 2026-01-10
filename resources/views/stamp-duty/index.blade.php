@@ -11,7 +11,7 @@
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/calculator.svg') }}" alt="EPC Dashboard" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/calculator.svg') }}" alt="Stamp Duty" class="w-64 h-auto">
         </div>
     </section>
 
@@ -60,7 +60,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="standard-button">Calculate</button>
+                    <button type="submit" class="inner-button">Calculate</button>
                 </form>
             </div>
         </div>

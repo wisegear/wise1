@@ -24,10 +24,10 @@
                 @endif
             </p>
             <div class="mt-4 flex flex-wrap gap-2">
-                <a href="/epc/search" class="standard-button inline-flex items-center gap-2 whitespace-nowrap">
+                <a href="/epc/search" class="inner-button inline-flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-magnifying-glass-chart"></i>
                   Search England & Wales</a>
-                <a href="/epc/search_scotland" class="standard-button inline-flex items-center gap-2 whitespace-nowrap">
+                <a href="/epc/search_scotland" class="inner-button inline-flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-magnifying-glass-chart"></i>
                   Search Scotland</a>
             </div>
@@ -40,13 +40,13 @@
     <!-- Buttons to swith from England to Scotland -->
     <div class="mb-6 flex justify-center gap-4">
         <a href="{{ url('/epc?nation=ew') }}"
-           class="standard-button inline-flex items-center gap-2 whitespace-nowrap {{ (($nation ?? 'ew') === 'ew') ? 'bg-lime-600 text-white' : '' }}"
+           class="inner-button inline-flex items-center gap-2 whitespace-nowrap {{ (($nation ?? 'ew') === 'ew') ? 'bg-lime-600 text-white' : '' }}"
            aria-current="{{ (($nation ?? 'ew') === 'ew') ? 'page' : 'false' }}">
           <i class="fa-solid fa-chart-line"></i>
            England &amp; Wales
         </a>
         <a href="{{ url('/epc?nation=scotland') }}"
-           class="standard-button inline-flex items-center gap-2 whitespace-nowrap {{ (($nation ?? 'ew') === 'scotland') ? 'bg-lime-600 text-white' : '' }}"
+           class="inner-button inline-flex items-center gap-2 whitespace-nowrap {{ (($nation ?? 'ew') === 'scotland') ? 'bg-lime-600 text-white' : '' }}"
            aria-current="{{ (($nation ?? 'ew') === 'scotland') ? 'page' : 'false' }}">
           <i class="fa-solid fa-chart-line"></i>
            Scotland
@@ -77,9 +77,9 @@
     <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Certificates issued by year --}}
         <div class="border rounded-lg bg-white p-4 shadow">
-            <h2 class="text-lg font-semibold">Certificates issued by year</h2>
+            <h2 class="text-lg font-semibold">Certificates issued each year</h2>
             <p class="mb-2 text-xs text-gray-600">
-                Number of EPC certificates lodged each year for the selected nation.
+                Number of EPC certificates lodged each year for the selected area.
             </p>
             <div class="w-full h-72">
                 <canvas id="certificatesByYearChart" class="w-full h-full"></canvas>
@@ -88,9 +88,9 @@
 
         {{-- Tenure by year --}}
         <div class="border rounded-lg bg-white p-4 shadow">
-            <h2 class="text-lg font-semibold">Tenure by year</h2>
+            <h2 class="text-lg font-semibold">Reason for reports each year</h2>
             <p class="mb-2 text-xs text-gray-600">
-                Split of EPCs by tenure (owner-occupied, private rented, social rented) each year.
+                Split of EPCs by reason for instruction each year.
             </p>
             <div class="w-full h-72">
                 <canvas id="tenureByYearChart" class="w-full h-full"></canvas>

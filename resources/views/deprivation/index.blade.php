@@ -49,7 +49,7 @@
           <div class="flex flex-row items-center gap-2 w-full">
             <input name="postcode" value="{{ request('postcode') }}" placeholder="Enter postcode (e.g. SW1A 1AA)"
                    class="flex-grow h-10 rounded border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-lime-500 focus:border-lime-500" />
-            <button class="border text-sm text-white p-2 bg-zinc-700 hover:bg-zinc-500 cursor-pointer h-10 inline-flex items-center justify-center mt-0">
+            <button class="border text-sm text-black p-2 bg-zinc-300 hover:bg-zinc-400 cursor-pointer h-10 inline-flex items-center justify-center mt-0">
               Search
             </button>
           </div>
