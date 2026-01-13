@@ -57,24 +57,25 @@
                 
                 <!-- Left Section: Social Media Icons -->
                 <div class="flex-1 flex items-center">
-                    <div class="inline-flex items-center gap-2 text-sm">
+                    <div class="inline-flex items-center gap-4 text-sm">
                         <!-- LinkedIn -->
                         <a href="https://www.linkedin.com/in/leewisener/" target="_blank" rel="noopener"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-[#0A66C2] hover:bg-zinc-100 transition shadow-sm"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded
+                            border border-zinc-300 bg-white/80 text-[#0A66C2] hover:bg-zinc-100 transition shadow-sm"
                            aria-label="LinkedIn profile">
                             <i class="fa-brands fa-linkedin-in text-sm"></i>
                         </a>
                         
                         <!-- Facebook -->
                         <a href="https://www.facebook.com/lee.wisener" target="_blank" rel="noopener"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-[#1877F2] hover:bg-zinc-100 transition shadow-sm"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded border border-zinc-300 bg-white/80 text-[#1877F2] hover:bg-zinc-100 transition shadow-sm"
                            aria-label="Facebook profile">
                             <i class="fa-brands fa-square-facebook text-sm"></i>
                         </a>
                         
                         <!-- X (formerly Twitter) -->
                         <a href="https://x.com/Propertyda03" target="_blank" rel="noopener"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white/80 text-black hover:bg-zinc-100 transition shadow-sm"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded border border-zinc-300 bg-white/80 text-black hover:bg-zinc-100 transition shadow-sm"
                            aria-label="X profile">
                             <i class="fa-brands fa-x-twitter text-sm"></i>
                         </a>
