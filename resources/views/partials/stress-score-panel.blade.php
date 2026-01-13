@@ -32,7 +32,7 @@
 
 @if(!is_null($stressScore))
     @php
-        $panelClasses = 'mb-8 rounded-xl border border-gray-200 border-l-4 border-l-lime-500 bg-gradient-to-br from-white to-gray-50 p-5 md:p-6 shadow-lg';
+        $panelClasses = 'mb-8 rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-5 md:p-6 shadow-lg';
         if ($isSticky) {
             $panelClasses .= ' sticky top-0 z-40 backdrop-blur-sm bg-white/95';
         }

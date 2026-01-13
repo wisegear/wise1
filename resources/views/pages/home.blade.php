@@ -4,7 +4,7 @@
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-10">
 
     {{-- Hero --}}
-    <section class="relative overflow-hidden rounded-lg border border-zinc-200 border-l-4 border-l-lime-500 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
+    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-5xl relative z-10">
             <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                 <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
@@ -258,7 +258,7 @@
     {{-- Economic Dashboard Highlight --}}
     <section class="mt-10">
         <a href="{{ route('economic.dashboard') }}"
-           class="group block rounded-lg border border-zinc-200 border-l-4 border-l-lime-500 bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-md">
+           class="group block rounded-lg border border-zinc-200 bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-md">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
