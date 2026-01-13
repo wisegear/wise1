@@ -209,7 +209,11 @@
         @php
             $stressBarClass = $stressScore >= 70 ? 'bg-rose-500' :
                              ($stressScore >= 40 ? 'bg-amber-500' : 'bg-emerald-500');
-            $gaugeRotation = -90 + ($stressScore * 1.8); // Maps 0-100 to -90 to 90 degrees
+            $gaugeRotation = $stressScore <= 40
+                ? -90 + pow(($stressScore / 40), 1.6) * 71.79
+                : ($stressScore <= 69
+                    ? -18.21 + (($stressScore - 40) / 29) * 52.10
+                    : 33.89 + (($stressScore - 70) / 30) * 56.11);
         @endphp
 
         <section class="mb-8 rounded-xl border border-gray-200 border-l-4 border-l-lime-500 bg-gradient-to-br from-white to-gray-50 p-5 md:p-6 shadow-lg sticky top-0 z-40 backdrop-blur-sm bg-white/95">
@@ -229,21 +233,21 @@
                     <div class="relative w-44 h-24">
                         <svg class="w-44 h-24" viewBox="0 0 200 120" aria-hidden="true">
                             <!-- Green zone (0–40) -->
-                            <path d="M 20 100 A 80 80 0 0 1 76 32"
+                            <path d="M 20 100 A 80 80 0 0 1 75 24"
                                   fill="none"
                                   stroke="#d1fae5"
                                   stroke-width="12"
                                   stroke-linecap="round" />
 
-                            <!-- Amber zone (40–70) -->
-                            <path d="M 76 32 A 80 80 0 0 1 124 32"
+                            <!-- Amber zone (40–69) -->
+                            <path d="M 75 24 A 80 80 0 0 1 145 33"
                                   fill="none"
                                   stroke="#fef3c7"
                                   stroke-width="12"
                                   stroke-linecap="round" />
 
                             <!-- Red zone (70–100) -->
-                            <path d="M 124 32 A 80 80 0 0 1 180 100"
+                            <path d="M 145 33 A 80 80 0 0 1 180 100"
                                   fill="none"
                                   stroke="#fecaca"
                                   stroke-width="12"
