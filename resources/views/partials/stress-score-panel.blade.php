@@ -2,6 +2,7 @@
     $totalStress = $totalStress ?? null;
 
     $isSticky = $isSticky ?? true;
+    $showDashboardLink = $showDashboardLink ?? false;
 
     if (is_null($totalStress)) {
         $stressScore = null;
@@ -44,9 +45,20 @@
                 <h2 class="text-sm text-center font-semibold tracking-wide text-gray-700 uppercase">
                     Overall Property MArket Stress Index
                 </h2>
-                <p class="mt-1 text-sm text-center text-gray-700 hidden md:block">
+                <p class="mt-1 text-sm text-center text-gray-700 md:block">
                     A single 0–100 score combining all eight indicators. Higher scores mean more stress and risk.
                 </p>
+                @if($showDashboardLink)
+                    <div class="mt-3 flex justify-center">
+                        <a href="/economic-dashboard"
+                           class="inline-flex items-center gap-2 rounded-md border border-lime-600 px-3 py-1.5 text-xs font-semibold text-lime-700 transition hover:bg-lime-50">
+                            View stress dashboard
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-3.5 w-3.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             {{-- Center: Semi-circular gauge --}}

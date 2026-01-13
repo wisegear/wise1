@@ -18,7 +18,7 @@ class PagesController extends Controller
     public function home()
     {
         // Get the 4 most recent blog posts
-        $posts = BlogPosts::where('published', true)->orderBy('date', 'desc')->take(5)->get();
+        $posts = BlogPosts::where('published', true)->orderBy('date', 'desc')->take(4)->get();
 
         // Get stats from cache only (warmed by home:stats-warm command)
         $stats = Cache::get('homepage_stats', [
