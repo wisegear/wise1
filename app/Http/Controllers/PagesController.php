@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use App\Models\BlogPosts;
 
 /**
@@ -18,9 +18,17 @@ class PagesController extends Controller
     public function home()
     {
         // Get the 4 most recent blog posts
-        $posts = BlogPosts::where('published', true)->orderBy('date', 'desc')->take(4)->get();
+        $posts = BlogPosts::where('published', true)->orderBy('date', 'desc')->take(5)->get();
 
-        return view('pages.home', compact('posts'));
+        // Get stats from cache only (warmed by home:stats-warm command)
+        $stats = Cache::get('homepage_stats', [
+            'property_records' => 0,
+            'uk_avg_price' => 0,
+            'bank_rate' => 0,
+            'epc_count' => 0,
+        ]);
+
+        return view('pages.home', compact('posts', 'stats'));
     }
 
     /**

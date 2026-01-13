@@ -4,32 +4,125 @@
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-10">
 
     {{-- Hero --}}
-    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
+    <section class="relative overflow-hidden rounded-lg border border-zinc-200 border-l-4 border-l-lime-500 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-5xl relative z-10">
             <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                 <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
                 Fresh, independent property data
             </div>
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
-                Property Research — clear, credible & fast datasets
+                Property Research — <span class="text-lime-600">free</span>, clear, credible & fast datasets
             </h1>
             <p class="mt-3 text-md leading-7 text-zinc-500">
-                Explore sales, repossessions and market signals across England &amp; Wales (some Scotland & NI). Built for clarity, speed and repeatable analysis.  Best on larger screens, some tables are too wide for mobiles. 
+                Explore sales, repossessions and market signals across England &amp; Wales (some Scotland & NI). Built for clarity, speed and repeatable analysis.  Best on larger screens, some tables are too wide for mobiles.
             </p>
 
             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-600">
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-lime-500"></span>
-                    Latest data<datalist></datalist>: <class="">December 2025
+                    Latest data: December 2025
                 </span>
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white/70 px-3 py-1">
                     <span class="h-2 w-2 rounded-lg bg-zinc-400"></span>
-                    Next update: <class="">31st January 2026
+                    Next update: 31st January 2026
                 </span>
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
             <img src="{{ asset('/assets/images/site/home.svg') }}" alt="Property Research" class="w-64 h-auto">
+        </div>
+    </section>
+
+    {{-- Live Stats Section --}}
+    <section class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4" x-data="{
+        shown: false,
+        propertyRecords: 0,
+        ukAvgPrice: 0,
+        bankRate: 0,
+        epcCount: 0,
+        animateValue(start, end, key, duration) {
+            const range = end - start;
+            const startTime = performance.now();
+            const animate = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                this[key] = Math.floor(start + range * easeOut);
+                if (progress < 1) requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        }
+    }" x-init="
+        setTimeout(() => {
+            shown = true;
+            animateValue(0, {{ $stats['property_records'] ?? 0 }}, 'propertyRecords', 2000);
+            animateValue(0, {{ $stats['uk_avg_price'] ?? 0 }}, 'ukAvgPrice', 2000);
+            animateValue(0, {{ ($stats['bank_rate'] ?? 0) * 100 }}, 'bankRate', 1500);
+            animateValue(0, {{ $stats['epc_count'] ?? 0 }}, 'epcCount', 2000);
+        }, 300);
+    ">
+        {{-- Property Records --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500"
+             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Property Records</p>
+                    <p class="text-2xl font-bold text-zinc-900" x-text="propertyRecords.toLocaleString()">0</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- UK Average Price --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-100"
+             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">UK Avg Price</p>
+                    <p class="text-2xl font-bold text-zinc-900">&pound;<span x-text="ukAvgPrice.toLocaleString()">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Bank Rate --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-200"
+             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Bank Rate</p>
+                    <p class="text-2xl font-bold text-zinc-900"><span x-text="(bankRate / 100).toFixed(2)">0</span>%</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- EPC Records --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-300"
+             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">EPC Records</p>
+                    <p class="text-2xl font-bold text-zinc-900" x-text="epcCount.toLocaleString()">0</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -157,64 +250,188 @@
 
     </section>
 
-    {{-- Economic Dashboard Overview --}}
-    <section class="mt-6">
+    {{-- Economic Dashboard Highlight --}}
+    <section class="mt-10">
         <a href="{{ route('economic.dashboard') }}"
-           class="group block rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div class="flex items-center justify-between mb-2">
-                <h2 class="text-xl font-semibold text-zinc-900">Economic Indicators Dashboard</h2>
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke-width="1.5"
-                     stroke="currentColor"
-                     class="h-6 w-6 text-zinc-500 group-hover:text-lime-600 transition">
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819" />
-                </svg>
-            </div>
-            <p class="text-sm text-zinc-700 leading-6">
-                Our new Economic Indicators Dashboard brings together eight key measures that influence the property market:
-                interest rates, inflation, wage growth, unemployment, mortgage approvals, repossessions and the UK House Price Index.
-                Each indicator is tracked quarterly using a consistent early‑warning system to show when conditions are improving,
-                stable or deteriorating.
-            </p>
-            <p class="mt-3 text-sm text-zinc-700 leading-6">
-                One difficult quarter may simply signal noise, but consecutive adverse quarters create meaningful trends. The dashboard
-                colours and stress score help highlight when the combined picture is moving into riskier territory. Explore the summary
-                or dive into each indicator for deeper charts and context.
-            </p>
-            <div class="mt-4 inline-flex items-center text-sm font-medium text-lime-700 group-hover:underline">
-                Open Economic Dashboard
+           class="group block rounded-lg border border-zinc-200 border-l-4 border-l-lime-500 bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-md">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Live Indicators
+                    </div>
+                    <h2 class="mt-4 text-2xl font-bold text-zinc-900 md:text-3xl">Economic Stress Dashboard</h2>
+                    <p class="mt-3 text-zinc-500 leading-relaxed">
+                        Eight key measures that influence the property market: interest rates, inflation, wage growth,
+                        unemployment, mortgage approvals, repossessions and UK House Price Index. Track when conditions
+                        are improving, stable or deteriorating.
+                    </p>
+                    <div class="mt-6 inline-flex items-center gap-2 text-lime-600 font-medium group-hover:gap-3 transition-all">
+                        View Full Dashboard
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        </svg>
+                    </div>
+                </div>
+
+                {{-- Mini indicator preview --}}
+                <div class="flex gap-3 md:gap-4">
+                    <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 min-w-[80px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-amber-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                        </svg>
+                        <span class="text-xs text-zinc-600">Rates</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 min-w-[80px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-rose-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        <span class="text-xs text-zinc-600">Inflation</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 min-w-[80px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-emerald-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                        <span class="text-xs text-zinc-600">Jobs</span>
+                    </div>
+                </div>
             </div>
         </a>
     </section>
 
-    <!-- Blog posts -->
-    <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-4">
-        @foreach ($posts as $post)
-            <a href="/blog/{{ $post->slug }}"
-               class="group block rounded-lg border border-zinc-200 bg-white p-2 shadow-sm transition hover:shadow-md">
-                <img src="{{ '/assets/images/uploads/' . 'small_' . $post->original_image }}"
-                     class="rounded-lg w-lg h-40 object-cover border border-zinc-200"
-                     alt="blog-post-picture">
-                <div class="p-2">
-                    <h2 class="mt-2 font-semibold text-zinc-900">
-                        {{ $post->title }}
-                    </h2>
-                    <div class="mt-1 text-xs text-zinc-500">
-                        {{ $post->date->startOfDay()->diffForHumans() }}
-                    </div>
-                    <div class="mt-2 text-sm">
-                        {{ $post->summary }}
-                    </div>
+    {{-- Tools Section --}}
+    <section class="mt-10">
+        <h2 class="text-xl font-bold text-zinc-900 mb-6">Calculators</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ url('/affordability') }}"
+               class="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-zinc-300">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition group-hover:bg-lime-500 group-hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-zinc-900">Affordability Calculator</h3>
+                    <p class="text-sm text-zinc-500">How much can you borrow?</p>
                 </div>
             </a>
-        @endforeach
-    </div>
 
+            <a href="{{ url('/mortgage-calculator') }}"
+               class="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-zinc-300">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition group-hover:bg-lime-500 group-hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-zinc-900">Mortgage Calculator</h3>
+                    <p class="text-sm text-zinc-500">Calculate your repayments</p>
+                </div>
+            </a>
 
+            <a href="{{ url('/stamp-duty') }}"
+               class="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-zinc-300">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition group-hover:bg-lime-500 group-hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185ZM9.75 9h.008v.008H9.75V9Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008V13.5Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-zinc-900">Stamp Duty Calculator</h3>
+                    <p class="text-sm text-zinc-500">SDLT costs instantly</p>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    {{-- Blog Section --}}
+    @if($posts->count() > 0)
+    <section class="mt-12">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-zinc-900">Latest Insights</h2>
+                <p class="text-sm text-zinc-500 mt-1">Analysis and commentary on the UK property market</p>
+            </div>
+            <a href="{{ url('/blog') }}" class="hidden sm:inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 hover:border-zinc-300">
+                View all posts
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            {{-- Featured post (first post, larger) --}}
+            @if($posts->first())
+                <a href="/blog/{{ $posts->first()->slug }}"
+                   class="group lg:col-span-6 block rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div class="aspect-[16/10] overflow-hidden bg-zinc-100">
+                        <img src="{{ '/assets/images/uploads/' . 'medium_' . $posts->first()->original_image }}"
+                             class="w-full h-full transition-transform duration-500 group-hover:scale-105"
+                             alt="{{ $posts->first()->title }}">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="inline-flex items-center rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-700">
+                                Latest
+                            </span>
+                            <span class="text-sm text-zinc-500">
+                                {{ $posts->first()->date->format('M j, Y') }}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-zinc-900 group-hover:text-lime-700 transition-colors">
+                            {{ $posts->first()->title }}
+                        </h3>
+                        <p class="mt-3 text-zinc-600 line-clamp-3">
+                            {{ $posts->first()->summary }}
+                        </p>
+                        <div class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-lime-600 group-hover:gap-2 transition-all">
+                            Read article
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+            @endif
+
+            {{-- Other posts (smaller, stacked) --}}
+            <div class="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                @foreach ($posts->skip(1) as $post)
+                    <a href="/blog/{{ $post->slug }}"
+                       class="group flex gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:border-zinc-300">
+                        <div class="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-100">
+                            <img src="{{ '/assets/images/uploads/' . 'small_' . $post->original_image }}"
+                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                 alt="{{ $post->title }}">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs text-zinc-500 mb-1">
+                                {{ $post->date->format('M j, Y') }}
+                            </div>
+                            <h3 class="font-semibold text-zinc-900 line-clamp-2 group-hover:text-lime-700 transition-colors">
+                                {{ $post->title }}
+                            </h3>
+                            <p class="mt-1 text-sm text-zinc-500 line-clamp-2 hidden sm:block lg:block">
+                                {{ $post->summary }}
+                            </p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Mobile "View all" link --}}
+        <div class="mt-6 sm:hidden">
+            <a href="{{ url('/blog') }}" class="block w-full text-center rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50">
+                View all posts
+            </a>
+        </div>
+    </section>
+    @endif
 
 </div>
 @endsection
