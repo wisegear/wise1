@@ -42,7 +42,7 @@
             {{-- Left: Title and description --}}
             <div class="md:col-span-1">
                 <h2 class="text-sm text-center font-semibold tracking-wide text-gray-700 uppercase">
-                    Overall Property Stress Index
+                    Overall Property MArket Stress Index
                 </h2>
                 <p class="mt-1 text-sm text-center text-gray-700 hidden md:block">
                     A single 0–100 score combining all eight indicators. Higher scores mean more stress and risk.
@@ -100,7 +100,7 @@
 
             {{-- Right: Score explanation --}}
             <div class="flex flex-col items-center text-right md:col-span-1">
-                <div class="text-sm uppercase text-center tracking-wide text-gray-700 font-semibold mb-2">Score guide</div>
+                <div class="text-sm uppercase text-center tracking-wide text-gray-700 font-semibold mb-2">Market Stress Score guide</div>
                 <p class="text-xs text-center text-gray-600">
                     The score rolls up eight indicators into a 0–100 index. Under 40 is low stress,
                     40–69 signals elevated risk, and 70+ points to high stress. Use it to compare
