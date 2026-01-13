@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\EconomicDashboardController;
 
 class WarmEconomicDashboard extends Command
 {
@@ -84,6 +85,14 @@ class WarmEconomicDashboard extends Command
         Cache::put('eco:dashboard:last_warm', now());
         $this->info('All economic dashboard caches warmed.');
         $this->line('Last warm recorded in eco:dashboard:last_warm');
+
+        // Also compute total stress so the homepage gauge can render from cache.
+        try {
+            (new EconomicDashboardController())->index();
+            $this->line('→ eco:total_stress refreshed');
+        } catch (\Throwable $e) {
+            $this->warn('→ eco:total_stress not refreshed: ' . $e->getMessage());
+        }
 
         return Command::SUCCESS;
     }

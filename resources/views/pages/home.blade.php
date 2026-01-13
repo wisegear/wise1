@@ -126,6 +126,11 @@
         </div>
     </section>
 
+    {{-- Property Stress Index --}}
+    <div class="mt-8">
+        @include('partials.stress-score-panel', ['totalStress' => $totalStress ?? null, 'isSticky' => false])
+    </div>
+
     {{-- Explore panels --}}
     <section class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <a href="{{ Route::has('property.home') ? route('property.home') : url('/property') }}"

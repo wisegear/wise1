@@ -572,6 +572,7 @@ class EconomicDashboardController extends Controller
 
         // Total score
         $totalStress = array_sum($stress);
+        Cache::put('eco:total_stress', $totalStress, $ttl);
 
         return view('economic.dashboard', [
             'interest'        => $interest,

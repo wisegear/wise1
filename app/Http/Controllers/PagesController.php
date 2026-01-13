@@ -28,7 +28,9 @@ class PagesController extends Controller
             'epc_count' => 0,
         ]);
 
-        return view('pages.home', compact('posts', 'stats'));
+        $totalStress = Cache::get('eco:total_stress');
+
+        return view('pages.home', compact('posts', 'stats', 'totalStress'));
     }
 
     /**
