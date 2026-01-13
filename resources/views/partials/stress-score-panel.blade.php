@@ -41,10 +41,10 @@
         <div class="flex flex-col gap-4 md:grid md:grid-cols-3 md:items-center">
             {{-- Left: Title and description --}}
             <div class="md:col-span-1">
-                <h2 class="text-sm font-semibold tracking-wide text-gray-700 uppercase">
+                <h2 class="text-sm text-center font-semibold tracking-wide text-gray-700 uppercase">
                     Overall Property Stress Index
                 </h2>
-                <p class="mt-1 text-xs text-gray-700 hidden md:block">
+                <p class="mt-1 text-sm text-center text-gray-700 hidden md:block">
                     A single 0–100 score combining all eight indicators. Higher scores mean more stress and risk.
                 </p>
             </div>
@@ -99,14 +99,14 @@
             </div>
 
             {{-- Right: Score explanation --}}
-            <div class="flex flex-col items-end text-right md:col-span-1">
-                <div class="text-sm uppercase tracking-wide text-gray-700 font-semibold mb-2">Score guide</div>
-                <p class="text-xs text-gray-600">
+            <div class="flex flex-col items-center text-right md:col-span-1">
+                <div class="text-sm uppercase text-center tracking-wide text-gray-700 font-semibold mb-2">Score guide</div>
+                <p class="text-xs text-center text-gray-600">
                     The score rolls up eight indicators into a 0–100 index. Under 40 is low stress,
                     40–69 signals elevated risk, and 70+ points to high stress. Use it to compare
                     momentum over time rather than a single-month snapshot.
                 </p>
-                <div class="text-[10px] text-gray-500 mt-2">Raw: {{ $totalStress }}/31</div>
+                <div class="text-xs text-gray-500 mt-2">Raw: {{ $totalStress }}/31</div>
             </div>
         </div>
     </section>
