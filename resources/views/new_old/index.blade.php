@@ -133,6 +133,20 @@
           return;
         }
 
+        const formatNumber = (value) => new Intl.NumberFormat('en-GB').format(value);
+        const gradients = { up: null };
+        const getBarGradient = (chart) => {
+          const { ctx, chartArea } = chart;
+          if (!chartArea) return '#16a34a';
+          const key = 'up';
+          if (gradients[key]) return gradients[key];
+          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, '#86efac');
+          gradient.addColorStop(1, '#16a34a');
+          gradients[key] = gradient;
+          return gradient;
+        };
+
         const chart = new Chart(ctx, {
           type: 'bar',
           data: {
@@ -149,22 +163,28 @@
                   if (i <= 0 || val == null) return '#16a34a'; // green-600
                   const prev = ctx.chart.data.datasets[0].data[i - 1];
                   const prevVal = (prev != null && typeof prev === 'object' && 'y' in prev) ? prev.y : prev;
-                  return (prevVal != null && val < prevVal) ? '#dc2626' : '#16a34a'; // red-600 if down
-                }
+                  return getBarGradient(ctx.chart);
+                },
+                borderRadius: 6,
+                borderSkipped: false
               },
               {
                 label: 'Existing',
                 type: 'line',
                 data: oldData,
-                tension: 0.25,
+                tension: 0.35,
                 fill: false,
-                borderWidth: 2,
-                pointRadius: 2,
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointHoverRadius: 4,
+                pointBorderWidth: 2,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#000000',
                 borderColor: '#000000',
                 backgroundColor: '#000000',
                 segment: {
                   borderColor: ctx =>
-                    ctx.p0.parsed.y > ctx.p1.parsed.y ? '#dc2626' : '#000000' // red if down, black otherwise
+                    '#000000'
                 }
               }
             ]
@@ -172,15 +192,44 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            categoryPercentage: 0.75,
-            barPercentage: 0.9,
+            categoryPercentage: 0.7,
+            barPercentage: 0.85,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-              legend: { position: 'top' },
-              tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${new Intl.NumberFormat().format(ctx.parsed.y)}` } }
+              legend: {
+                position: 'top',
+                labels: {
+                  color: '#475569',
+                  boxWidth: 14,
+                  boxHeight: 8,
+                  padding: 12
+                }
+              },
+              tooltip: {
+                backgroundColor: '#0f172a',
+                titleColor: '#ffffff',
+                bodyColor: '#e2e8f0',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)}`
+                }
+              }
             },
             scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
+              x: {
+                grid: { display: false },
+                ticks: { color: '#64748b', maxRotation: 0, autoSkipPadding: 12 }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(15,23,42,0.06)' },
+                ticks: {
+                  color: '#64748b',
+                  precision: 0,
+                  callback: (value) => formatNumber(value)
+                }
+              }
             }
           }
         });
