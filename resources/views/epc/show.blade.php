@@ -10,11 +10,20 @@
         <div class="flex flex-col md:flex-row justify-between items-center p-8 gap-6">
             <div class="flex-1">
                 <h1 class="text-3xl font-semibold text-zinc-900 mb-2">Energy Performance Certificate</h1>
-                <p class="text-zinc-600 leading-relaxed">
-                    @if(!empty($record['address_display']))
-                     {{ rtrim($record['address_display'], ', ') }}@if(!empty($record['postcode'])), {{ strtoupper($record['postcode']) }}@endif
-                    @endif
-                </p>
+                @php
+                    $addressParts = [];
+                    foreach (['address_display','address','ADDRESS','address1','address2','address3','town','postcode','POSTCODE'] as $key) {
+                        if (!empty($record[$key])) {
+                            $addressParts[] = $key === 'postcode'
+                                ? strtoupper(trim($record[$key]))
+                                : trim($record[$key], ', ');
+                        }
+                    }
+                    $fullAddress = implode(', ', array_filter($addressParts));
+                @endphp
+                @if($fullAddress)
+                    <p class="text-zinc-600 leading-relaxed">{{ $fullAddress }}</p>
+                @endif
             </div>
             <div class="flex-shrink-0">
                 <img src="{{ asset('assets/images/site/epc.svg') }}" alt="EPC Report" class="w-64 h-auto md:w-72">
@@ -71,20 +80,20 @@
 
         // Visual config
         $bands = [
-            ['A', 92, 100, '#22c55e'],
-            ['B', 81, 91,  '#84cc16'],
-            ['C', 69, 80,  '#eab308'],
-            ['D', 55, 68,  '#f59e0b'],
-            ['E', 39, 54,  '#f97316'],
-            ['F', 21, 38,  '#ef4444'],
-            ['G', 1,  20,  '#dc2626'],
+            ['A', 92, 100, '#0f7a2e'],
+            ['B', 81, 91,  '#2f9b31'],
+            ['C', 69, 80,  '#a3d221'],
+            ['D', 55, 68,  '#f4ea00'],
+            ['E', 39, 54,  '#f2c100'],
+            ['F', 21, 38,  '#e67e22'],
+            ['G', 1,  20,  '#e00024'],
         ];
 
         $w = 960;  // svg width (extra room for Current/Potential columns)
         $rowH = 52;                 // taller rows for readability
         $topPad = 40;               // more headroom for header labels
         $h = ($rowH * 7) + $topPad; // svg height = rows + header row
-        $padL = 140; // left label gutter
+        $padL = 40; // left label gutter
         $barW = intval(($w - $padL - 220) * 0.5); // half-width bars
 
         // Convert a score 1–100 into an x-position along the bar
@@ -163,9 +172,9 @@
                         $y = $topPad + $i * $rowH;
                         $cy = $y + $rowH/2;
                     @endphp
-                    {{-- Band label and score range on the left --}}
-                    <text x="16" y="{{ $cy + 8 }}" font-size="24" fill="#111827" font-weight="600">{{ $letter }}</text>
-                    <text x="56" y="{{ $cy + 8 }}" font-size="20" fill="#4b5563">{{ $min }}–{{ $max }}</text>
+                    @php
+                        $textColor = in_array($letter, ['C','D','E'], true) ? '#111827' : '#ffffff';
+                    @endphp
 
                     @php
                         $lf = $lengthFactor[$letter] ?? 1.0;
@@ -176,6 +185,7 @@
                     {{-- Arrow bar (rounded rect + triangular tip) --}}
                     <rect x="{{ $xBarStart }}" y="{{ $y+4 }}" width="{{ $rowRectW }}" height="{{ $rowH-8 }}" rx="6" ry="6" fill="{{ $fill }}" />
                     <polygon points="{{ $rowTipStart }},{{ $y+4 }} {{ $rowTipStart+$tipW }},{{ $cy }} {{ $rowTipStart }},{{ $y+$rowH-4 }}" fill="{{ $fill }}" />
+                    <text x="{{ $xBarStart + 12 }}" y="{{ $cy + 8 }}" font-size="20" fill="{{ $textColor }}" font-weight="600">{{ $letter }} {{ $min }}–{{ $max }}</text>
 
                     {{-- Light row separator line --}}
                     <line x1="{{ $padL }}" y1="{{ $y + $rowH }}" x2="{{ $w - $rightPad }}" y2="{{ $y + $rowH }}" stroke="#e5e7eb" stroke-width="1" />
@@ -189,7 +199,10 @@
                     <g transform="translate({{ $xCurCol }}, {{ $yMarker }})">
                         <polygon points="0,0 14,-8 14,8" fill="{{ $curColor }}" />
                         <rect x="14" y="-14" width="72" height="28" rx="6" fill="{{ $curColor }}" />
-                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $curScore }} {{ $curLetter }}</text>
+                        @php
+                            $curMarkerText = in_array($curLetter, ['A','B','F','G'], true) ? '#ffffff' : '#111827';
+                        @endphp
+                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="{{ $curMarkerText }}">{{ $curScore }} {{ $curLetter }}</text>
                         <title>Current: {{ $curScore }} {{ $curLetter }}</title>
                     </g>
                 @endif
@@ -202,7 +215,10 @@
                     <g transform="translate({{ $xPotCol }}, {{ $yMarker }})">
                         <polygon points="0,0 14,-8 14,8" fill="{{ $potColor }}" />
                         <rect x="14" y="-14" width="72" height="28" rx="6" fill="{{ $potColor }}" />
-                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="#ffffff">{{ $potScore }} {{ $potLetter }}</text>
+                        @php
+                            $potMarkerText = in_array($potLetter, ['A','B','F','G'], true) ? '#ffffff' : '#111827';
+                        @endphp
+                        <text x="56" y="9" text-anchor="middle" font-size="20" fill="{{ $potMarkerText }}">{{ $potScore }} {{ $potLetter }}</text>
                         <title>Potential: {{ $potScore }} {{ $potLetter }}</title>
                     </g>
                 @endif
@@ -232,13 +248,13 @@
 
         // Blue/grey palette (A brightest blue → G darkest grey)
         $envBands = [
-            ['A', 92, 100, '#60a5fa'],
-            ['B', 81, 91,  '#3b82f6'],
-            ['C', 69, 80,  '#2563eb'],
-            ['D', 55, 68,  '#1d4ed8'],
-            ['E', 39, 54,  '#9ca3af'],
-            ['F', 21, 38,  '#6b7280'],
-            ['G', 1,  20,  '#4b5563'],
+            ['A', 92, 100, '#cfe2f8'],
+            ['B', 81, 91,  '#9fc2e7'],
+            ['C', 69, 80,  '#7aa5d9'],
+            ['D', 55, 68,  '#4f82c3'],
+            ['E', 39, 54,  '#b3b3b3'],
+            ['F', 21, 38,  '#9b9b9b'],
+            ['G', 1,  20,  '#7f7f7f'],
         ];
 
         $w2 = $w;            // reuse layout dims
@@ -304,9 +320,9 @@
                         $cy = $y + $rowH2/2;
                     @endphp
 
-                    {{-- Labels --}}
-                    <text x="16" y="{{ $cy + 8 }}" font-size="24" fill="#111827" font-weight="600">{{ $letter }}</text>
-                    <text x="56" y="{{ $cy + 8 }}" font-size="20" fill="#4b5563">{{ $min }}–{{ $max }}</text>
+                    @php
+                        $envTextColor = in_array($letter, ['F','G'], true) ? '#ffffff' : '#111827';
+                    @endphp
 
                     @php
                         $lf2 = $lengthFactor2[$letter] ?? 1.0;
@@ -317,6 +333,7 @@
                     {{-- Arrow bar --}}
                     <rect x="{{ $xBarStart2 }}" y="{{ $y+4 }}" width="{{ $rowRectW2 }}" height="{{ $rowH2-8 }}" rx="6" ry="6" fill="{{ $fill }}" />
                     <polygon points="{{ $rowTipStart2 }},{{ $y+4 }} {{ $rowTipStart2+$tipW2 }},{{ $cy }} {{ $rowTipStart2 }},{{ $y+$rowH2-4 }}" fill="{{ $fill }}" />
+                    <text x="{{ $xBarStart2 + 12 }}" y="{{ $cy + 8 }}" font-size="20" fill="{{ $envTextColor }}" font-weight="600">{{ $letter }} {{ $min }}–{{ $max }}</text>
 
                     <line x1="{{ $padL2 }}" y1="{{ $y + $rowH2 }}" x2="{{ $w2 - $rightPad2 }}" y2="{{ $y + $rowH2 }}" stroke="#e5e7eb" stroke-width="1" />
                 @endfor

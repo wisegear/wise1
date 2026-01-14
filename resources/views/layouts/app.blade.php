@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'PropertyResearch') }}</title>
+    <title>@yield('title', config('app.name', 'PropertyResearch'))</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('assets/favicon/favicon.png') }}">
@@ -27,6 +27,10 @@
         <meta property="og:image:width" content="800" />
         <meta property="og:image:height" content="300" />
     @endisset
+
+    @hasSection('meta')
+        @yield('meta')
+    @endif
 
     <!-- Vite Assets - Moved to top to prevent FOUC (Flash of Unstyled Content) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

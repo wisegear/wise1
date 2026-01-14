@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\File;
 
 
 // 3rd Party packages 
@@ -192,6 +193,19 @@ Route::get('/generate-sitemap', function () {
                 Url::create("/blog/{$post->slug}")
                     ->setLastModificationDate($post->updated_at)
             );
+        }
+
+        $areaFile = public_path('data/property_districts.json');
+        if (File::exists($areaFile)) {
+            $areas = json_decode(File::get($areaFile), true);
+            if (is_array($areas)) {
+                foreach ($areas as $area) {
+                    $path = $area['path'] ?? null;
+                    if ($path) {
+                        $sitemap->add(Url::create($path));
+                    }
+                }
+            }
         }
 
         $sitemap->writeToFile(public_path('sitemap.xml'));

@@ -64,15 +64,15 @@
         {{-- Property Records --}}
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
                     </svg>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Property Records</p>
-                    <p class="text-2xl font-bold text-zinc-900" x-text="propertyRecords.toLocaleString()">0</p>
+                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words" x-text="propertyRecords.toLocaleString()">0</p>
                 </div>
             </div>
         </div>
@@ -80,15 +80,15 @@
         {{-- UK Average Price --}}
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-100"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.121 7.629A3 3 0 0 0 9.017 9.43c-.023.212-.002.425.028.636l.506 3.541a4.5 4.5 0 0 1-.43 2.65L9 16.5l1.539-.513a2.25 2.25 0 0 1 1.422 0l.655.218a2.25 2.25 0 0 0 1.718-.122L15 15.75M8.25 12H12m9 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">UK Avg Price</p>
-                    <p class="text-2xl font-bold text-zinc-900">&pound;<span x-text="ukAvgPrice.toLocaleString()">0</span></p>
+                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words">&pound;<span x-text="ukAvgPrice.toLocaleString()">0</span></p>
                 </div>
             </div>
         </div>
@@ -96,15 +96,15 @@
         {{-- Bank Rate --}}
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-200"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Bank Rate</p>
-                    <p class="text-2xl font-bold text-zinc-900"><span x-text="(bankRate / 100).toFixed(2)">0</span>%</p>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Interest Rate</p>
+                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words"><span x-text="(bankRate / 100).toFixed(2)">0</span>%</p>
                 </div>
             </div>
         </div>
@@ -112,15 +112,15 @@
         {{-- EPC Records --}}
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-300"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                     </svg>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">EPC Records</p>
-                    <p class="text-2xl font-bold text-zinc-900" x-text="epcCount.toLocaleString()">0</p>
+                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words" x-text="epcCount.toLocaleString()">0</p>
                 </div>
             </div>
         </div>
