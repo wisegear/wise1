@@ -69,21 +69,21 @@
                         <path d="M 20 100 A 80 80 0 0 1 75 24"
                               fill="none"
                               stroke="#d1fae5"
-                              stroke-width="12"
+                              stroke-width="16"
                               stroke-linecap="round" />
 
                         <!-- Amber zone (40–69) -->
                         <path d="M 75 24 A 80 80 0 0 1 145 33"
                               fill="none"
                               stroke="#fef3c7"
-                              stroke-width="12"
+                              stroke-width="16"
                               stroke-linecap="round" />
 
                         <!-- Red zone (70–100) -->
                         <path d="M 145 33 A 80 80 0 0 1 180 100"
                               fill="none"
                               stroke="#fecaca"
-                              stroke-width="12"
+                              stroke-width="16"
                               stroke-linecap="round" />
 
                         <!-- Needle -->
@@ -96,9 +96,9 @@
                         </g>
 
                         <!-- Scale labels -->
-                        <text x="16" y="116" class="text-[10px] fill-gray-500">0</text>
-                        <text x="96" y="18" class="text-[10px] fill-gray-500">50</text>
-                        <text x="176" y="116" class="text-[10px] fill-gray-500">100</text>
+                        <text x="16" y="118" class="text-[10px] fill-gray-500">0</text>
+                        <text x="96" y="26" class="text-[10px] fill-gray-500">50</text>
+                        <text x="176" y="118" class="text-[10px] fill-gray-500">100</text>
                     </svg>
                 </div>
                 <div class="flex items-baseline gap-1 -mt-2">

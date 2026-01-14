@@ -39,11 +39,21 @@
         // Helper function to get CSS classes for level
         function getLevelClasses($level) {
             return match($level) {
-                'green' => 'border-emerald-200 bg-emerald-50',
-                'amber' => 'border-amber-200 bg-amber-50',
-                'red' => 'border-rose-200 bg-rose-50',
-                'deep' => 'border-rose-400 bg-rose-100',
-                default => 'border-gray-200 bg-white',
+                'green' => 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white border-l-4 border-l-emerald-400',
+                'amber' => 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white border-l-4 border-l-amber-400',
+                'red' => 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-white border-l-4 border-l-rose-400',
+                'deep' => 'border-rose-400 bg-gradient-to-br from-rose-100 via-white to-white border-l-4 border-l-rose-600',
+                default => 'border-gray-200 bg-white border-l-4 border-l-gray-300',
+            };
+        }
+
+        function getLevelAccentClasses($level) {
+            return match($level) {
+                'green' => 'bg-emerald-200/60',
+                'amber' => 'bg-amber-200/60',
+                'red' => 'bg-rose-200/60',
+                'deep' => 'bg-rose-300/70',
+                default => 'bg-gray-200/60',
             };
         }
 
@@ -193,258 +203,282 @@
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
 
         {{-- INTEREST RATES --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['interest']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['interest']) }}" 
              title="{{ $trendTexts['interest'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Interest Rates</div>
-                    <p class="text-[11px] text-gray-600">Lower is supportive; rising rates increase stress.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['interest']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Interest Rates</div>
+                        <p class="text-[11px] text-gray-600">Lower is supportive; rising rates increase stress.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
-                    </svg>
-                </div>
+                
+                @if($interest)
+                    <div class="text-2xl font-semibold">{{ number_format($interest->rate, 2) }}%</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($interest->effective_date)->format('M Y') }}
+                        @if(!empty($sparklines['interest']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-interest"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($interest)
-                <div class="text-2xl font-semibold">{{ number_format($interest->rate, 2) }}%</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($interest->effective_date)->format('M Y') }}
-                    @if(!empty($sparklines['interest']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-interest"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- INFLATION --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['inflation']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['inflation']) }}" 
              title="{{ $trendTexts['inflation'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Inflation (CPIH)</div>
-                    <p class="text-[11px] text-gray-600">Lower is supportive; persistent rises are negative.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['inflation']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Inflation (CPIH)</div>
+                        <p class="text-[11px] text-gray-600">Lower is supportive; persistent rises are negative.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19h14M9 15l2-4 2 4 2-8"/>
+                            <circle cx="8" cy="6" r="1"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 19h14M9 15l2-4 2 4 2-8"/>
-                        <circle cx="8" cy="6" r="1"/>
-                    </svg>
-                </div>
+                
+                @if($inflation)
+                    @php
+                        $cpihValue = collect(get_object_vars($inflation))
+                            ->except(['id', 'date', 'created_at', 'updated_at'])
+                            ->first();
+                    @endphp
+                    <div class="text-2xl font-semibold">
+                        {{ !is_null($cpihValue) ? number_format((float) $cpihValue, 1) . '%' : 'n/a' }}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($inflation->date)->format('M Y') }}
+                        @if(!empty($sparklines['inflation']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-inflation"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($inflation)
-                @php
-                    $cpihValue = collect(get_object_vars($inflation))
-                        ->except(['id', 'date', 'created_at', 'updated_at'])
-                        ->first();
-                @endphp
-                <div class="text-2xl font-semibold">
-                    {{ !is_null($cpihValue) ? number_format((float) $cpihValue, 1) . '%' : 'n/a' }}
-                </div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($inflation->date)->format('M Y') }}
-                    @if(!empty($sparklines['inflation']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-inflation"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- WAGE GROWTH --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['wages']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['wages']) }}" 
              title="{{ $trendTexts['wages'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Wage Growth</div>
-                    <p class="text-[11px] text-gray-600">Higher real wage growth is positive; negative real wages are a drag.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['wages']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Wage Growth</div>
+                        <p class="text-[11px] text-gray-600">Higher real wage growth is positive; negative real wages are a drag.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-4a2 2 0 0 1 2-2h2M11 19v-6a2 2 0 0 1 2-2h2"/>
+                            <circle cx="8" cy="7" r="2"/><circle cx="15" cy="6" r="2"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-4a2 2 0 0 1 2-2h2M11 19v-6a2 2 0 0 1 2-2h2"/>
-                        <circle cx="8" cy="7" r="2"/><circle cx="15" cy="6" r="2"/>
-                    </svg>
-                </div>
+                
+                @if($wages)
+                    @php
+                        $wageValue = $wages->three_month_avg_yoy ?? $wages->single_month_yoy ?? null;
+                        $realWage = (!is_null($wageValue) && isset($cpihValue)) 
+                            ? (float)$wageValue - (float)$cpihValue 
+                            : null;
+                    @endphp
+                    <div class="text-2xl font-semibold flex items-baseline gap-2">
+                        {{ !is_null($wageValue) ? number_format((float) $wageValue, 2) . '%' : 'n/a' }}
+                        @if(!is_null($realWage))
+                            <span class="text-sm font-normal {{ $realWage >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
+                                (real: {{ number_format($realWage, 2) }}%)
+                            </span>
+                        @endif
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($wages->date)->format('M Y') }}
+                        @if(!empty($sparklines['wages']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-wages"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($wages)
-                @php
-                    $wageValue = $wages->three_month_avg_yoy ?? $wages->single_month_yoy ?? null;
-                    $realWage = (!is_null($wageValue) && isset($cpihValue)) 
-                        ? (float)$wageValue - (float)$cpihValue 
-                        : null;
-                @endphp
-                <div class="text-2xl font-semibold flex items-baseline gap-2">
-                    {{ !is_null($wageValue) ? number_format((float) $wageValue, 2) . '%' : 'n/a' }}
-                    @if(!is_null($realWage))
-                        <span class="text-sm font-normal {{ $realWage >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
-                            (real: {{ number_format($realWage, 2) }}%)
-                        </span>
-                    @endif
-                </div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($wages->date)->format('M Y') }}
-                    @if(!empty($sparklines['wages']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-wages"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- UNEMPLOYMENT --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['unemployment']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['unemployment']) }}" 
              title="{{ $trendTexts['unemployment'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Unemployment</div>
-                    <p class="text-[11px] text-gray-600">Lower is positive; rising unemployment is a warning sign.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['unemployment']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Unemployment</div>
+                        <p class="text-[11px] text-gray-600">Lower is positive; rising unemployment is a warning sign.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 20v-3a3 3 0 0 1 3-3h8"/>
+                            <circle cx="9" cy="8" r="2.5"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9v6M15 15h4"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 20v-3a3 3 0 0 1 3-3h8"/>
-                        <circle cx="9" cy="8" r="2.5"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9v6M15 15h4"/>
-                    </svg>
-                </div>
+                
+                @if($unemp)
+                    @php
+                        $unempValue = collect(get_object_vars($unemp))
+                            ->except(['id', 'date', 'created_at', 'updated_at'])
+                            ->first();
+                    @endphp
+                    <div class="text-2xl font-semibold">
+                        {{ !is_null($unempValue) ? number_format((float) $unempValue, 1) . '%' : 'n/a' }}
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($unemp->date)->format('M Y') }}
+                        @if(!empty($sparklines['unemployment']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-unemployment"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($unemp)
-                @php
-                    $unempValue = collect(get_object_vars($unemp))
-                        ->except(['id', 'date', 'created_at', 'updated_at'])
-                        ->first();
-                @endphp
-                <div class="text-2xl font-semibold">
-                    {{ !is_null($unempValue) ? number_format((float) $unempValue, 1) . '%' : 'n/a' }}
-                </div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($unemp->date)->format('M Y') }}
-                    @if(!empty($sparklines['unemployment']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-unemployment"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- MORTGAGE APPROVALS --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['approvals']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['approvals']) }}" 
              title="{{ $trendTexts['approvals'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
-                    <p class="text-[11px] text-gray-600">Higher approvals are supportive; persistent declines signal tightening credit.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['approvals']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
+                        <p class="text-[11px] text-gray-600">Higher approvals are supportive; persistent declines signal tightening credit.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M6 10v9h5v-5h2v5h5v-9M4 19h16"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M6 10v9h5v-5h2v5h5v-9M4 19h16"/>
-                    </svg>
-                </div>
+                
+                @if($approvals)
+                    <div class="text-2xl font-semibold">{{ number_format((float) $approvals->value) }}</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($approvals->period)->format('M Y') }}
+                        @if(!empty($sparklines['approvals']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-approvals"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($approvals)
-                <div class="text-2xl font-semibold">{{ number_format((float) $approvals->value) }}</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($approvals->period)->format('M Y') }}
-                    @if(!empty($sparklines['approvals']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-approvals"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- REPOSSESSIONS --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['repossessions']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['repossessions']) }}" 
              title="{{ $trendTexts['repossessions'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
-                    <p class="text-[11px] text-gray-600">Share of regulated mortgages in possession. Lower is positive.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['repossessions']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
+                        <p class="text-[11px] text-gray-600">Share of regulated mortgages in possession. Lower is positive.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M9 21v-5M15 21v-3M4 19h16M7 15l10-6"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M9 21v-5M15 21v-3M4 19h16M7 15l10-6"/>
-                    </svg>
-                </div>
+                
+                @if($reposs)
+                    <div class="text-2xl font-semibold">{{ number_format((float) $reposs->total, 3) }}%</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ $reposs->year }} {{ $reposs->quarter }}
+                        @if(!empty($sparklines['repossessions']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-repossessions"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($reposs)
-                <div class="text-2xl font-semibold">{{ number_format((float) $reposs->total, 3) }}%</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ $reposs->year }} {{ $reposs->quarter }}
-                    @if(!empty($sparklines['repossessions']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-repossessions"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- MORTGAGE ARREARS --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['arrears']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['arrears']) }}" 
              title="Total arrears 2.5%+ of balance (excluding 1.5–2.5% band)">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Arrears (MLAR)</div>
-                    <p class="text-[11px] text-gray-600">Total arrears 2.5%+ of balance. Higher is worse.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['arrears']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Arrears (MLAR)</div>
+                        <p class="text-[11px] text-gray-600">Total arrears 2.5%+ of balance. Higher is worse.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
-                    </svg>
-                </div>
+                
+                @if(!empty($arrearsPanel))
+                    <div class="text-2xl font-semibold">{{ number_format((float) $arrearsPanel['value'], 3) }}%</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ $arrearsPanel['year'] }} {{ $arrearsPanel['quarter'] }}
+                        @if(!empty($sparklines['arrears']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-arrears"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if(!empty($arrearsPanel))
-                <div class="text-2xl font-semibold">{{ number_format((float) $arrearsPanel['value'], 3) }}%</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ $arrearsPanel['year'] }} {{ $arrearsPanel['quarter'] }}
-                    @if(!empty($sparklines['arrears']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-arrears"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
         {{-- HOUSE PRICE INDEX --}}
-        <div class="rounded-lg border p-5 shadow-sm transition-all hover:shadow-md {{ getLevelClasses($levels['hpi']) }}" 
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['hpi']) }}" 
              title="{{ $trendTexts['hpi'] ?? '' }}">
-            <div class="flex items-start justify-between mb-1">
-                <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">House Price Index (UK)</div>
-                    <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls signal stress.</p>
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['hpi']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">House Price Index (UK)</div>
+                        <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls signal stress.</p>
+                    </div>
+                    <div class="ml-3 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12l7-7 7 7M7 11v8h10v-8M9 16h3"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12l7-7 7 7M7 11v8h10v-8M9 16h3"/>
-                    </svg>
-                </div>
+                
+                @if($hpi)
+                    <div class="text-2xl font-semibold">£{{ number_format($hpi->AveragePrice, 0) }}</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($hpi->Date)->format('M Y') }}
+                        @if(!empty($sparklines['hpi']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-hpi"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
             </div>
-            
-            @if($hpi)
-                <div class="text-2xl font-semibold">£{{ number_format($hpi->AveragePrice, 0) }}</div>
-                <div class="text-sm text-gray-600 mt-1">
-                    {{ \Carbon\Carbon::parse($hpi->Date)->format('M Y') }}
-                    @if(!empty($sparklines['hpi']['values'] ?? []))
-                        <div class="h-28 pt-8"><canvas id="spark-hpi"></canvas></div>
-                    @endif
-                </div>
-            @else
-                <div class="text-gray-500 text-sm">No data</div>
-            @endif
         </div>
 
     </section>
