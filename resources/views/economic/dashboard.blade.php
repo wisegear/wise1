@@ -39,11 +39,11 @@
         // Helper function to get CSS classes for level
         function getLevelClasses($level) {
             return match($level) {
-                'green' => 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white border-l-4 border-l-emerald-400',
-                'amber' => 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white border-l-4 border-l-amber-400',
-                'red' => 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-white border-l-4 border-l-rose-400',
-                'deep' => 'border-rose-400 bg-gradient-to-br from-rose-100 via-white to-white border-l-4 border-l-rose-600',
-                default => 'border-gray-200 bg-white border-l-4 border-l-gray-300',
+                'green' => 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white',
+                'amber' => 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white',
+                'red' => 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-white',
+                'deep' => 'border-rose-400 bg-gradient-to-br from-rose-100 via-white to-white',
+                default => 'border-gray-200 bg-white',
             };
         }
 
@@ -54,6 +54,16 @@
                 'red' => 'bg-rose-200/60',
                 'deep' => 'bg-rose-300/70',
                 default => 'bg-gray-200/60',
+            };
+        }
+
+        function getLevelNeedleRotation($level) {
+            return match($level) {
+                'green' => -60,
+                'amber' => -15,
+                'red' => 20,
+                'deep' => 55,
+                default => -60,
             };
         }
 
@@ -114,7 +124,7 @@
     @endphp
 
     {{-- HERO SECTION: Dashboard overview --}}
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 border-l-4 border-l-lime-500 bg-gradient-to-br from-white to-gray-50 p-6 md:p-8 shadow-sm mb-8">
+    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-6 md:p-8 shadow-sm mb-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
             <div class="max-w-4xl">
                 <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900">
@@ -181,11 +191,16 @@
                 </ul>
                 
                 <p class="mt-3 font-semibold">How the colours and score work:</p>
+                <p class="mt-1 text-xs text-zinc-700">
+                    Each panel is ranked by the length of the current “bad” streak (how many consecutive periods the indicator
+                    has moved in the direction that historically signals stress). The direction differs by indicator
+                    (e.g. higher interest rates and unemployment are worse, while lower approvals and HPI are worse).
+                </p>
                 <ul class="list-disc pl-5 mt-1 text-xs space-y-1">
-                    <li><span class="font-medium text-emerald-800">Green</span> — conditions are broadly supportive or normal.</li>
-                    <li><span class="font-medium text-amber-800">Amber</span> — starting to move into a more challenging zone.</li>
-                    <li><span class="font-medium text-rose-600">Red</span> — historically associated with stress for the housing market.</li>
-                    <li><span class="font-medium text-rose-900">Dark Red</span> — Suggests the market may be heading for turmoil.</li>
+                    <li><span class="font-medium text-emerald-800">Green</span> — no current bad streak; conditions broadly supportive or normal.</li>
+                    <li><span class="font-medium text-amber-800">Amber</span> — 1 consecutive bad period; early warning signs.</li>
+                    <li><span class="font-medium text-rose-600">Red</span> — 2–3 consecutive bad periods; sustained stress signals.</li>
+                    <li><span class="font-medium text-rose-900">Dark Red</span> — 4+ consecutive bad periods; elevated risk of downturn.</li>
                 </ul>
                 
                 <p class="mt-2 text-xs">
@@ -212,9 +227,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Interest Rates</div>
                         <p class="text-[11px] text-gray-600">Lower is supportive; rising rates increase stress.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['interest']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -243,10 +281,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Inflation (CPIH)</div>
                         <p class="text-[11px] text-gray-600">Lower is supportive; persistent rises are negative.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19h14M9 15l2-4 2 4 2-8"/>
-                            <circle cx="8" cy="6" r="1"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['inflation']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -282,10 +342,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Wage Growth</div>
                         <p class="text-[11px] text-gray-600">Higher real wage growth is positive; negative real wages are a drag.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 19v-4a2 2 0 0 1 2-2h2M11 19v-6a2 2 0 0 1 2-2h2"/>
-                            <circle cx="8" cy="7" r="2"/><circle cx="15" cy="6" r="2"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['wages']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -327,11 +409,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Unemployment</div>
                         <p class="text-[11px] text-gray-600">Lower is positive; rising unemployment is a warning sign.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 20v-3a3 3 0 0 1 3-3h8"/>
-                            <circle cx="9" cy="8" r="2.5"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9v6M15 15h4"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['unemployment']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -367,9 +470,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
                         <p class="text-[11px] text-gray-600">Higher approvals are supportive; persistent declines signal tightening credit.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M6 10v9h5v-5h2v5h5v-9M4 19h16"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['approvals']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -398,9 +524,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
                         <p class="text-[11px] text-gray-600">Share of regulated mortgages in possession. Lower is positive.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 11l7-7 7 7M9 21v-5M15 21v-3M4 19h16M7 15l10-6"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['repossessions']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -429,9 +578,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Arrears (MLAR)</div>
                         <p class="text-[11px] text-gray-600">Total arrears 2.5%+ of balance. Higher is worse.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M6 15l4-4 3 3 5-7"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['arrears']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -460,9 +632,32 @@
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">House Price Index (UK)</div>
                         <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls signal stress.</p>
                     </div>
-                    <div class="ml-3 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12l7-7 7 7M7 11v8h10v-8M9 16h3"/>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['hpi']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
                         </svg>
                     </div>
                 </div>
