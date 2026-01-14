@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', config('app.name', 'PropertyResearch'))</title>
+    @hasSection('description')
+        <meta name="description" content="@yield('description')">
+    @else
+        <meta name="description" content="Independent UK property data, sales trends, market signals, and research insights across England, Wales, Scotland, and Northern Ireland.">
+    @endif
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('assets/favicon/favicon.png') }}">

@@ -87,6 +87,7 @@
         <div class="border rounded bg-white p-4 shadow-lg">
             <div class="w-full">
                 <canvas id="areaPriceSalesChart" class="w-full max-h-[360px]"></canvas>
+                <div class="chart-empty hidden py-8 text-center text-sm text-zinc-500">No sales data available for this area yet.</div>
             </div>
         </div>
     </div>
@@ -95,10 +96,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="areaTypeSplitChart" class="w-full max-h-[260px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No property type split data available for this area.</div>
             </div>
 
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="newBuildSplitChart" class="w-full max-h-[260px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No new build vs existing data available for this area.</div>
             </div>
         </div>
     </div>
@@ -108,15 +111,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="areaTypeChart_detached" class="w-full max-h-[320px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No detached sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="areaTypeChart_semi" class="w-full max-h-[320px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No semi-detached sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="areaTypeChart_terraced" class="w-full max-h-[320px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No terraced sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
                 <canvas id="areaTypeChart_flat" class="w-full max-h-[320px]"></canvas>
+                <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No flat sales data available for this area.</div>
             </div>
         </div>
     </div>
@@ -164,7 +171,19 @@
         const salesCounts = @json($chartSalesCounts);
 
 
+        const showEmpty = (canvasId, message) => {
+            const el = document.getElementById(canvasId);
+            if (!el) return;
+            el.classList.add('hidden');
+            const msg = el.parentElement?.querySelector('.chart-empty');
+            if (msg) {
+                msg.textContent = message || msg.textContent;
+                msg.classList.remove('hidden');
+            }
+        };
+
         if (!years.length) {
+            showEmpty('areaPriceSalesChart', 'No sales data available for this area yet.');
             return;
         }
 
@@ -308,9 +327,18 @@
 
         const typeSeries = @json($typeChartData);
 
-        Object.keys(typeSeries || {}).forEach(function (key) {
+        const expectedKeys = ['detached', 'semi', 'terraced', 'flat'];
+        expectedKeys.forEach(function (key) {
             const cfg = typeSeries[key];
-            if (!cfg.years.length) {
+            if (!cfg || !cfg.years.length) {
+                showEmpty('areaTypeChart_' + key, 'No ' + key.replace('-', ' ') + ' sales data available for this area.');
+                return;
+            }
+
+            const hasSales = (cfg.salesCounts || []).some(v => v && v > 0);
+            const hasPrices = (cfg.avgPrices || []).some(v => v && v > 0);
+            if (!hasSales && !hasPrices) {
+                showEmpty('areaTypeChart_' + key, 'No ' + key.replace('-', ' ') + ' sales data available for this area.');
                 return;
             }
 
@@ -456,103 +484,103 @@
 
         // --- Property type split chart ---
         const typeSplit = @json($propertyTypeSplit);
-        if (typeSplit && typeSplit.years && typeSplit.years.length) {
-            const el = document.getElementById('areaTypeSplitChart');
-            if (el) {
-                const typeColorMap = {
-                    'Detached': 'oklch(64.8% 0.2 131.684)',
-                    'Semi-detached': 'oklch(64.5% 0.246 16.439)',
-                    'Terraced': 'oklch(66.6% 0.179 58.318)',
-                    'Flat': 'rgba(54, 162, 235, 0.8)',
-                    'Other': 'rgba(75, 192, 192, 0.8)'
-                };
+        const typeSplitEl = document.getElementById('areaTypeSplitChart');
+        if (!typeSplit || !typeSplit.years || !typeSplit.years.length) {
+            showEmpty('areaTypeSplitChart', 'No property type split data available for this area.');
+        } else if (typeSplitEl) {
+            const typeColorMap = {
+                'Detached': 'oklch(64.8% 0.2 131.684)',
+                'Semi-detached': 'oklch(64.5% 0.246 16.439)',
+                'Terraced': 'oklch(66.6% 0.179 58.318)',
+                'Flat': 'rgba(54, 162, 235, 0.8)',
+                'Other': 'rgba(75, 192, 192, 0.8)'
+            };
 
-                const datasets = [];
-                Object.keys(typeSplit.types).forEach(function (key) {
-                    const label = typeSplit.types[key].label;
-                    const color = typeColorMap[label] || 'rgba(148, 163, 184, 0.8)';
+            const datasets = [];
+            Object.keys(typeSplit.types).forEach(function (key) {
+                const label = typeSplit.types[key].label;
+                const color = typeColorMap[label] || 'rgba(148, 163, 184, 0.8)';
 
-                    datasets.push({
-                        type: 'bar',
-                        label: label,
-                        data: typeSplit.types[key].counts,
-                        borderWidth: 1,
-                        backgroundColor: color,
-                        borderColor: color,
-                        stacked: true,
-                    });
-                });
-
-                new Chart(el, {
+                datasets.push({
                     type: 'bar',
-                    data: {
-                        labels: typeSplit.years,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Sales split by property type',
-                                font: { size: 16, weight: 'bold' }
-                            }
-                        },
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
-                        }
-                    }
+                    label: label,
+                    data: typeSplit.types[key].counts,
+                    borderWidth: 1,
+                    backgroundColor: color,
+                    borderColor: color,
+                    stacked: true,
                 });
-            }
+            });
+
+            new Chart(typeSplitEl, {
+                type: 'bar',
+                data: {
+                    labels: typeSplit.years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sales split by property type',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
+                    }
+                }
+            });
         }
 
         // --- New build split chart ---
         const newSplit = @json($newBuildSplit);
-        if (newSplit && newSplit.years && newSplit.years.length) {
-            const el2 = document.getElementById('newBuildSplitChart');
-            if (el2) {
-                const nbColors = {
-                    Y: '#22c55e', // New build
-                    N: '#6b7280', // Existing
-                };
-                const ds2 = [];
-                Object.keys(newSplit.series).forEach(function(flag) {
-                    ds2.push({
-                        type: 'bar',
-                        label: newSplit.series[flag].label,
-                        data: newSplit.series[flag].counts,
-                        borderWidth: 1,
-                        backgroundColor: nbColors[flag] || 'rgba(148,163,184,0.8)',
-                        borderColor: nbColors[flag] || 'rgba(148,163,184,1)',
-                        stacked: true,
-                    });
-                });
-
-                new Chart(el2, {
+        const newSplitEl = document.getElementById('newBuildSplitChart');
+        if (!newSplit || !newSplit.years || !newSplit.years.length) {
+            showEmpty('newBuildSplitChart', 'No new build vs existing data available for this area.');
+        } else if (newSplitEl) {
+            const nbColors = {
+                Y: '#22c55e', // New build
+                N: '#6b7280', // Existing
+            };
+            const ds2 = [];
+            Object.keys(newSplit.series).forEach(function(flag) {
+                ds2.push({
                     type: 'bar',
-                    data: {
-                        labels: newSplit.years,
-                        datasets: ds2
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'New build vs existing sales',
-                                font: { size: 16, weight: 'bold' }
-                            }
-                        },
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
-                        }
-                    }
+                    label: newSplit.series[flag].label,
+                    data: newSplit.series[flag].counts,
+                    borderWidth: 1,
+                    backgroundColor: nbColors[flag] || 'rgba(148,163,184,0.8)',
+                    borderColor: nbColors[flag] || 'rgba(148,163,184,1)',
+                    stacked: true,
                 });
-            }
+            });
+
+            new Chart(newSplitEl, {
+                type: 'bar',
+                data: {
+                    labels: newSplit.years,
+                    datasets: ds2
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'New build vs existing sales',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
+                    }
+                }
+            });
         }
     })();
 </script>
