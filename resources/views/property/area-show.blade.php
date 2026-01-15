@@ -9,27 +9,6 @@
     $metaAvg = isset($summary) && !is_null($summary->avg_price ?? null) ? '£' . number_format((float) $summary->avg_price, 0) : 'n/a';
     $metaYears = $yearsCount ? $yearsCount . ' years' : 'limited history';
     $metaDesc = "{$areaTitle} house price stats: average {$metaAvg}, {$metaSales} sales, {$metaYears} of data. Trends, types, and tenure breakdowns.";
-    $relatedAreas = [];
-    $areasFile = public_path('data/property_districts.json');
-    if (is_file($areasFile)) {
-        $areas = json_decode(file_get_contents($areasFile), true);
-        if (is_array($areas)) {
-            $typed = array_values(array_filter($areas, function ($a) use ($type) {
-                return isset($a['type']) && $a['type'] === $type;
-            }));
-            $norm = function ($s) {
-                return strtolower(preg_replace('/[^a-z0-9]+/i', '', $s));
-            };
-            $current = $norm($areaName);
-            $related = array_values(array_filter($typed, function ($a) use ($current, $norm) {
-                return $norm($a['name'] ?? '') !== $current;
-            }));
-            usort($related, function ($a, $b) {
-                return strcasecmp($a['name'] ?? '', $b['name'] ?? '');
-            });
-            $relatedAreas = array_slice($related, 0, 12);
-        }
-    }
 @endphp
 
 @section('title', "{$areaTitle} | PropertyResearch.uk")
@@ -127,20 +106,6 @@
             </div>
         </div>
     </div>
-
-    @if(!empty($relatedAreas))
-        <div class="mt-10 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
-            <h2 class="text-sm font-semibold text-zinc-700 mb-3">Explore nearby {{ ucfirst($type) }} areas</h2>
-            <div class="flex flex-wrap gap-2">
-                @foreach($relatedAreas as $area)
-                    <a href="{{ $area['path'] ?? '#' }}"
-                       class="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-700 hover:bg-zinc-100">
-                        {{ $area['label'] ?? $area['name'] ?? 'Area' }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endif
 
 </div>
 

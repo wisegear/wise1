@@ -223,4 +223,5 @@ class PropertyAreaController extends Controller
             'generated_at'      => now()->toIso8601String(),
         ];
     }
+
 }
