@@ -29,6 +29,9 @@ class PagesController extends Controller
         ]);
 
         $totalStress = Cache::get('eco:total_stress');
+        if (is_null($totalStress)) {
+            $totalStress = Cache::get('eco:total_stress_persist');
+        }
 
         return view('pages.home', compact('posts', 'stats', 'totalStress'));
     }
