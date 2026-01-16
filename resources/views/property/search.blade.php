@@ -31,7 +31,7 @@
                     </h2>
                     <p class="text-xs text-zinc-600">
                         View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
-                        property sales.  England and Wales only.  Category A property sales are green, Category B property sales are red.
+                        property sales.  England and Wales only.  Category A property sales are <span class="text-green-600 font-bold">green</span>, Category B property sales are <span class="text-red-600 font-bold">red</span>.
                     </p>
                 </div>
                 <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
