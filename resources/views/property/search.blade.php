@@ -11,7 +11,7 @@
                 There are currently in excess of<span class="text-lime-700"> 30m</span> records in this table.
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                You can either search for a specific postcode to see every sale in that postcode, or search for a
+                You can either search directly on the map, for a specific postcode to see every sale in that postcode, or search for a
                 locality, town/city, district or county to view a wider area summary. Data covers the period from
                 January 1995 to October 2025.
             </p>
@@ -30,7 +30,8 @@
                         <i class="fa-solid fa-map-location-dot text-lime-600"></i> Land Registry points (England &amp; Wales)
                     </h2>
                     <p class="text-xs text-zinc-600">
-                        Pan and zoom to load property points. Click a point to open the property details page.
+                        View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
+                        property sales.  England and Wales only.
                     </p>
                 </div>
                 <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
