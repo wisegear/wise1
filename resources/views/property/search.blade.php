@@ -36,7 +36,7 @@
                 </div>
                 <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
             </div>
-            <div id="property-points-map" class="mt-4 h-96 md:h-[32rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
+            <div id="property-points-map" class="mt-4 h-96 md:h-[36rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
             <p id="points-status" class="mt-2 text-xs text-zinc-500">Zoom in to load property points.</p>
         </div>
     </section>
