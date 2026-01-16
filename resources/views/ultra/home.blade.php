@@ -31,16 +31,15 @@
     </section>
 
     <div class="mb-6 flex flex-col items-center gap-3">
-        <span class="text-sm text-neutral-700 font-bold">Filter:</span>
         <div id="districtFilterGroup" class="flex flex-wrap justify-center gap-2">
 
             @if(($districts ?? collect())->contains('ALL'))
                 <button
                     type="button"
-                    class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                    class="inner-button"
                     data-district-filter="ALL"
                 >
-                    All Ultra Prime (aggregate)
+                    All Ultra Prime
                 </button>
             @endif
 
@@ -48,7 +47,7 @@
                 @if($d !== 'ALL')
                     <button
                         type="button"
-                        class="prime-filter-btn px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                        class="inner-button"
                         data-district-filter="{{ $d }}"
                     >
                         {{ $d }}

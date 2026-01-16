@@ -140,20 +140,34 @@
             }
         }
     @endphp
-    <div class="mb-6 flex flex-wrap items-center justify-end gap-2 text-sm">
+    @php
+        $streetViewUrl = ($mapLat && $mapLong)
+            ? 'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' . $mapLat . ',' . $mapLong
+            : 'https://www.google.com/maps/@?api=1&map_action=pano&query=' . urlencode($displayAddress);
+    @endphp
+    <div class="mb-6 flex flex-wrap items-center justify-center gap-2 text-sm">
         <a href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inner-button inline-flex items-center gap-2 rounded-md bg-lime-600 hover:bg-lime-700 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2a7 7 0 00-7 7c0 5.25 7 12 7 12s7-6.75 7-12a7 7 0 00-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
             </svg>
             <span>View in Google Maps</span>
         </a>
+        <a href="{{ $streetViewUrl }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inner-button inline-flex gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M4.5 6.75A2.25 2.25 0 016.75 4.5h10.5A2.25 2.25 0 0119.5 6.75v6.5A2.25 2.25 0 0117.25 15.5H9l-3.25 3.25V15.5A2.25 2.25 0 014.5 13.25v-6.5zm5.25 4.25a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0z"/>
+            </svg>
+            <span>Street View</span>
+        </a>
         <a href="https://www.google.com/search?q={{ urlencode($displayAddress) }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inner-button inline-flex items-center gap-2 rounded-md bg-zinc-700 hover:bg-zinc-500 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
@@ -164,7 +178,7 @@
         <a href="{{ $rightmoveUrl }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 inner-button"
+           class="inline-flex inner-button gap-2"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M4.5 4.5h15a1 1 0 011 1v9a1 1 0 01-1 1H8.414L4.5 19.914V5.5a1 1 0 011-1z"/>
@@ -177,7 +191,7 @@
         <a href="{{ $zooplaUrl }}"
            target="_blank"
            rel="noopener noreferrer"
-           class="inner-button inline-flex items-center gap-2 rounded-md bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 shadow-sm transition">
+           class="inner-button inline-flex gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M10.25 3.5a6.75 6.75 0 105.22 11.2l3.4 3.4a1 1 0 001.42-1.42l-3.4-3.4A6.75 6.75 0 0010.25 3.5zm0 2a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5z"/>
             </svg>
