@@ -324,7 +324,7 @@
         const pointsStatus = document.getElementById('points-status');
         if (pointsEl && typeof L !== 'undefined') {
             const bounds = L.latLngBounds([49.8, -6.6], [55.9, 2.2]);
-            const map = L.map('property-points-map', { scrollWheelZoom: false, maxBounds: bounds }).setView([52.7, -1.6], 6);
+            const map = L.map('property-points-map', { scrollWheelZoom: true, maxBounds: bounds }).setView([52.7, -1.6], 6);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors',
