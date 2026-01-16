@@ -312,6 +312,99 @@ class PropertyController extends Controller
             ->with(['sort' => $sort ?? 'Date', 'dir' => $dir ?? 'desc']);
     }
 
+    public function heatmap()
+    {
+        $cacheKey = 'land_registry_heatmap:lsoa21:v2';
+
+        if (!Cache::has($cacheKey)) {
+            return response()->json([
+                'status' => 'warming',
+                'message' => 'Heatmap cache is warming. Run `php artisan property:heatmap-warm` to generate it.',
+            ], 202);
+        }
+
+        $points = Cache::get($cacheKey, []);
+
+        return response()->json($points);
+    }
+
+    public function points(Request $request)
+    {
+        $south = (float) $request->query('south');
+        $west  = (float) $request->query('west');
+        $north = (float) $request->query('north');
+        $east  = (float) $request->query('east');
+        $zoom  = (int) $request->query('zoom', 6);
+        $limit = (int) $request->query('limit', 5000);
+
+        $limit = max(1000, min($limit, 15000));
+
+        if ($zoom < 12) {
+            return response()->json([
+                'status' => 'zoom',
+                'message' => 'Zoom in to load property points.',
+            ], 202);
+        }
+
+        $bboxKey = sprintf('%.3f:%.3f:%.3f:%.3f:z%d:l%d', $south, $west, $north, $east, $zoom, $limit);
+
+        $payload = Cache::remember('land_registry_points:' . $bboxKey, now()->addMinutes(10), function () use ($south, $west, $north, $east, $limit) {
+            $rows = DB::table('onspd as o')
+                ->join('land_registry as lr', 'lr.Postcode', '=', 'o.pcds')
+                ->whereIn('lr.PPDCategoryType', ['A', 'B'])
+                ->whereNotNull('o.lat')
+                ->whereNotNull('o.long')
+                ->whereBetween('o.lat', [$south, $north])
+                ->whereBetween('o.long', [$west, $east])
+                ->select([
+                    'o.lat',
+                    'o.long',
+                    'lr.Postcode',
+                    'lr.PAON',
+                    'lr.SAON',
+                    'lr.Street',
+                    'lr.Price',
+                    'lr.Date',
+                ])
+                ->limit($limit + 1)
+                ->get();
+
+            $truncated = $rows->count() > $limit;
+            if ($truncated) {
+                $rows = $rows->take($limit);
+            }
+
+            $points = $rows->map(function ($row) {
+                $postcode = (string) ($row->Postcode ?? '');
+                $paon = (string) ($row->PAON ?? '');
+                $street = (string) ($row->Street ?? '');
+                $saon = (string) ($row->SAON ?? '');
+
+                return [
+                    'lat' => (float) $row->lat,
+                    'lng' => (float) $row->long,
+                    'price' => $row->Price !== null ? (int) $row->Price : null,
+                    'date' => $row->Date ? (string) $row->Date : null,
+                    'address' => trim($paon . ' ' . $street),
+                    'postcode' => $postcode,
+                    'url' => route('property.show', [
+                        'postcode' => $postcode,
+                        'paon' => $paon,
+                        'street' => $street,
+                        'saon' => $saon,
+                    ], false),
+                ];
+            })->values();
+
+            return [
+                'points' => $points,
+                'truncated' => $truncated,
+            ];
+        });
+
+        return response()->json($payload);
+    }
+
 
     public function show(Request $request)
     {

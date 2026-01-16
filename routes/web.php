@@ -59,6 +59,8 @@ Route::post('/affordability/calculate', [AffordabilityController::class, 'calcul
 
 Route::get('/property', [PropertyController::class, 'home'])->name('property.home');
 Route::get('/property/search', [PropertyController::class, 'search'])->name('property.search');
+Route::get('/property/heatmap', [PropertyController::class, 'heatmap'])->name('property.heatmap');
+Route::get('/property/points', [PropertyController::class, 'points'])->name('property.points');
 Route::get('/property/show', [PropertyController::class, 'show'])->name('property.show');
 Route::get('/property/prime-central-london', [PrimeLondonController::class, 'home'])->name('property.pcl');
 Route::get('/property/outer-prime-london', [OuterPrimeLondonController::class, 'home'])->name('property.outer');

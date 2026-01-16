@@ -84,6 +84,25 @@
         </div>
     </section>
 
+    {{-- England & Wales heatmap --}}
+    <section class="mb-12">
+        <div class="rounded border border-zinc-200 bg-white/80 p-6">
+            <div class="flex items-start justify-between gap-6 flex-col md:flex-row">
+                <div>
+                    <h2 class="text-base font-semibold mb-2">
+                        <i class="fa-solid fa-map-location-dot text-lime-600"></i> Land Registry points (England &amp; Wales)
+                    </h2>
+                    <p class="text-xs text-zinc-600">
+                        Pan and zoom to load property points. Click a point to open the property details page.
+                    </p>
+                </div>
+                <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
+            </div>
+            <div id="property-points-map" class="mt-4 h-96 md:h-[32rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
+            <p id="points-status" class="mt-2 text-xs text-zinc-500">Zoom in to load property points.</p>
+        </div>
+    </section>
+
     {{-- Results --}}
     @if(isset($results))
         @if($results->count() === 0)
@@ -287,6 +306,12 @@
     @endif
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 {{-- Bulk postcode coordinates (from controller) to avoid per-row ONSPD lookups --}}
 <script>
     window.propertyCoordsByPostcode = @json($coordsByPostcode ?? []);
@@ -294,6 +319,114 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const pointsEl = document.getElementById('property-points-map');
+        const pointsStatus = document.getElementById('points-status');
+        if (pointsEl && typeof L !== 'undefined') {
+            const bounds = L.latLngBounds([49.8, -6.6], [55.9, 2.2]);
+            const map = L.map('property-points-map', { scrollWheelZoom: false, maxBounds: bounds }).setView([52.7, -1.6], 6);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 18,
+            }).addTo(map);
+
+            const cluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 40,
+                disableClusteringAtZoom: 15,
+                removeOutsideVisibleBounds: true,
+            });
+            map.addLayer(cluster);
+
+            let activeController = null;
+            let loadTimer = null;
+
+            const fmtGBP = function (value) {
+                if (value == null) return 'N/A';
+                return '£' + Number(value).toLocaleString('en-GB');
+            };
+
+            const fmtDate = function (value) {
+                if (!value) return 'Unknown date';
+                const d = new Date(value);
+                if (Number.isNaN(d.getTime())) return String(value);
+                return d.toLocaleDateString('en-GB');
+            };
+
+            const loadPoints = function () {
+                if (loadTimer) window.clearTimeout(loadTimer);
+                loadTimer = window.setTimeout(function () {
+                    const zoom = map.getZoom();
+                    const b = map.getBounds();
+                    const limit = zoom >= 16 ? 12000 : (zoom >= 14 ? 8000 : 3000);
+
+                    if (activeController) activeController.abort();
+                    activeController = new AbortController();
+
+                    if (pointsStatus) pointsStatus.textContent = 'Loading property points…';
+
+                    const url = new URL('{{ route('property.points', [], false) }}', window.location.origin);
+                    url.searchParams.set('south', b.getSouthWest().lat.toFixed(6));
+                    url.searchParams.set('west', b.getSouthWest().lng.toFixed(6));
+                    url.searchParams.set('north', b.getNorthEast().lat.toFixed(6));
+                    url.searchParams.set('east', b.getNorthEast().lng.toFixed(6));
+                    url.searchParams.set('zoom', String(zoom));
+                    url.searchParams.set('limit', String(limit));
+
+                    fetch(url.toString(), { signal: activeController.signal })
+                        .then(function (response) {
+                            if (response.status === 202) {
+                                return response.json().then(function (payload) {
+                                    if (pointsStatus) pointsStatus.textContent = payload.message || 'Zoom in to load property points.';
+                                    return null;
+                                });
+                            }
+                            if (!response.ok) throw new Error('Points response was not ok');
+                            return response.json();
+                        })
+                        .then(function (payload) {
+                            if (!payload) return;
+                            const points = Array.isArray(payload.points) ? payload.points : [];
+                            cluster.clearLayers();
+
+                            points.forEach(function (pt) {
+                                const marker = L.circleMarker([pt.lat, pt.lng], {
+                                    radius: 6,
+                                    color: '#0f172a',
+                                    weight: 1.5,
+                                    fillColor: '#22c55e',
+                                    fillOpacity: 0.9,
+                                });
+
+                                const label = pt.address ? pt.address + ', ' + pt.postcode : pt.postcode;
+                                const popup = '<div class="text-xs">' +
+                                    '<div class="font-semibold">' + (label || 'Property') + '</div>' +
+                                    '<div class="mt-1">Date: ' + fmtDate(pt.date) + '</div>' +
+                                    '<div>Price: ' + fmtGBP(pt.price) + '</div>' +
+                                    '<div class="mt-2"><a class="text-lime-700 hover:underline" href="' + pt.url + '">View property</a></div>' +
+                                    '</div>';
+
+                                marker.bindPopup(popup);
+                                cluster.addLayer(marker);
+                            });
+
+                            if (pointsStatus) {
+                                pointsStatus.textContent = payload.truncated
+                                    ? 'Showing a sample of points in view. Zoom in for more detail.'
+                                    : 'Showing ' + points.length.toLocaleString('en-GB') + ' points in view.';
+                            }
+                        })
+                        .catch(function (err) {
+                            if (err && err.name === 'AbortError') return;
+                            if (pointsStatus) pointsStatus.textContent = 'Property points could not be loaded right now.';
+                        });
+                }, 200);
+            };
+
+            map.on('moveend zoomend', loadPoints);
+            loadPoints();
+        }
+
         const input = document.getElementById('district-search');
         const suggestionsBox = document.getElementById('district-suggestions');
         if (!input || !suggestionsBox) return;
