@@ -31,7 +31,7 @@
                     </h2>
                     <p class="text-xs text-zinc-600">
                         View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
-                        property sales.  England and Wales only.
+                        property sales.  England and Wales only.  Category A property sales are green, Category B property sales are red.
                     </p>
                 </div>
                 <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
@@ -391,19 +391,22 @@
                             cluster.clearLayers();
 
                             points.forEach(function (pt) {
+                                const isCategoryB = String(pt.category || '').toUpperCase() === 'B';
                                 const marker = L.circleMarker([pt.lat, pt.lng], {
                                     radius: 6,
                                     color: '#0f172a',
                                     weight: 1.5,
-                                    fillColor: '#22c55e',
+                                    fillColor: isCategoryB ? '#ef4444' : '#22c55e',
                                     fillOpacity: 0.9,
                                 });
 
                                 const label = pt.address ? pt.address + ', ' + pt.postcode : pt.postcode;
+                                const categoryLabel = isCategoryB ? 'B' : 'A';
                                 const popup = '<div class="text-xs">' +
                                     '<div class="font-semibold">' + (label || 'Property') + '</div>' +
                                     '<div class="mt-1">Date: ' + fmtDate(pt.date) + '</div>' +
                                     '<div>Price: ' + fmtGBP(pt.price) + '</div>' +
+                                    '<div>Category: ' + categoryLabel + '</div>' +
                                     '<div class="mt-2"><a class="text-lime-700 hover:underline" href="' + pt.url + '">View property</a></div>' +
                                     '</div>';
 

@@ -365,6 +365,7 @@ class PropertyController extends Controller
                     'lr.Street',
                     'lr.Price',
                     'lr.Date',
+                    'lr.PPDCategoryType',
                 ])
                 ->limit($limit + 1)
                 ->get();
@@ -387,6 +388,7 @@ class PropertyController extends Controller
                     'date' => $row->Date ? (string) $row->Date : null,
                     'address' => trim($paon . ' ' . $street),
                     'postcode' => $postcode,
+                    'category' => (string) ($row->PPDCategoryType ?? ''),
                     'url' => route('property.show', [
                         'postcode' => $postcode,
                         'paon' => $paon,
