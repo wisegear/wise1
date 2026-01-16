@@ -50,7 +50,7 @@
                 <h2 class="text-base font-semibold mb-2"><i class="fa-solid fa-magnifying-glass-chart text-lime-600"></i> Search by postcode</h2>
                 <p class="text-xs text-zinc-600 mb-4">
                     Enter a full postcode to see every sale in that postcode from 1995 onwards. This is best when you
-                    want to look at a specific street or a small cluster of properties.
+                    want to look at a specific street or a small cluster of properties.  Property results are show in a table below once you click 'Search postcode'.
                 </p>
 
                 <form method="GET" action="{{ route('property.search') }}" class="space-y-3">
@@ -71,7 +71,7 @@
                     <button
                         type="submit"
                         class="inner-button">
-                        Search postcode
+                        Search Postcode
                     </button>
                 </form>
             </div>
