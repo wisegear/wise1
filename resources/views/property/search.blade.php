@@ -310,6 +310,39 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<style>
+    .price-pin {
+        --pin-color: #22c55e;
+        align-items: center;
+        background: var(--pin-color);
+        border: 1px solid rgba(15, 23, 42, 0.15);
+        border-radius: 999px;
+        color: #ffffff;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 600;
+        justify-content: center;
+        line-height: 1.1;
+        min-width: 44px;
+        padding: 3px 8px;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .price-pin::after {
+        border: 6px solid transparent;
+        border-top-color: var(--pin-color);
+        content: '';
+        left: 50%;
+        margin-left: -6px;
+        position: absolute;
+        top: 100%;
+    }
+
+    .price-pin--b {
+        --pin-color: #ef4444;
+    }
+</style>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
@@ -324,17 +357,29 @@
         const pointsStatus = document.getElementById('points-status');
         if (pointsEl && typeof L !== 'undefined') {
             const bounds = L.latLngBounds([49.8, -6.6], [55.9, 2.2]);
-            const map = L.map('property-points-map', { scrollWheelZoom: true, maxBounds: bounds }).setView([52.7, -1.6], 6);
+            const map = L.map('property-points-map', { scrollWheelZoom: true, maxBounds: bounds, maxZoom: 19 }).setView([52.7, -1.6], 6);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 18,
+                maxZoom: 19,
+                maxNativeZoom: 19,
             }).addTo(map);
+
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 19,
+                maxNativeZoom: 19,
+            });
+
+            L.control.layers({
+                'Map': osm,
+                'Satellite': satellite,
+            }, null, { position: 'topright', collapsed: true }).addTo(map);
 
             const cluster = L.markerClusterGroup({
                 chunkedLoading: true,
                 maxClusterRadius: 40,
-                disableClusteringAtZoom: 15,
+                disableClusteringAtZoom: 17,
                 removeOutsideVisibleBounds: true,
             });
             map.addLayer(cluster);
@@ -345,6 +390,23 @@
             const fmtGBP = function (value) {
                 if (value == null) return 'N/A';
                 return '£' + Number(value).toLocaleString('en-GB');
+            };
+
+            const fmtPriceCompact = function (value) {
+                if (value == null) return '£—';
+                const num = Number(value);
+                if (!Number.isFinite(num)) return '£—';
+                if (num >= 1000000) {
+                    const millions = num / 1000000;
+                    const rounded = millions >= 10 ? Math.round(millions) : Math.round(millions * 10) / 10;
+                    return '£' + rounded + 'm';
+                }
+                if (num >= 1000) {
+                    const thousands = num / 1000;
+                    const rounded = thousands >= 100 ? Math.round(thousands) : Math.round(thousands * 10) / 10;
+                    return '£' + rounded + 'k';
+                }
+                return '£' + Math.round(num);
             };
 
             const fmtDate = function (value) {
@@ -392,13 +454,15 @@
 
                             points.forEach(function (pt) {
                                 const isCategoryB = String(pt.category || '').toUpperCase() === 'B';
-                                const marker = L.circleMarker([pt.lat, pt.lng], {
-                                    radius: 6,
-                                    color: '#0f172a',
-                                    weight: 1.5,
-                                    fillColor: isCategoryB ? '#ef4444' : '#22c55e',
-                                    fillOpacity: 0.9,
+                                const priceLabel = fmtPriceCompact(pt.price);
+                                const icon = L.divIcon({
+                                    className: '',
+                                    html: '<div class="price-pin ' + (isCategoryB ? 'price-pin--b' : '') + '">' + priceLabel + '</div>',
+                                    iconSize: [64, 28],
+                                    iconAnchor: [32, 28],
+                                    popupAnchor: [0, -26],
                                 });
+                                const marker = L.marker([pt.lat, pt.lng], { icon: icon });
 
                                 const label = pt.address ? pt.address + ', ' + pt.postcode : pt.postcode;
                                 const categoryLabel = isCategoryB ? 'B' : 'A';
