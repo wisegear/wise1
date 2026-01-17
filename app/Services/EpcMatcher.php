@@ -132,19 +132,6 @@ class EpcMatcher
             $score += 8;
         }
 
-        // Date proximity: optional, very light bonus only (never penalise)
-        if ($refDate && !empty($lodgementDate)) {
-            try {
-                $lodged = Carbon::parse($lodgementDate);
-                $months = abs($lodged->diffInMonths($refDate));
-                if ($months <= 36)      { $score += 6; }
-                elseif ($months <= 60)  { $score += 3; }
-                // >60 months: no bonus
-            } catch (\Throwable $e) {
-                // ignore parse errors
-            }
-        }
-
         if ($score < 0) $score = 0;
         return min(100, $score);
     }
