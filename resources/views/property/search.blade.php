@@ -31,7 +31,8 @@
                     </h2>
                     <p class="text-xs text-zinc-600">
                         View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
-                        property sales.  England and Wales only.  Category A property sales are <span class="text-green-600 font-bold">green</span>, Category B property sales are <span class="text-red-600 font-bold">red</span>.
+                        property sales.  England and Wales only.  Category A property sales are <span class="text-green-600 font-bold">green</span>, Category B property sales are <span class="text-red-600 font-bold">red</span>.  Where a property
+                        has multiple sales, the most recent sale is shown.
                     </p>
                 </div>
                 <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
@@ -312,7 +313,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <style>
     .price-pin {
-        --pin-color: #22c55e;
+        --pin-color: #166433;
         align-items: center;
         background: var(--pin-color);
         border: 1px solid rgba(15, 23, 42, 0.15);
@@ -341,6 +342,7 @@
 
     .price-pin--b {
         --pin-color: #ef4444;
+        color: #ffffff;
     }
 </style>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
