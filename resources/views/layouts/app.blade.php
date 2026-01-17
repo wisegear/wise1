@@ -12,6 +12,19 @@
         ));
         $metaUrl = url()->current();
         $metaImage = asset('assets/images/site/research-logo-4.png');
+        $schemaWebsite = [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => config('app.name', 'PropertyResearch'),
+            'url' => url('/'),
+        ];
+        $schemaOrg = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => config('app.name', 'PropertyResearch'),
+            'url' => url('/'),
+            'logo' => $metaImage,
+        ];
     @endphp
 
     <meta name="description" content="{{ $metaDescription }}">
@@ -60,6 +73,9 @@
     @hasSection('meta')
         @yield('meta')
     @endif
+
+    <script type="application/ld+json">{!! json_encode($schemaWebsite, JSON_UNESCAPED_SLASHES) !!}</script>
+    <script type="application/ld+json">{!! json_encode($schemaOrg, JSON_UNESCAPED_SLASHES) !!}</script>
 
     <!-- Vite Assets - Moved to top to prevent FOUC (Flash of Unstyled Content) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
