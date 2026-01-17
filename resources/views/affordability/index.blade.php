@@ -11,8 +11,8 @@
             <p class="text-sm text-zinc-600 pt-2">Knowing whether you can afford a mortgage from a lenders perspective can be quite tricky, unless you have spent many years in different lenders making those decision, which I have.
                 To assist those looking to be better prepared, I have create a simplfied version of a calculator that looks at the key elements of mortgage affordability from the lenders perspective.
             </p>
-            <p class="text-sm pt-2 font-semibold italic text-rose-700">Importantly, each lender is different, don't assume just because it says you can afford it using this tool, that a lender will agree.  They all have
-                their own tools and forumulas.
+            <p class="text-sm pt-2 font-semibold italic text-amber-700">Importantly, each lender is different, don't assume just because it says you can afford it using this tool, that a lender will agree.  They all have
+                their own tools and forumulas.  Equally, don't assume that just because this tool says you can't afford it, that a lender won't lend to you.  This is a guide only.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
