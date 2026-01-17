@@ -316,12 +316,6 @@
                              role="menu" 
                              aria-labelledby="calculatorsMenuButton" 
                              class="absolute left-0 mt-4 w-56 bg-white border border-zinc-200 rounded shadow-lg z-50 transform transition duration-150 ease-out origin-top opacity-0 scale-95 pointer-events-none hidden">
-                            <a href="{{ url('/affordability') }}" 
-                               role="menuitem" 
-                               tabindex="-1" 
-                               class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">
-                                Affordability Calculator
-                            </a>
                             <a href="{{ url('/mortgage-calculator') }}" 
                                role="menuitem" 
                                tabindex="-1" 
@@ -333,6 +327,12 @@
                                tabindex="-1" 
                                class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">
                                 Stamp Duty Calculator
+                            </a>
+                            <a href="{{ url('/affordability') }}" 
+                               role="menuitem" 
+                               tabindex="-1" 
+                               class="block px-4 py-2 hover:bg-zinc-100 text-zinc-700">
+                                Affordability Calculator
                             </a>
                         </div>
                     </div>
@@ -564,10 +564,6 @@
                     
                     <!-- Calculators Submenu Items -->
                     <div id="mobileCalculatorsMenu" class="hidden flex-col pl-2 space-y-1 mt-1">
-                        <a href="{{ url('/affordability') }}" 
-                           class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">
-                            Affordability Calculator
-                        </a>
                         <a href="{{ url('/mortgage-calculator') }}" 
                            class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">
                             Mortgage Calculator
@@ -575,6 +571,10 @@
                         <a href="{{ url('/stamp-duty') }}" 
                            class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">
                             Stamp Duty Calculator
+                        </a>
+                        <a href="{{ url('/affordability') }}" 
+                           class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">
+                            Affordability Calculator
                         </a>
                     </div>
                 </div>

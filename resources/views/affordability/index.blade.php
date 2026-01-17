@@ -35,18 +35,13 @@
             </div>
         @endif
 
-        {{-- Section 1: Property Details --}}
-        <details id="sec-property" class="rounded-lg border border-gray-200 bg-white/90 shadow-sm md:p-1" open>
-            <summary class="list-none cursor-pointer select-none p-4 md:p-5 flex items-center justify-between">
-                <span class="flex items-center gap-2 md:gap-3">
-                    <span class="text-lg md:text-xl font-semibold text-gray-900">Property Details</span>
-                    <span id="status-property" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
-                    <span id="label-property" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
-                </span>
-                <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
-            </summary>
-            <div class="px-4 md:px-6 pb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-8">
+            <section class="rounded-lg border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
+                <div>
+                    <h2 class="text-lg md:text-xl font-semibold text-gray-900">Property Details</h2>
+                    <p class="text-sm text-zinc-600 mt-1">Enter the basics of the property and mortgage you are planning.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
                     <!-- Property Value -->
                     <div>
                         <label for="property_value" class="block text-sm font-medium text-gray-700 mb-1">Property Value (£)</label>
@@ -87,25 +82,17 @@
                         @enderror
                     </div>
                 </div>
-            </div>
-        </details>
+            </section>
 
-        {{-- Section 2: Income Details --}}
-        <details id="sec-income" class="rounded-lg border border-gray-200 bg-white/90 shadow-sm md:p-1 mt-4">
-            <summary class="list-none cursor-pointer select-none p-4 md:p-5 flex items-center justify-between">
-                <span class="flex items-center gap-2 md:gap-3">
-                    <span class="text-lg md:text-xl font-semibold text-gray-900">Income Details</span>
-                    <span id="status-income" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
-                    <span id="label-income" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
-                </span>
-                <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
-            </summary>
-            <div class="px-4 md:px-6 pb-6">
-                <p class="text-sm text-zinc-600 mb-4">Include all regular income such as salary, bonuses, commission, overtime, allowances, and verified benefits. Use <span class="font-semibold">gross annual</span> for total before tax, and <span class="font-semibold">net annual</span> for take‑home after tax and NI.</p>
-                <div class="grid grid-cols-1 gap-8">
-                    <fieldset class="border border-gray-200 rounded-md p-4">
-                        <legend class="px-2 text-sm font-semibold text-gray-800">Applicant 1 (required)</legend>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+            <section class="rounded-lg border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
+                <div>
+                    <h2 class="text-lg md:text-xl font-semibold text-gray-900">Income Details</h2>
+                    <p class="text-sm text-zinc-600 mt-1">Include all regular income. Use <span class="font-semibold">gross annual</span> for total before tax and <span class="font-semibold">net annual</span> for take‑home after tax and NI.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-5">
+                    <div class="rounded-md border border-gray-200 p-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Applicant 1 (required)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="app1_gross_annual" class="block text-sm font-medium text-gray-700 mb-1">Gross Annual Income (£)</label>
                                 <input type="text" inputmode="numeric" data-format="currency" name="app1_gross_annual" id="app1_gross_annual" class="w-full rounded-md border border-zinc-400 p-2 text-base shadow-sm focus:border-lime-500 focus:ring-lime-500" placeholder="e.g. 60,000" required value="{{ old('app1_gross_annual', $prefill['app1_gross_annual'] ?? '') }}">
@@ -121,11 +108,11 @@
                                 @enderror
                             </div>
                         </div>
-                    </fieldset>
+                    </div>
 
-                    <fieldset class="border border-gray-200 rounded-md p-4">
-                        <legend class="px-2 text-sm font-semibold text-gray-800">Applicant 2 (optional)</legend>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                    <div class="rounded-md border border-gray-200 p-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Applicant 2 (optional)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="app2_gross_annual" class="block text-sm font-medium text-gray-700 mb-1">Gross Annual Income (£)</label>
                                 <input type="text" inputmode="numeric" data-format="currency" name="app2_gross_annual" id="app2_gross_annual" class="w-full rounded-md border border-zinc-400 p-2 text-base shadow-sm focus:border-lime-500 focus:ring-lime-500" placeholder="e.g. 40,000" value="{{ old('app2_gross_annual', $prefill['app2_gross_annual'] ?? '') }}">
@@ -141,28 +128,19 @@
                                 @enderror
                             </div>
                         </div>
-                    </fieldset>
+                    </div>
                 </div>
-            </div>
-        </details>
+            </section>
 
-        {{-- Section 3: Financial Commitments --}}
-        <details id="sec-commitments" class="rounded-lg border border-gray-200 bg-white/90 shadow-sm md:p-1 mt-4">
-            <summary class="list-none cursor-pointer select-none p-4 md:p-5 flex items-center justify-between">
-                <span class="flex items-center gap-2 md:gap-3">
-                    <span class="text-lg md:text-xl font-semibold text-gray-900">Financial Commitments</span>
-                    <span id="status-commitments" class="inline-block h-3 w-3 md:h-4 md:w-4 rounded-full bg-amber-500" title="Incomplete"></span>
-                    <span id="label-commitments" class="ml-2 text-xs md:text-sm font-medium text-amber-600">Incomplete</span>
-                </span>
-                <svg class="w-4 h-4 text-zinc-500 transition-transform duration-200 details-toggle" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/></svg>
-            </summary>
-            <div class="px-4 md:px-6 pb-6">
-                <p class="text-sm text-zinc-600 mb-4">Add regular, ongoing commitments that lenders consider in affordability. Use totals where applicable.</p>
-                <div class="grid grid-cols-1 gap-8">
-
-                    <fieldset class="border border-gray-200 rounded-md p-4">
-                        <legend class="px-2 text-sm font-semibold text-gray-800">Loans & Hire Purchase</legend>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+            <section class="rounded-lg border border-gray-200 bg-white p-5 md:p-6 shadow-sm">
+                <div>
+                    <h2 class="text-lg md:text-xl font-semibold text-gray-900">Financial Commitments</h2>
+                    <p class="text-sm text-zinc-600 mt-1">Add regular, ongoing commitments that lenders consider in affordability.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-5">
+                    <div class="rounded-md border border-gray-200 p-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Loans & Hire Purchase</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="commit_loans_hp_monthly" class="block text-sm font-medium text-gray-700 mb-1">Loans / HP – Total Monthly Cost (£)</label>
                                 <input type="text" inputmode="numeric" data-format="currency" name="commit_loans_hp_monthly" id="commit_loans_hp_monthly" class="w-full rounded-md border border-zinc-400 p-2 text-base shadow-sm focus:border-lime-500 focus:ring-lime-500" placeholder="e.g. 300" value="{{ old('commit_loans_hp_monthly', $prefill['commit_loans_hp_monthly'] ?? '') }}">
@@ -178,23 +156,21 @@
                                 @enderror
                             </div>
                         </div>
-                    </fieldset>
+                    </div>
 
-                    <fieldset class="border border-gray-200 rounded-md p-4">
-                        <legend class="px-2 text-sm font-semibold text-gray-800">Other Regular Outgoings</legend>
-                        <div class="grid grid-cols-1 gap-6 mt-2">
-                            <div>
-                                <label for="commit_other_monthly" class="block text-sm font-medium text-gray-700 mb-1">Other Regular Outgoings – Monthly (£)</label>
-                                <input type="text" inputmode="numeric" data-format="currency" name="commit_other_monthly" id="commit_other_monthly" class="w-full rounded-md border border-zinc-400 p-2 text-base shadow-sm focus:border-lime-500 focus:ring-lime-500" placeholder="e.g. 200" value="{{ old('commit_other_monthly', $prefill['commit_other_monthly'] ?? '') }}">
-                                @error('commit_other_monthly')
-                                    <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                    <div class="rounded-md border border-gray-200 p-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Other Regular Outgoings</h3>
+                        <div>
+                            <label for="commit_other_monthly" class="block text-sm font-medium text-gray-700 mb-1">Other Regular Outgoings – Monthly (£)</label>
+                            <input type="text" inputmode="numeric" data-format="currency" name="commit_other_monthly" id="commit_other_monthly" class="w-full rounded-md border border-zinc-400 p-2 text-base shadow-sm focus:border-lime-500 focus:ring-lime-500" placeholder="e.g. 200" value="{{ old('commit_other_monthly', $prefill['commit_other_monthly'] ?? '') }}">
+                            @error('commit_other_monthly')
+                                <p class="text-xs text-rose-600 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                    </fieldset>
+                    </div>
                 </div>
-            </div>
-        </details>
+            </section>
+        </div>
 
         <div class="flex justify-end">
             <button type="submit" class="inner-button">
@@ -205,33 +181,6 @@
 
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function(){
-    const groups = [
-      document.getElementById('sec-property'),
-      document.getElementById('sec-income'),
-      document.getElementById('sec-commitments')
-    ].filter(Boolean);
-
-    // rotate chevrons
-    const syncChevron = (det) => {
-      const icon = det.querySelector('.details-toggle');
-      if (!icon) return;
-      icon.style.transform = det.open ? 'rotate(180deg)' : 'rotate(0deg)';
-    };
-
-    groups.forEach(d => {
-      syncChevron(d);
-      d.addEventListener('toggle', () => {
-        syncChevron(d);
-        // Close others when one opens
-        if (d.open) {
-          groups.forEach(o => { if (o !== d) o.open = false; });
-        }
-      });
-    });
-  });
-</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const formatNumber = (digits) => {
@@ -287,78 +236,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  const val = id => {
-    const el = document.getElementById(id);
-    return el ? String(el.value).trim() : '';
-  };
-
-  // Set a specific color + tooltip on a status dot and update label
-  const setDot = (id, color, title) => {
-    const dot = document.getElementById(id);
-    if (!dot) return;
-    dot.classList.remove('bg-emerald-500','bg-amber-500','bg-rose-500');
-    dot.classList.add(color);
-    if (title) dot.setAttribute('title', title);
-
-    // Also set the text label next to the dot
-    const labelId = id.replace('status', 'label');
-    const label = document.getElementById(labelId);
-    if (label) {
-      label.textContent = title || '';
-      label.classList.remove('text-emerald-600','text-amber-600','text-rose-600');
-      let textClass = 'text-zinc-600';
-      if (color.includes('emerald')) textClass = 'text-emerald-600';
-      else if (color.includes('amber')) textClass = 'text-amber-600';
-      else if (color.includes('rose')) textClass = 'text-rose-600';
-      label.classList.add(textClass);
-    }
-  };
-
-  // Completion rules
-  const propertyComplete = () => val('property_value') && val('loan_amount') && val('term_years') && val('mortgage_type');
-  const incomeComplete    = () => val('app1_gross_annual') && val('app1_net_annual');
-  const commitmentsAny    = () => val('commit_loans_hp_monthly') || val('commit_credit_cards_balance') || val('commit_other_monthly');
-
-  const update = () => {
-    // Property: required → green if complete, red if not
-    if (propertyComplete()) {
-      setDot('status-property', 'bg-emerald-500', 'Complete');
-    } else {
-      setDot('status-property', 'bg-rose-500', 'Incomplete');
-    }
-
-    // Income: required → green if complete, red if not
-    if (incomeComplete()) {
-      setDot('status-income', 'bg-emerald-500', 'Complete');
-    } else {
-      setDot('status-income', 'bg-rose-500', 'Incomplete');
-    }
-
-    // Commitments: optional → green if any provided, amber if none
-    if (commitmentsAny()) {
-      setDot('status-commitments', 'bg-emerald-500', 'Complete');
-    } else {
-      setDot('status-commitments', 'bg-amber-500', 'Optional');
-    }
-  };
-
-  // Run once on load
-  update();
-
-  // Watch relevant fields
-  [
-    'property_value','loan_amount','term_years','mortgage_type',
-    'app1_gross_annual','app1_net_annual',
-    'commit_loans_hp_monthly','commit_credit_cards_balance','commit_other_monthly'
-  ].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    ['input','change','blur'].forEach(ev => el.addEventListener(ev, update));
-  });
 });
 </script>
 

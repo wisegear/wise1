@@ -70,71 +70,85 @@
 
     {{-- Combined Summary Panel --}}
     <section class="rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b border-zinc-300 pb-2">Your Details (Review)</h2>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4 border-b border-zinc-200 pb-3">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Your Details (Review)</h2>
+                <p class="text-sm text-zinc-600">A clean summary of the information used in the calculations.</p>
+            </div>
+            <span class="text-xs text-zinc-500">All figures shown before stress testing</span>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Property -->
-            <div>
-                <h3 class="text-sm font-semibold text-gray-800 mb-2">Property</h3>
-                <dl class="space-y-2 text-sm">
-                    <div>
-                        <dt class="text-zinc-600">Property Value</dt>
-                        <dd class="font-semibold">{{ $money($value, 0) }}</dd>
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Property</h3>
+                <div class="grid gap-3 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-600">Property Value</span>
+                        <span class="font-semibold text-gray-900">{{ $money($value, 0) }}</span>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Loan Amount</dt>
-                        <dd class="font-semibold">{{ $money($loan, 0) }}</dd>
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-600">Loan Amount</span>
+                        <span class="font-semibold text-gray-900">{{ $money($loan, 0) }}</span>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Loan to Value (LTV)</dt>
-                        <dd class="font-semibold">{{ is_null($ltv) ? '—' : number_format($ltv, 1) . '%' }}</dd>
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-600">Loan to Value (LTV)</span>
+                        <span class="font-semibold text-gray-900">{{ is_null($ltv) ? '—' : number_format($ltv, 1) . '%' }}</span>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Estimated Payment @ 4.5%</dt>
-                        <dd class="font-semibold">{{ $money($monthly, 2) }} <span class="text-zinc-600 font-normal">/ month</span></dd>
-                        <dd class="text-zinc-600">{{ $money($annual, 2) }} per year · Term {{ $termY }} years · {{ $type === 'interest_only' ? 'Interest Only' : 'Repayment' }}</dd>
+                    <div class="border-t border-zinc-200 pt-3">
+                        <div class="text-xs uppercase tracking-wide text-zinc-500">Estimated Payment @ 4.5%</div>
+                        <div class="mt-1 font-semibold text-gray-900">{{ $money($monthly, 2) }} <span class="text-zinc-600 font-normal">/ month</span></div>
+                        <div class="text-zinc-600 text-xs">{{ $money($annual, 2) }} per year · Term {{ $termY }} years · {{ $type === 'interest_only' ? 'Interest Only' : 'Repayment' }}</div>
                     </div>
-                </dl>
+                </div>
             </div>
 
             <!-- Income -->
-            <div>
-                <h3 class="text-sm font-semibold text-gray-800 mb-2">Income</h3>
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Income</h3>
                 @php $grossMonthly = $totalGross / 12; $netAnnual = $totalNet * 12; @endphp
-                <dl class="space-y-2 text-sm">
-                    <div>
-                        <dt class="text-zinc-600">Total Gross Income</dt>
-                        <dd class="font-semibold">{{ $money($grossMonthly, 0) }} <span class="text-zinc-600 font-normal">/ month</span></dd>
-                        <dd class="text-zinc-600">{{ $money($totalGross, 0) }} per year</dd>
+                <div class="grid gap-3 text-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-zinc-600">Gross Income</span>
+                        <span class="font-semibold text-gray-900">{{ $money($grossMonthly, 0) }} <span class="text-zinc-600 font-normal">/ month</span></span>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Total Net Income</dt>
-                        <dd class="font-semibold">{{ $money($totalNet, 0) }} <span class="text-zinc-600 font-normal">/ month</span></dd>
-                        <dd class="text-zinc-600">{{ $money($netAnnual, 0) }} per year</dd>
+                    <div class="text-xs text-zinc-600">{{ $money($totalGross, 0) }} per year</div>
+                    <div class="border-t border-zinc-200 pt-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-zinc-600">Net Income</span>
+                            <span class="font-semibold text-gray-900">{{ $money($totalNet, 0) }} <span class="text-zinc-600 font-normal">/ month</span></span>
+                        </div>
+                        <div class="text-xs text-zinc-600">{{ $money($netAnnual, 0) }} per year</div>
                     </div>
-                </dl>
+                </div>
             </div>
 
             <!-- Commitments -->
-            <div>
-                <h3 class="text-sm font-semibold text-gray-800 mb-2">Commitments</h3>
-                <dl class="space-y-2 text-sm">
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Commitments</h3>
+                <div class="grid gap-3 text-sm">
                     <div>
-                        <dt class="text-zinc-600">Loans & HP</dt>
-                        <dd class="font-semibold">{{ $money($loanMon, 2) }} <span class="text-zinc-600 font-normal">/ month</span></dd>
-                        <dd class="text-zinc-600">{{ $money($loanAnn, 2) }} per year</dd>
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-600">Loans & HP</span>
+                            <span class="font-semibold text-gray-900">{{ $money($loanMon, 2) }} <span class="text-zinc-600 font-normal">/ month</span></span>
+                        </div>
+                        <div class="text-xs text-zinc-600">{{ $money($loanAnn, 2) }} per year</div>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Credit Cards</dt>
-                        <dd class="font-semibold">Balance: {{ $money($ccBal, 0) }}</dd>
-                        <dd class="text-zinc-600">Estimated Cost: {{ $money($ccMon, 2) }} / month · {{ $money($ccAnn, 2) }} per year (3% assumption)</dd>
+                    <div class="border-t border-zinc-200 pt-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-600">Credit Cards</span>
+                            <span class="font-semibold text-gray-900">{{ $money($ccBal, 0) }}</span>
+                        </div>
+                        <div class="text-xs text-zinc-600">Est. cost {{ $money($ccMon, 2) }} / month · {{ $money($ccAnn, 2) }} / year (3% assumption)</div>
                     </div>
-                    <div>
-                        <dt class="text-zinc-600">Other Regular Outgoings</dt>
-                        <dd class="font-semibold">{{ $money($othMon, 2) }} <span class="text-zinc-600 font-normal">/ month</span></dd>
-                        <dd class="text-zinc-600">{{ $money($othAnn, 2) }} per year</dd>
+                    <div class="border-t border-zinc-200 pt-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-zinc-600">Other Outgoings</span>
+                            <span class="font-semibold text-gray-900">{{ $money($othMon, 2) }} <span class="text-zinc-600 font-normal">/ month</span></span>
+                        </div>
+                        <div class="text-xs text-zinc-600">{{ $money($othAnn, 2) }} per year</div>
                     </div>
-                </dl>
+                </div>
             </div>
         </div>
     </section>
@@ -220,7 +234,7 @@
     </section>
 
     <div class="mt-6">
-        <a href="{{ route('affordability.index', ['token' => $token ?? null]) }}" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">← Back to form</a>
+        <a href="{{ route('affordability.index', ['token' => $token ?? null]) }}" class="inline-flex inner-button">← Go back and amend form</a>
     </div>
 
 @endsection
