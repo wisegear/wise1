@@ -270,29 +270,25 @@
         @endif
     @endif
 
-    <!-- EPC Matches (collapsible) -->
+    <div class="my-8 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+    <!-- EPC Matches -->
     @php
-        $epcCount = is_countable($epcMatches ?? []) ? count($epcMatches ?? []) : 0;
+        $filteredEpcMatches = array_values(array_filter($epcMatches ?? [], function ($m) {
+            $score = (int) round($m['score'] ?? 0);
+            return $score >= 80;
+        }));
     @endphp
-    <details class="mt-6 group">
-        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
-            <div>
-                <h2 class="text-lg font-semibold m-0">EPC Certificates (matched by postcode & address)</h2>
-                <p class="text-xs text-zinc-600 mt-1">
-                    {{ $epcCount }} match{{ $epcCount === 1 ? '' : 'es' }} found. Click to {{ 'view' }}.
-                </p>
-            </div>
-            <span class="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
-        </summary>
 
-        <div class="mt-4">
-            @if(empty($epcMatches))
-                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg text-sm text-zinc-600">
+    <section class="h-full flex">
+        <div class="w-full flex flex-col">
+            @if(empty($filteredEpcMatches))
+                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg text-sm text-zinc-600 flex-1">
                     <p class="mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
-                    <p class="m-0">No EPC certificates found for this property.</p>
+                    <p class="m-0 font-semibold text-rose-400">No EPC certificates found for this property.</p>
                 </div>
             @else
-                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg">
+                <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg flex-1 flex flex-col">
+                    <h2 class="text-lg font-bold text-zinc-600 mb-2">Matched EPC Certificates</h2>
                     <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
@@ -308,7 +304,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($epcMatches as $m)
+                            @foreach($filteredEpcMatches as $m)
                                     @php
                                         $row = $m['row'];
                                     @endphp
@@ -348,7 +344,7 @@
                                                     title="View EPC report"
                                                     aria-label="View EPC report for {{ $row->address ?? 'this property' }}{{ !empty($row->postcode) ? ', '.$row->postcode : '' }}"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-lime-600 hover:bg-lime-700 text-white p-2 rounded" aria-hidden="true">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 bg-zinc-700 hover:bg-zinc-500 text-white p-2 rounded" aria-hidden="true">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
                                                     </svg>
                                                     <span class="sr-only">View</span>
@@ -365,7 +361,7 @@
                 </div>
             @endif
         </div>
-    </details>
+    </section>
 
     {{-- Deprivation data is now fully resolved in the controller --}}
     {{-- Expected variables: $depr (array|null), $deprMsg (string|null), $lsoaLink (string|null) --}}
@@ -381,68 +377,54 @@
         };
     @endphp
 
-    <details class="my-8 group">
-        <summary class="list-none select-none cursor-pointer flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-lg hover:border-lime-400 hover:bg-lime-50">
-            <div>
-                <h2 class="text-lg font-semibold m-0">Local Deprivation Index</h2>
-                <p class="text-xs text-zinc-600 mt-1">Derived from postcode via ONSPD → LSOA (England only).</p>
-            </div>
-            <span class="ml-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-zinc-300 text-zinc-600 group-open:rotate-180 transition-transform">▼</span>
-        </summary>
+    <section class="h-full flex">
+        @if($depr)
+            <div class="rounded shadow-lg border border-zinc-200 bg-white p-4 flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                    <div>
+                        <div class="text-lg font-bold text-zinc-600">Property Deprivation Information</div>
+                        <div class="font-medium">{{ $depr['name'] }} <span class="text-xs text-zinc-500">({{ $depr['lsoa21'] }})</span></div>
+                        <div class="text-xs pt-1 text-zinc-500">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places.</div>
+                    </div>
 
-        <div class="mt-4">
-            @if($depr)
-                <div class="rounded border border-zinc-200 bg-white p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Left: everything except Decile/Rank -->
-                        <div>
-                            <div class="text-sm text-zinc-600">LSOA21</div>
-                            <div class="font-medium">{{ $depr['name'] }} <span class="text-xs text-zinc-500">({{ $depr['lsoa21'] }})</span></div>
-
-                            <div class="mt-4 flex flex-wrap items-center gap-2">
-                                @if($lsoaLink)
-                                    <a href="{{ $lsoaLink }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-zinc-700 rounded-md hover:bg-zinc-500 border border-lime-200">Full details</a>
-                                @endif
-                                @if(($depr['lat'] ?? null) && ($depr['long'] ?? null))
-                                    <a href="https://www.google.com/maps?q={{ $depr['lat'] }},{{ $depr['long'] }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-700 bg-white rounded-md hover:bg-zinc-100 border">View on map</a>
-                                @endif
-                            </div>
-
-                            <p class="mt-3 text-xs text-zinc-500">Note: “Deprivation” is a statistical term about access to resources and services; it is not a label on people or places. IMD 2025 is the latest full release for England.</p>
-                        </div>
-
-                        <!-- Right: Decile & Rank presentation -->
-                        <div class="md:flex md:items-stretch md:justify-end">
-                            <div class="w-full md:w-auto rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-center">
-                                <div class="grid grid-cols-2 gap-4 md:flex md:flex-col md:gap-4 md:text-left">
-                                    <div class="md:order-1">
-                                        <div class="text-xs text-zinc-600 mb-1">Decile</div>
-                                        <span class="inline-flex items-center rounded-full px-2 py-1 text-sm font-medium {{ $badgeClass($depr['decile']) }}">
-                                            {{ $depr['decile'] ?? 'N/A' }}
-                                        </span>
-                                    </div>
-                                    <div class="md:order-2">
-                                        <div class="text-xs text-zinc-600 mb-1">Rank</div>
-                                        <div class="text-2xl font-semibold leading-none">{{ $depr['rank'] ? number_format($depr['rank']) : 'N/A' }}</div>
-                                        @if(!is_null($depr['pct']))
-                                            <div class="text-xs text-zinc-500 mt-1">
-                                                {{ number_format($depr['total'] ?? 32844) }} total · top {{ $depr['pct'] }}%
-                                                {{ ($depr['pct'] ?? 0) >= 50 ? 'most deprived' : 'least deprived' }}
-                                            </div>
+                    <div class="md:flex md:items-stretch md:justify-end">
+                        <div class="w-full rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-center">
+                            <div class="grid grid-cols-2 gap-4 md:gap-4 md:text-left">
+                                <div class="md:order-1">
+                                    <div class="text-xs text-zinc-600 mb-1">Decile</div>
+                                    <span class="inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-bold shadow-sm {{ $badgeClass($depr['decile']) }}">
+                                        {{ $depr['decile'] ? $depr['decile'].' / 10' : 'N/A' }}
+                                    </span>
+                                </div>
+                                <div class="md:order-2">
+                                    <div class="text-xs text-zinc-600 mb-1">Rank</div>
+                                    <div class="text-2xl font-semibold leading-none">
+                                        @if($depr['rank'])
+                                            {{ number_format($depr['rank']) }} <span class="text-sm font-normal text-zinc-500">/ {{ number_format($depr['total'] ?? 32844) }}</span>
+                                        @else
+                                            N/A
                                         @endif
                                     </div>
                                 </div>
                             </div>
+                            <p class="mt-4 text-xs text-zinc-500">Higher decile/rank values indicate less deprivation (better).</p>
                         </div>
                     </div>
                 </div>
-            @else
-                <div class="rounded border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm">
-                    {{ $deprMsg ?? 'Unable to resolve this postcode to an English LSOA.' }}
-                </div>
-            @endif
-        </div>
-    </details>
+                @if($lsoaLink)
+                    <div class="mt-4 flex justify-start">
+                        <a href="{{ $lsoaLink }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-zinc-700 rounded-md hover:bg-zinc-500 border border-lime-200">Full details</a>
+                    </div>
+                @endif
+            </div>
+        @else
+            <div class="rounded border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm flex-1">
+                {{ $deprMsg ?? 'Unable to resolve this postcode to an English LSOA.' }}
+            </div>
+        @endif
+    </section>
+    </div>
+
     <div>
         <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-blue-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.
         <span class="font-semibold">If you want to see more detail about a specific area and or property type go back and use the <a class="text-lime-600 hover:underline" href="../property/search">search by area</a> option</span>.</p>

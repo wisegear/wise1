@@ -61,6 +61,8 @@ class EpcMatcher
         $normSAON   = $saon ? $this->normToken($saon) : null;
         $normStreet = $this->normStreet($street);
         $normLocality = $locality ? $this->normToken($locality) : null;
+        $epcUnitId = $this->extractUnitId($normEpc);
+        $saonUnitId = $normSAON ? $this->extractUnitId($normSAON) : null;
 
         // Flags for combo bonuses
         $paonHit = false;
@@ -80,8 +82,15 @@ class EpcMatcher
 
         // 2) SAON (flat/unit)
         if ($normSAON) {
-            if (preg_match('/(^|\s)'.preg_quote($normSAON,'/').'($|\s)/', $normEpc)) {
-                $score += 20; // bump from 15 -> 20 so exact flat gets more weight
+            if ($saonUnitId && $epcUnitId) {
+                if ($saonUnitId === $epcUnitId) {
+                    $score += 20; // exact flat/unit match
+                    $saonHit = true;
+                } else {
+                    $score -= 25; // penalise different flat/unit number
+                }
+            } elseif (preg_match('/(^|\s)'.preg_quote($normSAON,'/').'($|\s)/', $normEpc)) {
+                $score += 20; // exact flat text present
                 $saonHit = true;
             }
         }
@@ -136,7 +145,8 @@ class EpcMatcher
             }
         }
 
-        return $score;
+        if ($score < 0) $score = 0;
+        return min(100, $score);
     }
 
     protected function normAddress(string $s): string
@@ -182,5 +192,18 @@ class EpcMatcher
         $p = 0.0;
         similar_text($a, $b, $p);
         return $p / 100.0;
+    }
+
+    protected function extractUnitId(string $s): ?string
+    {
+        if ($s === '') return null;
+        $s = strtoupper($s);
+        if (preg_match('/\b(FLAT|APARTMENT|APT|UNIT|STUDIO|ROOM|MAISONETTE)\s+([A-Z0-9]+)\b/', $s, $m)) {
+            return $m[2];
+        }
+        if (preg_match('/\b([0-9]+[A-Z]?)\b/', $s, $m)) {
+            return $m[1];
+        }
+        return null;
     }
 }
