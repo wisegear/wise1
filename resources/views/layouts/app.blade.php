@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', config('app.name', 'PropertyResearch'))</title>
-    @hasSection('description')
-        <meta name="description" content="@yield('description')">
-    @else
-        <meta name="description" content="Independent UK property data, sales trends, market signals, and research insights across England, Wales, Scotland, and Northern Ireland.">
-    @endif
+    @php
+        $metaTitle = trim($__env->yieldContent('title', config('app.name', 'PropertyResearch')));
+        $metaDescription = trim($__env->yieldContent(
+            'description',
+            'Independent UK property data, sales trends, market signals, and research insights across England, Wales, Scotland, and Northern Ireland.'
+        ));
+        $metaUrl = url()->current();
+        $metaImage = asset('assets/images/site/research-logo-4.png');
+    @endphp
+
+    <meta name="description" content="{{ $metaDescription }}">
+    <link rel="canonical" href="{{ $metaUrl }}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('assets/favicon/favicon.png') }}">
@@ -27,10 +34,27 @@
         <meta property="og:site_name" content="PropertyResearch.uk" />
         <meta property="og:title" content="{{ $page->title }}" />
         <meta property="og:description" content="{{ $page->summary }}" />
-        <meta property="og:url" content="{{ url()->current() }}" />
+        <meta property="og:url" content="{{ $metaUrl }}" />
         <meta property="og:image" content="{{ url('assets/images/uploads/' . 'medium_' . $page->original_image) }}" />
         <meta property="og:image:width" content="800" />
         <meta property="og:image:height" content="300" />
+        <meta property="og:locale" content="en_GB" />
+    @else
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@ukprores" />
+        <meta name="twitter:title" content="{{ $metaTitle }}" />
+        <meta name="twitter:description" content="{{ $metaDescription }}" />
+        <meta name="twitter:image" content="{{ $metaImage }}" />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="PropertyResearch.uk" />
+        <meta property="og:title" content="{{ $metaTitle }}" />
+        <meta property="og:description" content="{{ $metaDescription }}" />
+        <meta property="og:url" content="{{ $metaUrl }}" />
+        <meta property="og:image" content="{{ $metaImage }}" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="en_GB" />
     @endisset
 
     @hasSection('meta')
