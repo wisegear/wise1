@@ -36,7 +36,7 @@
                         <article class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                             <!-- Post image -->
                             <div class="max-w-3xl mx-auto mb-4">
-                                <div class="w-full max-w-[800px] mx-auto overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-[300px]">
+                                <div class="w-full max-w-[800px] mx-auto overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-[350px]">
                                     <img
                                         src="{{ asset('assets/images/uploads/medium_' . $post->original_image) }}"
                                         alt="{{ $post->title }}"
