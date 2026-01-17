@@ -202,6 +202,34 @@
     </div>
 
 
+    @php
+        $epcSqft = null;
+        if (!empty($epcMatches)) {
+            $epcHighMatches = array_filter($epcMatches, function ($m) {
+                $score = (int) round($m['score'] ?? 0);
+                return $score >= 80;
+            });
+            $latest = null;
+            foreach ($epcHighMatches as $m) {
+                $row = $m['row'] ?? null;
+                if (!$row || empty($row->total_floor_area)) {
+                    continue;
+                }
+                try {
+                    $date = \Carbon\Carbon::parse($row->lodgement_date);
+                } catch (\Throwable $e) {
+                    continue;
+                }
+                if ($latest === null || $date->gt($latest['date'])) {
+                    $latest = ['date' => $date, 'area' => (float) $row->total_floor_area];
+                }
+            }
+            if ($latest && $latest['area'] > 0) {
+                $epcSqft = $latest['area'] * 10.7639;
+            }
+        }
+    @endphp
+
     @if($results->isEmpty())
         <p>No transactions found for this property.</p>
     @else
@@ -210,6 +238,7 @@
                 <tr class="text-left">
                     <th class="px-3 py-2">Date</th>
                     <th class="px-3 py-2">Price</th>
+                    <th class="px-3 py-2">£/sq ft (based on EPC)</th>
                     <th class="px-3 py-2">Type</th>
                     <th class="px-3 py-2">Tenure</th>
                     <th class="px-3 py-2">New Build?</th>
@@ -221,6 +250,13 @@
                 <tr class="border-t {{ ($row->PPDCategoryType ?? null) === 'B' ? 'bg-rose-50' : 'bg-white' }}">
                     <td class="px-3 py-2">{{ \Carbon\Carbon::parse($row->Date)->format('d-m-Y') }}</td>
                     <td class="px-3 py-2">£{{ number_format($row->Price) }}</td>
+                    <td class="px-3 py-2">
+                        @if($epcSqft && $row->Price)
+                            £{{ number_format($row->Price / $epcSqft, 0) }}
+                        @else
+                            N/A
+                        @endif
+                    </td>
                     <td class="px-3 py-2">
                         @if($row->PropertyType === 'D')
                             Detached
