@@ -57,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const button = document.getElementById('userMenuButton');
     const dropdown = document.getElementById('userDropdown');
 
-    if (button && dropdown) window._registerDropdownPair(button, dropdown);
+    if (!button || !dropdown) return;
+
+    window._registerDropdownPair(button, dropdown);
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function (e) {
