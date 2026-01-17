@@ -289,7 +289,7 @@
             @else
                 <div class="rounded border border-zinc-200 bg-white p-4 shadow-lg flex-1 flex flex-col">
                     <h2 class="text-lg font-bold text-zinc-600 mb-2">Matched EPC Certificates</h2>
-                    <p class="text-sm text-zinc-600 mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
+                    <p class="text-xs text-zinc-600 mb-4">Due to inconsistency between the Land Registry &amp; EPC dataset, address matching is not perfect mostly due to the EPC dataset. As a result I am using a fuzzy matching approach based on the Levenshtein ratio with scoring. The higher the Match score the more likely it relates to this property.</p>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead class="bg-zinc-100">
