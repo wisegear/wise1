@@ -67,10 +67,8 @@
   {{-- UK trend --}}
   <div class="mb-6">
     <h2 class="text-xl font-semibold mb-3">Last 15 years — UK totals</h2>
-    <div class="border rounded p-3 bg-white">
-      <div class="relative" style="height: 320px;">
-        <canvas id="trendChart"></canvas>
-      </div>
+    <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
+      <canvas id="trendChart" class="w-full h-full"></canvas>
     </div>
   </div>
 
@@ -79,32 +77,24 @@
     <h2 class="text-xl font-semibold mb-3">Last 15 years — by nation</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="border rounded p-3 bg-white">
+      <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <h3 class="text-sm font-semibold mb-2 text-zinc-700">England</h3>
-        <div class="relative" style="height: 280px;">
-          <canvas id="trendChartEngland"></canvas>
-        </div>
+        <canvas id="trendChartEngland" class="w-full h-full"></canvas>
       </div>
 
-      <div class="border rounded p-3 bg-white">
+      <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <h3 class="text-sm font-semibold mb-2 text-zinc-700">Scotland</h3>
-        <div class="relative" style="height: 280px;">
-          <canvas id="trendChartScotland"></canvas>
-        </div>
+        <canvas id="trendChartScotland" class="w-full h-full"></canvas>
       </div>
 
-      <div class="border rounded p-3 bg-white">
+      <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <h3 class="text-sm font-semibold mb-2 text-zinc-700">Wales</h3>
-        <div class="relative" style="height: 280px;">
-          <canvas id="trendChartWales"></canvas>
-        </div>
+        <canvas id="trendChartWales" class="w-full h-full"></canvas>
       </div>
 
-      <div class="border rounded p-3 bg-white">
+      <div class="border p-4 bg-white rounded-lg shadow h-80 overflow-hidden">
         <h3 class="text-sm font-semibold mb-2 text-zinc-700">Northern Ireland</h3>
-        <div class="relative" style="height: 280px;">
-          <canvas id="trendChartNorthernIreland"></canvas>
-        </div>
+        <canvas id="trendChartNorthernIreland" class="w-full h-full"></canvas>
       </div>
     </div>
   </div>
@@ -134,18 +124,10 @@
         }
 
         const formatNumber = (value) => new Intl.NumberFormat('en-GB').format(value);
-        const gradients = { up: null };
-        const getBarGradient = (chart) => {
-          const { ctx, chartArea } = chart;
-          if (!chartArea) return '#16a34a';
-          const key = 'up';
-          if (gradients[key]) return gradients[key];
-          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          gradient.addColorStop(0, '#86efac');
-          gradient.addColorStop(1, '#16a34a');
-          gradients[key] = gradient;
-          return gradient;
-        };
+        const barFill = 'rgba(87, 161, 0, 0.70)';
+        const barBorder = 'rgba(87, 161, 0, 1)';
+        const lineColor = 'rgb(54, 162, 235)';
+        const lineFill = 'rgba(54, 162, 235, 0.2)';
 
         const chart = new Chart(ctx, {
           type: 'bar',
@@ -156,35 +138,27 @@
                 label: 'New build',
                 type: 'bar',
                 data: newData,
-                borderWidth: 0,
-                backgroundColor: (ctx) => {
-                  const i = ctx.dataIndex;
-                  const val = ctx.parsed.y;
-                  if (i <= 0 || val == null) return '#16a34a'; // green-600
-                  const prev = ctx.chart.data.datasets[0].data[i - 1];
-                  const prevVal = (prev != null && typeof prev === 'object' && 'y' in prev) ? prev.y : prev;
-                  return getBarGradient(ctx.chart);
-                },
-                borderRadius: 6,
-                borderSkipped: false
+                backgroundColor: barFill,
+                borderColor: barBorder,
+                borderWidth: 1,
+                maxBarThickness: 28
               },
               {
                 label: 'Existing',
                 type: 'line',
                 data: oldData,
-                tension: 0.35,
+                borderColor: lineColor,
+                backgroundColor: lineFill,
+                tension: 0.1,
                 fill: false,
-                borderWidth: 2.5,
+                borderWidth: 2,
                 pointRadius: 3,
-                pointHoverRadius: 4,
-                pointBorderWidth: 2,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#000000',
-                borderColor: '#000000',
-                backgroundColor: '#000000',
-                segment: {
-                  borderColor: ctx =>
-                    '#000000'
+                pointHoverRadius: 5,
+                pointBackgroundColor: function(ctx) {
+                  const index = ctx.dataIndex;
+                  const data = ctx.dataset.data;
+                  if (index === 0) return lineColor;
+                  return data[index] < data[index - 1] ? 'red' : lineColor;
                 }
               }
             ]
@@ -192,25 +166,13 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            categoryPercentage: 0.7,
-            barPercentage: 0.85,
+            layout: { padding: { top: 12, right: 12, bottom: 28, left: 12 } },
             interaction: { mode: 'index', intersect: false },
             plugins: {
               legend: {
-                position: 'top',
-                labels: {
-                  color: '#475569',
-                  boxWidth: 14,
-                  boxHeight: 8,
-                  padding: 12
-                }
+                position: 'top'
               },
               tooltip: {
-                backgroundColor: '#0f172a',
-                titleColor: '#ffffff',
-                bodyColor: '#e2e8f0',
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1,
                 callbacks: {
                   label: (ctx) => `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)}`
                 }
@@ -218,14 +180,21 @@
             },
             scales: {
               x: {
-                grid: { display: false },
-                ticks: { color: '#64748b', maxRotation: 0, autoSkipPadding: 12 }
+                ticks: {
+                  callback: function(value, index) {
+                    const lbl = this.getLabelForValue(value);
+                    const clean = String(lbl).replace(/,/g, '');
+                    return (index % 2 === 0) ? clean : '';
+                  },
+                  padding: 12,
+                  maxRotation: 0,
+                  minRotation: 0,
+                  autoSkip: false
+                }
               },
               y: {
                 beginAtZero: true,
-                grid: { color: 'rgba(15,23,42,0.06)' },
                 ticks: {
-                  color: '#64748b',
                   precision: 0,
                   callback: (value) => formatNumber(value)
                 }
