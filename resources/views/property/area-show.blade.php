@@ -9,6 +9,95 @@
     $metaAvg = isset($summary) && !is_null($summary->avg_price ?? null) ? '£' . number_format((float) $summary->avg_price, 0) : 'n/a';
     $metaYears = $yearsCount ? $yearsCount . ' years' : 'limited history';
     $metaDesc = "{$areaTitle} house price stats: average {$metaAvg}, {$metaSales} sales, {$metaYears} of data. Trends, types, and tenure breakdowns.";
+    $areaLabel = ucfirst(strtolower($areaName));
+    $typeLabel = ucfirst($type);
+
+    $formatMoney = function ($value) {
+        return is_null($value) ? 'n/a' : '£' . number_format((float) $value, 0);
+    };
+    $formatCount = function ($value) {
+        return number_format((int) $value);
+    };
+    $percentChange = function ($current, $previous) {
+        if (! $previous || $previous == 0) {
+            return null;
+        }
+        return (($current - $previous) / $previous) * 100;
+    };
+
+    $overallInsight = "No yearly sales data is available yet for {$areaLabel}.";
+    if (! empty($byYear) && $byYear->count() > 0) {
+        $latest = $byYear->last();
+        $prev = $byYear->count() > 1 ? $byYear->get($byYear->count() - 2) : null;
+        $overallInsight = "In {$latest->year}, the average {$typeLabel} sale price in {$areaLabel} was {$formatMoney($latest->avg_price)} across {$formatCount($latest->sales_count)} sales";
+        $pct = $prev ? $percentChange($latest->avg_price ?? null, $prev->avg_price ?? null) : null;
+        if (! is_null($pct)) {
+            $overallInsight .= ', ' . ($pct >= 0 ? 'up ' : 'down ') . number_format(abs($pct), 1) . '% vs ' . (int) $prev->year . '.';
+        } else {
+            $overallInsight .= '.';
+        }
+    }
+
+    $buildTypeInsight = function ($series, $label) use ($areaLabel, $formatMoney, $formatCount, $percentChange) {
+        if (empty($series) || count($series) === 0) {
+            return "No {$label} sales data is available yet for {$areaLabel}.";
+        }
+        $series = collect($series);
+        $latest = $series->last();
+        $prev = $series->count() > 1 ? $series->get($series->count() - 2) : null;
+        $text = "In {$latest->year}, {$label} homes in {$areaLabel} averaged {$formatMoney($latest->avg_price)} across {$formatCount($latest->sales_count)} sales";
+        $pct = $prev ? $percentChange($latest->avg_price ?? null, $prev->avg_price ?? null) : null;
+        if (! is_null($pct)) {
+            $text .= ', ' . ($pct >= 0 ? 'up ' : 'down ') . number_format(abs($pct), 1) . '% vs ' . (int) $prev->year . '.';
+        } else {
+            $text .= '.';
+        }
+        return $text;
+    };
+
+    $typeInsights = [];
+    if (! empty($byType)) {
+        foreach ($byType as $key => $meta) {
+            $typeInsights[$key] = $buildTypeInsight($meta['series'] ?? [], $meta['label'] ?? ucfirst($key));
+        }
+    }
+
+    $typeSplitInsight = "No property type split data is available yet for {$areaLabel}.";
+    $typeSplitYears = collect($propertyTypeSplit['years'] ?? []);
+    if ($typeSplitYears->count() > 0) {
+        $idx = $typeSplitYears->count() - 1;
+        $year = (int) $typeSplitYears->get($idx);
+        $types = $propertyTypeSplit['types'] ?? [];
+        $total = 0;
+        $topCount = 0;
+        $topLabel = null;
+        foreach ($types as $typeData) {
+            $count = $typeData['counts'][$idx] ?? 0;
+            $total += $count;
+            if ($count > $topCount) {
+                $topCount = $count;
+                $topLabel = $typeData['label'] ?? 'Unknown';
+            }
+        }
+        if ($total > 0 && $topLabel) {
+            $pct = ($topCount / $total) * 100;
+            $typeSplitInsight = "In {$year}, {$topLabel} accounted for " . number_format($pct, 1) . "% of sales in {$areaLabel}.";
+        }
+    }
+
+    $newBuildInsight = "No new build data is available yet for {$areaLabel}.";
+    $newBuildYears = collect($newBuildSplit['years'] ?? []);
+    if ($newBuildYears->count() > 0) {
+        $idx = $newBuildYears->count() - 1;
+        $year = (int) $newBuildYears->get($idx);
+        $newCount = (int) ($newBuildSplit['series']['Y']['counts'][$idx] ?? 0);
+        $existingCount = (int) ($newBuildSplit['series']['N']['counts'][$idx] ?? 0);
+        $total = $newCount + $existingCount;
+        if ($total > 0) {
+            $pct = ($newCount / $total) * 100;
+            $newBuildInsight = "In {$year}, new build homes made up " . number_format($pct, 1) . "% of sales in {$areaLabel} (" . $formatCount($newCount) . " of " . $formatCount($total) . ").";
+        }
+    }
 @endphp
 
 @section('title', "{$areaTitle} | PropertyResearch.uk")
@@ -25,7 +114,7 @@
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         <div class="max-w-6xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900"><span class="text-lime-600">{{ ucfirst($type) }}</span>: {{ ucfirst(strtolower($areaName)) }}</h1>
-            <p class="mt-2 text-sm leading-6 text-gray-700">Similiar to an individual property search this page gives you a clear overview of a specific area in England/Wales.</p>
+            <p class="mt-2 text-sm leading-6 text-gray-700">This page provides a detailed breakdown of historical property sales, prices, and market composition for {{ ucfirst(strtolower($areaName)) }}, based on Land Registry transaction data.</p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
             <img src="{{ asset('assets/images/site/area.svg') }}" alt="Area" class="w-32 h-auto">
@@ -64,6 +153,10 @@
     <div class="mt-10">
 
         <div class="border rounded bg-white p-4 shadow-lg">
+            <div class="mb-2">
+                <h3 class="text-base font-semibold text-gray-900 text-center">Average sale price and number of sales per year for {{ $typeLabel }} in {{ $areaLabel }}</h3>
+                <p class="text-xs text-zinc-600 text-center">{{ $overallInsight }}</p>
+            </div>
             <div class="w-full">
                 <canvas id="areaPriceSalesChart" class="w-full max-h-[360px]"></canvas>
                 <div class="chart-empty hidden py-8 text-center text-sm text-zinc-500">No sales data available for this area yet.</div>
@@ -74,11 +167,19 @@
     <div class="mt-10">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">Sales split by property type in {{ $areaLabel }}</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $typeSplitInsight }}</p>
+                </div>
                 <canvas id="areaTypeSplitChart" class="w-full max-h-[260px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No property type split data available for this area.</div>
             </div>
 
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">New build vs existing sales in {{ $areaLabel }}</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $newBuildInsight }}</p>
+                </div>
                 <canvas id="newBuildSplitChart" class="w-full max-h-[260px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No new build vs existing data available for this area.</div>
             </div>
@@ -89,18 +190,34 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">Detached homes in {{ $areaLabel }} - average price and number of sales</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $typeInsights['detached'] ?? "No detached sales data is available yet for {$areaLabel}." }}</p>
+                </div>
                 <canvas id="areaTypeChart_detached" class="w-full max-h-[320px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No detached sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">Semi-detached homes in {{ $areaLabel }} - average price and number of sales</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $typeInsights['semi'] ?? "No semi-detached sales data is available yet for {$areaLabel}." }}</p>
+                </div>
                 <canvas id="areaTypeChart_semi" class="w-full max-h-[320px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No semi-detached sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">Terraced homes in {{ $areaLabel }} - average price and number of sales</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $typeInsights['terraced'] ?? "No terraced sales data is available yet for {$areaLabel}." }}</p>
+                </div>
                 <canvas id="areaTypeChart_terraced" class="w-full max-h-[320px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No terraced sales data available for this area.</div>
             </div>
             <div class="border rounded bg-white p-4 shadow-lg">
+                <div class="mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 text-center">Flats in {{ $areaLabel }} - average price and number of sales</h3>
+                    <p class="text-xs text-zinc-600 text-center">{{ $typeInsights['flat'] ?? "No flat sales data is available yet for {$areaLabel}." }}</p>
+                </div>
                 <canvas id="areaTypeChart_flat" class="w-full max-h-[320px]"></canvas>
                 <div class="chart-empty hidden py-6 text-center text-sm text-zinc-500">No flat sales data available for this area.</div>
             </div>
@@ -224,18 +341,6 @@
                             usePointStyle: true,
                             boxWidth: 10,
                             boxHeight: 10,
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Average sale price and number of sales per year for this {{ ucfirst($type) }}',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
                         }
                     },
                     tooltip: {
@@ -382,18 +487,6 @@
                                 boxHeight: 10,
                             }
                         },
-                        title: {
-                            display: true,
-                            text: cfg.label + ' – average sale price and number of sales per year',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            },
-                            padding: {
-                                top: 8,
-                                bottom: 12
-                            }
-                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -486,13 +579,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Sales split by property type',
-                            font: { size: 16, weight: 'bold' }
-                        }
-                    },
+                    plugins: {},
                     scales: {
                         x: { stacked: true },
                         y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
@@ -533,13 +620,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'New build vs existing sales',
-                            font: { size: 16, weight: 'bold' }
-                        }
-                    },
+                    plugins: {},
                     scales: {
                         x: { stacked: true },
                         y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sales count' } }
