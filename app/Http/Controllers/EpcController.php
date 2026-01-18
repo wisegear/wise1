@@ -137,26 +137,6 @@ class EpcController extends Controller
                 ->get();
         });
 
-        // 7) Habitable rooms by year (for charting)
-        // Keep it simple + safe: only numeric values in a sensible range.
-        $roomsByYear = Cache::remember($ck('roomsByYear'), $ttl, function () use ($cfg) {
-            // Build a numeric expression that works for both tables.
-            // Scotland columns are uppercase strings; E&W is typically numeric already.
-            $roomsExpr = ($cfg['table'] === 'epc_certificates_scotland')
-                ? "CAST(NULLIF({$cfg['roomsCol']}, '') AS UNSIGNED)"
-                : "CAST({$cfg['roomsCol']} AS UNSIGNED)";
-
-            return DB::table($cfg['table'])
-                ->selectRaw("{$cfg['yearExpr']} as yr, {$roomsExpr} as rooms, COUNT(*) as cnt")
-                ->whereRaw("{$cfg['dateExpr']} IS NOT NULL")
-                ->whereRaw("{$cfg['dateExpr']} >= ?", [$cfg['since']])
-                ->whereRaw("{$roomsExpr} BETWEEN 1 AND 20")
-                ->groupBy('yr', 'rooms')
-                ->orderBy('yr', 'asc')
-                ->orderBy('rooms', 'asc')
-                ->get();
-        });
-
         // 5) Distribution of current ratings (optional for Scotland too)
         $ratingDist = Cache::remember($ck('ratingDist'), $ttl, function () use ($cfg, $ratings) {
             return DB::table($cfg['table'])
@@ -173,106 +153,13 @@ class EpcController extends Controller
                 ->get();
         });
 
-        // 8) Construction age band distribution (nation-specific rules)
-        $ageDist = Cache::remember($ck('ageDist:v2'), $ttl, function () use ($cfg) {
-            // Scotland: show the official bands including "2008 onwards"
-            if ($cfg['table'] === 'epc_certificates_scotland') {
-                $labels = [
-                    'before 1919',
-                    '1919-1929',
-                    '1930-1949',
-                    '1950-1964',
-                    '1965-1975',
-                    '1976-1983',
-                    '1984-1991',
-                    '1992-1998',
-                    '1999-2002',
-                    '2003-2007',
-                    '2008 onwards',
-                ];
-
-                return DB::table($cfg['table'])
-                    ->selectRaw("{$cfg['ageCol']} as band, COUNT(*) as cnt")
-                    ->whereNotNull($cfg['ageCol'])
-                    ->whereIn($cfg['ageCol'], $labels)
-                    ->groupBy('band')
-                    ->orderByRaw("FIELD(band, '" . implode("','", $labels) . "')")
-                    ->get();
-            }
-
-            // England & Wales: bucket numeric/parsable years into broad ranges
-            // Ignore:
-            // - anything starting with "England and Wales:"
-            // - INVALID!, NO DATA!, Not applicable
-            // - anything > 2025 (bad inputs)
-            //
-            // Buckets:
-            //   < 1900
-            //   1900–1949
-            //   1950–1999
-            //   2000–2009
-            //   2010–2019
-            //   2020–2025
-            $col = $cfg['ageCol'];
-            $valExpr = "TRIM(CASE WHEN {$col} LIKE 'England and Wales:%' THEN SUBSTRING({$col}, LOCATE(':', {$col}) + 1) ELSE {$col} END)";
-
-            $yearExpr = "CASE\n"
-                . "  WHEN {$col} IS NULL THEN NULL\n"
-                . "  WHEN {$valExpr} IN ('INVALID!', 'NO DATA!', 'Not applicable') THEN NULL\n"
-                // "before 1900" style -> treat as 1899 so it lands in < 1900
-                . "  WHEN LOWER({$valExpr}) LIKE 'before %' THEN CAST(REGEXP_REPLACE(LOWER({$valExpr}), '[^0-9]', '') AS UNSIGNED) - 1\n"
-                // "1900-1929" style -> take first year
-                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}\\s*-\\s*[0-9]{4}$' THEN CAST(SUBSTRING_INDEX(REPLACE({$valExpr}, ' ', ''), '-', 1) AS UNSIGNED)\n"
-                // "2007 onwards" style -> take the year
-                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}\\s*onwards$' THEN CAST(REGEXP_REPLACE({$valExpr}, '[^0-9]', '') AS UNSIGNED)\n"
-                // plain "1900" style
-                . "  WHEN {$valExpr} REGEXP '^[0-9]{4}$' THEN CAST({$valExpr} AS UNSIGNED)\n"
-                . "  ELSE NULL\n"
-                . "END";
-
-            $bucketExpr = "CASE\n"
-                . "  WHEN y IS NULL THEN NULL\n"
-                . "  WHEN y > 2025 THEN NULL\n"
-                . "  WHEN y < 1900 THEN '< 1900'\n"
-                . "  WHEN y BETWEEN 1900 AND 1949 THEN '1900–1949'\n"
-                . "  WHEN y BETWEEN 1950 AND 1999 THEN '1950–1999'\n"
-                . "  WHEN y BETWEEN 2000 AND 2009 THEN '2000–2009'\n"
-                . "  WHEN y BETWEEN 2010 AND 2019 THEN '2010–2019'\n"
-                . "  WHEN y BETWEEN 2020 AND 2025 THEN '2020–2025'\n"
-                . "  ELSE NULL\n"
-                . "END";
-
-            $order = [
-                '< 1900',
-                '1900–1949',
-                '1950–1999',
-                '2000–2009',
-                '2010–2019',
-                '2020–2025',
-            ];
-
-            return DB::query()
-                ->fromSub(function ($q) use ($cfg, $yearExpr) {
-                    $q->from($cfg['table'])
-                        ->selectRaw("{$yearExpr} as y")
-                        ->whereNotNull($cfg['ageCol']);
-                }, 't')
-                ->selectRaw("{$bucketExpr} as band, COUNT(*) as cnt")
-                ->havingRaw("band IS NOT NULL")
-                ->groupBy('band')
-                ->orderByRaw("FIELD(band, '" . implode("','", $order) . "')")
-                ->get();
-        });
-
         return view('epc.home', [
             'stats'            => $stats,
             'byYear'           => $byYear,
             'ratingByYear'     => $ratingByYear,
             'potentialByYear'  => $potentialByYear,
             'tenureByYear'     => $tenureByYear,
-            'roomsByYear'      => $roomsByYear,
             'ratingDist'       => $ratingDist ?? collect(),
-            'ageDist'          => $ageDist ?? collect(),
             'nation'           => $nation,
         ]);
     }

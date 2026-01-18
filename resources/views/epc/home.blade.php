@@ -88,41 +88,15 @@
 
         {{-- Tenure by year --}}
         <div class="border rounded-lg bg-white p-4 shadow">
-            <h2 class="text-lg font-semibold">Reason for reports each year</h2>
+            <h2 class="text-lg font-semibold">Reason for EPC by year</h2>
             <p class="mb-2 text-xs text-gray-600">
-                Split of EPCs by reason for instruction each year.
+                Count of EPCs by reason for each year.
             </p>
             <div class="w-full h-72">
                 <canvas id="tenureByYearChart" class="w-full h-full"></canvas>
             </div>
         </div>
     </div>
-
-  {{-- Habitable rooms distribution by year (stacked) --}}
-  <div class="mb-8 border rounded-lg bg-white p-4 shadow">
-      <h2 class="text-lg font-semibold">Habitable rooms distribution by year</h2>
-      <p class="mb-2 text-xs text-gray-600 mb-2">
-          Count of habitable room number each year.  Bedrooms, living/dining, office/study, playroom, kitchens may be counted if large enough
-      </p>
-      <div class="w-full h-72">
-          <canvas id="roomsDistByYearChart" class="w-full h-full"></canvas>
-      </div>
-  </div>
-
-  {{-- Construction age band distribution --}}
-  <div class="mb-8 border rounded-lg bg-white p-4 shadow">
-      <h2 class="text-lg font-semibold">Construction age distribution</h2>
-      <p class="mb-2 text-xs text-gray-600">
-          @if(($nation ?? 'ew') === 'scotland')
-              Distribution of EPCs by construction age band (excluding 2008 onwards).
-          @else
-              Distribution of EPCs by estimated construction year bucket (bad inputs removed; anything after 2025 ignored).
-          @endif
-      </p>
-      <div class="w-full h-72">
-          <canvas id="ageDistChart" class="w-full h-full"></canvas>
-      </div>
-  </div>
 
     @php
         // Normalised tenure labels consistent with controller and warmer
@@ -169,25 +143,38 @@
           });
         }
 
-        // Tenure by year
+        // Tenure by year (stacked counts)
         const tenureCanvas = document.getElementById('tenureByYearChart');
         const tenureRaw = @json($tenureByYear ?? []);
         if (tenureCanvas && Array.isArray(tenureRaw) && tenureRaw.length) {
           const ctxTenure = tenureCanvas.getContext('2d');
           const tenureCategories = @json($tenureCategoriesJs);
           const tenureYears = [...new Set(tenureRaw.map(r => r.yr))].sort();
+          const tenureColors = [
+            'rgba(87, 161, 0, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 159, 64, 0.7)'
+          ];
+          const tenureBorderColors = [
+            'rgba(87, 161, 0, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 159, 64, 1)'
+          ];
 
-          const tenureDatasets = tenureCategories.map((cat) => ({
+          const tenureDatasets = tenureCategories.map((cat, idx) => ({
             label: cat,
             data: tenureYears.map(y => {
               const match = tenureRaw.find(r => r.yr === y && r.tenure === cat);
               return match ? match.cnt : 0;
             }),
-            borderWidth: 1
+            backgroundColor: tenureColors[idx % tenureColors.length],
+            borderColor: tenureBorderColors[idx % tenureBorderColors.length],
+            borderWidth: 1,
+            stack: 'tenure'
           }));
 
           new Chart(ctxTenure, {
-            type: 'line',
+            type: 'bar',
             data: {
               labels: tenureYears,
               datasets: tenureDatasets
@@ -205,85 +192,9 @@
               },
               scales: {
                 x: {
+                  stacked: true,
                   title: { display: true, text: 'Year' }
                 },
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Certificates' },
-                  ticks: {
-                    callback: function (value) {
-                      return value.toLocaleString();
-                    }
-                  }
-                }
-              }
-            }
-          });
-        }
-
-        // Habitable rooms (raw data for charts)
-        const roomsRaw = @json($roomsByYear ?? []);
-
-        // Habitable rooms distribution by year (stacked bar)
-        const roomsDistCanvas = document.getElementById('roomsDistByYearChart');
-        if (roomsDistCanvas) {
-          const ctxRoomsDist = roomsDistCanvas.getContext('2d');
-
-          // Years and room buckets (numeric, sorted)
-          const yearsDist = [...new Set(roomsRaw.map(r => r.yr))].sort();
-          // Bucket rooms: keep 1–5, group 6+ into a single "6+" bucket
-          const bucketLabel = (n) => (n >= 6 ? '6+' : String(n));
-
-          // Discover buckets present in the data, but only 1–5 and 6+
-          const bucketSet = new Set();
-          roomsRaw.forEach(r => {
-            const n = Number(r.rooms);
-            if (!Number.isFinite(n) || n <= 0) return;
-            bucketSet.add(bucketLabel(n));
-          });
-
-          // Order buckets: 1,2,3,4,5,6+
-          const bucketOrder = ['1','2','3','4','5','6+'];
-          const roomBuckets = bucketOrder.filter(b => bucketSet.has(b));
-
-          // Build datasets: one per bucket
-          const datasets = roomBuckets.map((bucket) => ({
-            label: bucket,
-            data: yearsDist.map(y => {
-              const rows = roomsRaw.filter(r => r.yr === y);
-              if (bucket === '6+') {
-                return rows
-                  .filter(r => Number(r.rooms) >= 6)
-                  .reduce((sum, r) => sum + (Number(r.cnt) || 0), 0);
-              }
-              const target = Number(bucket);
-              return rows
-                .filter(r => Number(r.rooms) === target)
-                .reduce((sum, r) => sum + (Number(r.cnt) || 0), 0);
-            }),
-            borderWidth: 1,
-            stack: 'rooms'
-          }));
-
-          new Chart(ctxRoomsDist, {
-            type: 'bar',
-            data: {
-              labels: yearsDist,
-              datasets
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: 'top',
-                  labels: {
-                    padding: 10
-                  }
-                }
-              },
-              scales: {
-                x: { stacked: true, title: { display: true, text: 'Year' } },
                 y: {
                   stacked: true,
                   beginAtZero: true,
@@ -298,59 +209,7 @@
             }
           });
         }
-        // Construction age distribution
-        const ageDistCanvas = document.getElementById('ageDistChart');
-        const ageDistRaw = @json($ageDist ?? []);
-        if (ageDistCanvas && Array.isArray(ageDistRaw) && ageDistRaw.length) {
-          const ctxAge = ageDistCanvas.getContext('2d');
-          const labels = ageDistRaw.map(r => r.band);
-          const data = ageDistRaw.map(r => Number(r.cnt) || 0);
 
-          new Chart(ctxAge, {
-            type: 'bar',
-            data: {
-              labels,
-              datasets: [{
-                label: 'Certificates',
-                data,
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      const v = Number(context.parsed.y) || 0;
-                      return `Certificates: ${v.toLocaleString()}`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  title: { display: false },
-                  ticks: {
-                    maxRotation: 0,
-                    minRotation: 0
-                  }
-                },
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Count' },
-                  ticks: {
-                    callback: function (value) {
-                      return value.toLocaleString();
-                    }
-                  }
-                }
-              }
-            }
-          });
-        }
       });
     </script>
 
