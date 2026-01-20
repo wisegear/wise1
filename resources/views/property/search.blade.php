@@ -21,27 +21,6 @@
         </div>
     </section>
 
-    {{-- England & Wales heatmap --}}
-    <section class="mb-12">
-        <div class="rounded border border-zinc-200 bg-white/80 p-6">
-            <div class="flex items-start justify-between gap-6 flex-col md:flex-row">
-                <div>
-                    <h2 class="text-base font-semibold mb-2">
-                        <i class="fa-solid fa-map-location-dot text-lime-600"></i> Land Registry points (England &amp; Wales)
-                    </h2>
-                    <p class="text-xs text-zinc-600">
-                        View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
-                        property sales.  England and Wales only.  Category A property sales are <span class="text-green-600 font-bold">green</span>, Category B property sales are <span class="text-red-600 font-bold">red</span>.  Where a property
-                        has multiple sales, the most recent sale is shown.
-                    </p>
-                </div>
-                <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
-            </div>
-            <div id="property-points-map" class="mt-4 h-96 md:h-[36rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
-            <p id="points-status" class="mt-2 text-xs text-zinc-500">Zoom in to load property points.</p>
-        </div>
-    </section>
-
     {{-- Search tools --}}
     <section class="mb-10">
         <div class="grid gap-6 md:grid-cols-2">
@@ -306,6 +285,27 @@
             </div>
         @endif
     @endif
+
+    {{-- England & Wales heatmap --}}
+    <section class="mb-12">
+        <div class="rounded border border-zinc-200 bg-white/80 p-6">
+            <div class="flex items-start justify-between gap-6 flex-col md:flex-row">
+                <div>
+                    <h2 class="text-base font-semibold mb-2">
+                        <i class="fa-solid fa-map-location-dot text-lime-600"></i> Land Registry points (England &amp; Wales)
+                    </h2>
+                    <p class="text-xs text-zinc-600">
+                        View all Land Registry properties on the map below.  The more you zoom in, the more points will load, right down to street level.  At the lowest level, green dots show
+                        property sales.  England and Wales only.  Category A property sales are <span class="text-green-600 font-bold">green</span>, Category B property sales are <span class="text-red-600 font-bold">red</span>.  Where a property
+                        has multiple sales, the most recent sale is shown.
+                    </p>
+                </div>
+                <p class="text-xs text-zinc-400">Data source: Land Registry + ONSPD</p>
+            </div>
+            <div id="property-points-map" class="mt-4 h-96 md:h-[36rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
+            <p id="points-status" class="mt-2 text-xs text-zinc-500">Zoom in to load property points.</p>
+        </div>
+    </section>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
