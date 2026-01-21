@@ -212,6 +212,233 @@ class EpcController extends Controller
         return view('epc.search', compact('results'));
     }
 
+    /**
+     * Map points for EPC certificates (E&W) joined to ONSUD by UPRN.
+     */
+    public function points(Request $request)
+    {
+        $zoom = (int) $request->query('zoom', 6);
+        $limit = (int) $request->query('limit', 5000);
+
+        $limit = max(1000, min($limit, 15000));
+
+        if ($zoom < 12) {
+            return response()->json([
+                'status' => 'zoom',
+                'message' => 'Zoom in to load EPC points.',
+            ], 202);
+        }
+
+        $eMin = (int) $request->query('e_min');
+        $eMax = (int) $request->query('e_max');
+        $nMin = (int) $request->query('n_min');
+        $nMax = (int) $request->query('n_max');
+
+        if ($eMin === 0 || $eMax === 0 || $nMin === 0 || $nMax === 0) {
+            return response()->json(['points' => []]);
+        }
+
+        $uprnRows = DB::table('onsud')
+            ->select('UPRN')
+            ->whereNotNull('GRIDGB1E')
+            ->whereNotNull('GRIDGB1N')
+            ->whereBetween('GRIDGB1E', [$eMin, $eMax])
+            ->whereBetween('GRIDGB1N', [$nMin, $nMax])
+            ->whereIn('ctry25cd', ['E92000001', 'W92000004'])
+            ->whereNotNull('UPRN')
+            ->where('UPRN', '!=', '')
+            ->limit($limit + 1)
+            ->get();
+
+        $truncated = $uprnRows->count() > $limit;
+        if ($truncated) {
+            $uprnRows = $uprnRows->take($limit);
+        }
+
+        $uprns = $uprnRows->pluck('UPRN')->filter()->values()->all();
+        if (empty($uprns)) {
+            return response()->json([
+                'points' => [],
+                'truncated' => false,
+            ]);
+        }
+
+        $latestByUprn = DB::table('epc_certificates')
+            ->select('UPRN', DB::raw('MAX(LODGEMENT_DATE) as max_date'))
+            ->whereIn('UPRN', $uprns)
+            ->groupBy('UPRN');
+
+        $rows = DB::table('epc_certificates as e')
+            ->joinSub($latestByUprn, 'latest', function ($join) {
+                $join->on('e.UPRN', '=', 'latest.UPRN')
+                    ->on('e.LODGEMENT_DATE', '=', 'latest.max_date');
+            })
+            ->whereIn('e.UPRN', $uprns)
+            ->select([
+                'e.UPRN as uprn',
+                'e.LMK_KEY as lmk_key',
+                'e.ADDRESS as address',
+                'e.POSTCODE as postcode',
+                'e.LODGEMENT_DATE as lodgement_date',
+                'e.CURRENT_ENERGY_RATING as rating',
+            ])
+            ->limit($limit + 1)
+            ->get();
+
+        if ($rows->count() > $limit) {
+            $truncated = true;
+            $rows = $rows->take($limit);
+        }
+
+        $epcUprns = $rows->pluck('uprn')->filter()->unique()->values()->all();
+        $coords = DB::table('onsud')
+            ->whereIn('UPRN', $epcUprns)
+            ->select(['UPRN', 'GRIDGB1E as easting', 'GRIDGB1N as northing'])
+            ->get()
+            ->keyBy('UPRN');
+
+        $points = $rows->map(function ($row) use ($coords) {
+            $uprn = (string) $row->uprn;
+            if (!isset($coords[$uprn])) {
+                return null;
+            }
+            $coord = $coords[$uprn];
+            $lmk = (string) $row->lmk_key;
+            return [
+                'easting' => $coord->easting !== null ? (int) $coord->easting : null,
+                'northing' => $coord->northing !== null ? (int) $coord->northing : null,
+                'lmk_key' => $lmk,
+                'address' => (string) $row->address,
+                'postcode' => (string) $row->postcode,
+                'lodgement_date' => (string) $row->lodgement_date,
+                'rating' => (string) $row->rating,
+                'url' => route('epc.show', ['lmk' => $lmk], false),
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'points' => $points,
+            'truncated' => $truncated,
+        ]);
+    }
+
+    /**
+     * Map points for Scotland EPC certificates (joined to ONSUD by OSG_REFERENCE_NUMBER/UPRN).
+     */
+    public function pointsScotland(Request $request)
+    {
+        $zoom = (int) $request->query('zoom', 6);
+        $limit = (int) $request->query('limit', 5000);
+
+        $limit = max(1000, min($limit, 15000));
+
+        if ($zoom < 12) {
+            return response()->json([
+                'status' => 'zoom',
+                'message' => 'Zoom in to load EPC points.',
+            ], 202);
+        }
+
+        $eMin = (int) $request->query('e_min');
+        $eMax = (int) $request->query('e_max');
+        $nMin = (int) $request->query('n_min');
+        $nMax = (int) $request->query('n_max');
+
+        if ($eMin === 0 || $eMax === 0 || $nMin === 0 || $nMax === 0) {
+            return response()->json(['points' => []]);
+        }
+
+        $uprnRows = DB::table('onsud')
+            ->select('UPRN')
+            ->whereNotNull('GRIDGB1E')
+            ->whereNotNull('GRIDGB1N')
+            ->whereBetween('GRIDGB1E', [$eMin, $eMax])
+            ->whereBetween('GRIDGB1N', [$nMin, $nMax])
+            ->whereIn('ctry25cd', ['S92000003'])
+            ->whereNotNull('UPRN')
+            ->where('UPRN', '!=', '')
+            ->limit($limit + 1)
+            ->get();
+
+        $truncated = $uprnRows->count() > $limit;
+        if ($truncated) {
+            $uprnRows = $uprnRows->take($limit);
+        }
+
+        $uprns = $uprnRows->pluck('UPRN')->filter()->values()->all();
+        if (empty($uprns)) {
+            return response()->json([
+                'points' => [],
+                'truncated' => false,
+            ]);
+        }
+
+        $latestByUprn = DB::table('epc_certificates_scotland')
+            ->select('OSG_REFERENCE_NUMBER', DB::raw('MAX(LODGEMENT_DATE) as max_date'))
+            ->whereIn('OSG_REFERENCE_NUMBER', $uprns)
+            ->groupBy('OSG_REFERENCE_NUMBER');
+
+        $rows = DB::table('epc_certificates_scotland as e')
+            ->joinSub($latestByUprn, 'latest', function ($join) {
+                $join->on('e.OSG_REFERENCE_NUMBER', '=', 'latest.OSG_REFERENCE_NUMBER')
+                    ->on('e.LODGEMENT_DATE', '=', 'latest.max_date');
+            })
+            ->whereIn('e.OSG_REFERENCE_NUMBER', $uprns)
+            ->select([
+                'e.OSG_REFERENCE_NUMBER as uprn',
+                'e.REPORT_REFERENCE_NUMBER as rrn',
+                'e.ADDRESS1',
+                'e.ADDRESS2',
+                'e.ADDRESS3',
+                'e.POSTCODE as postcode',
+                'e.LODGEMENT_DATE as lodgement_date',
+                'e.CURRENT_ENERGY_RATING as rating',
+            ])
+            ->limit($limit + 1)
+            ->get();
+
+        if ($rows->count() > $limit) {
+            $truncated = true;
+            $rows = $rows->take($limit);
+        }
+
+        $epcUprns = $rows->pluck('uprn')->filter()->unique()->values()->all();
+        $coords = DB::table('onsud')
+            ->whereIn('UPRN', $epcUprns)
+            ->select(['UPRN', 'GRIDGB1E as easting', 'GRIDGB1N as northing'])
+            ->get()
+            ->keyBy('UPRN');
+
+        $points = $rows->map(function ($row) use ($coords) {
+            $uprn = (string) $row->uprn;
+            if (!isset($coords[$uprn])) {
+                return null;
+            }
+            $coord = $coords[$uprn];
+            $rrn = (string) $row->rrn;
+            $address = trim(implode(', ', array_filter([
+                $row->ADDRESS1 ?? null,
+                $row->ADDRESS2 ?? null,
+                $row->ADDRESS3 ?? null,
+            ])));
+            return [
+                'easting' => $coord->easting !== null ? (int) $coord->easting : null,
+                'northing' => $coord->northing !== null ? (int) $coord->northing : null,
+                'rrn' => $rrn,
+                'address' => $address,
+                'postcode' => (string) $row->postcode,
+                'lodgement_date' => (string) $row->lodgement_date,
+                'rating' => (string) $row->rating,
+                'url' => $rrn !== '' ? route('epc.scotland.show', ['rrn' => $rrn], false) : null,
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'points' => $points,
+            'truncated' => $truncated,
+        ]);
+    }
+
     // Scotland: Search EPC certificates by postcode (exact match)
     public function searchScotland(Request $request)
     {

@@ -31,10 +31,10 @@
 <div class="mx-auto max-w-7xl px-4 py-10 md:py-12">
     {{-- Hero / summary card --}}
     <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Search EPC records in Scotland</h1>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from 2015 to 2025 (latest available)
+                Data covers the period from 2015 to 2025 (latest available),  Use the map below to zoom in and explore EPC locations, or enter a postcode to search for specific properties.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
@@ -71,6 +71,22 @@
             </div>
         </section>
     @endisset
+
+    {{-- EPC map --}}
+    <section class="mb-10 rounded border border-zinc-200 bg-white/80 p-6">
+        <div class="flex items-start justify-between gap-6 flex-col md:flex-row">
+            <div>
+                <h2 class="text-base font-semibold mb-2">
+                    <i class="fa-solid fa-map-location-dot text-lime-600"></i> EPC locations (Scotland)
+                </h2>
+                <p class="text-xs text-zinc-600">
+                    Zoom in to see EPC certificates as pins. Click a pin to open the EPC report.  Data is only as accurate as the EPC inputs, which may not always reflect the exact property location.
+                </p>
+            </div>
+        </div>
+        <div id="epc-map-scotland" class="mt-4 h-96 md:h-[36rem] w-full rounded border border-zinc-200 bg-zinc-50"></div>
+        <p id="epc-map-scotland-status" class="mt-2 text-xs text-zinc-500">Zoom in to load EPC points.</p>
+    </section>
 
     {{-- Search form --}}
     <div class="flex justify-center">
@@ -237,9 +253,7 @@
                                             title="View report"
                                             aria-label="View EPC report for {{ $row->address }}, {{ $row->postcode }}"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-8 w-8 border p-2 bg-zinc-800 text-white" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.1-5.4a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/>
-                                            </svg>
+                                            <i class="fa-solid fa-magnifying-glass-arrow-right fa-xl leading-none align-middle pt-3"></i>
                                             <span class="sr-only">View</span>
                                         </a>
                                     @else
@@ -349,4 +363,131 @@
         </script>
     @endisset
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.9.1/dist/proj4.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mapEl = document.getElementById('epc-map-scotland');
+        const statusEl = document.getElementById('epc-map-scotland-status');
+        if (!mapEl || typeof L === 'undefined' || typeof proj4 === 'undefined') return;
+
+        proj4.defs('EPSG:27700',
+            '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 ' +
+            '+x_0=400000 +y_0=-100000 +ellps=airy +datum=OSGB36 +units=m +no_defs'
+        );
+
+        const map = L.map('epc-map-scotland', { scrollWheelZoom: true, maxZoom: 19 }).setView([56.8, -4.2], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+            maxNativeZoom: 19,
+        }).addTo(map);
+
+        const cluster = L.markerClusterGroup({
+            chunkedLoading: true,
+            maxClusterRadius: 40,
+            spiderfyOnMaxZoom: true,
+            spiderfyDistanceMultiplier: 1.6,
+            removeOutsideVisibleBounds: true,
+        });
+        map.addLayer(cluster);
+
+        let activeController = null;
+        let loadTimer = null;
+
+        function loadPoints() {
+            if (loadTimer) window.clearTimeout(loadTimer);
+            loadTimer = window.setTimeout(function () {
+                const zoom = map.getZoom();
+                const bounds = map.getBounds();
+                const sw = bounds.getSouthWest();
+                const ne = bounds.getNorthEast();
+
+                const swOs = proj4('EPSG:4326', 'EPSG:27700', [sw.lng, sw.lat]);
+                const neOs = proj4('EPSG:4326', 'EPSG:27700', [ne.lng, ne.lat]);
+
+                const eMin = Math.min(swOs[0], neOs[0]);
+                const eMax = Math.max(swOs[0], neOs[0]);
+                const nMin = Math.min(swOs[1], neOs[1]);
+                const nMax = Math.max(swOs[1], neOs[1]);
+
+                const limit = zoom >= 16 ? 12000 : (zoom >= 14 ? 8000 : 3000);
+
+                if (activeController) activeController.abort();
+                activeController = new AbortController();
+
+                const url = new URL(@json(route('epc.points_scotland', [], false)), window.location.origin);
+                url.searchParams.set('e_min', Math.floor(eMin));
+                url.searchParams.set('e_max', Math.ceil(eMax));
+                url.searchParams.set('n_min', Math.floor(nMin));
+                url.searchParams.set('n_max', Math.ceil(nMax));
+                url.searchParams.set('zoom', String(zoom));
+                url.searchParams.set('limit', String(limit));
+
+                if (statusEl) statusEl.textContent = 'Loading EPC points…';
+
+                fetch(url.toString(), { signal: activeController.signal })
+                    .then(function (response) {
+                        if (response.status === 202) {
+                            return response.json().then(function (payload) {
+                                if (statusEl) statusEl.textContent = payload.message || 'Zoom in to load EPC points.';
+                                return null;
+                            });
+                        }
+                        if (!response.ok) throw new Error('Map response was not ok');
+                        return response.json();
+                    })
+                    .then(function (payload) {
+                        if (!payload) return;
+                        const points = Array.isArray(payload.points) ? payload.points : [];
+                        cluster.clearLayers();
+
+                        points.forEach(function (pt) {
+                            if (!pt.easting || !pt.northing) return;
+                            const coords = proj4('EPSG:27700', 'EPSG:4326', [pt.easting, pt.northing]);
+                            const lat = coords[1];
+                            const lng = coords[0];
+
+                            const label = pt.address || 'EPC record';
+                            const popup = '<div class="text-xs">' +
+                                '<div class="font-semibold">' + label + '</div>' +
+                                (pt.postcode ? '<div class="mt-1">' + pt.postcode + '</div>' : '') +
+                                (pt.rating ? '<div class="mt-1">Rating: ' + pt.rating + '</div>' : '') +
+                                (pt.lodgement_date ? '<div>Date: ' + pt.lodgement_date + '</div>' : '') +
+                                (pt.url ? '<div class="mt-2"><a class="text-lime-700 hover:underline" href="' + pt.url + '">View EPC report</a></div>' : '') +
+                                '</div>';
+
+                            const marker = L.circleMarker([lat, lng], {
+                                radius: 6,
+                                color: '#ffffff',
+                                fillColor: '#22c55e',
+                                fillOpacity: 0.9,
+                                weight: 2,
+                            }).bindPopup(popup);
+
+                            cluster.addLayer(marker);
+                        });
+
+                        if (statusEl) {
+                            statusEl.textContent = payload.truncated
+                                ? 'Showing a sample of EPC points in view. Zoom in for more detail.'
+                                : 'Showing ' + points.length.toLocaleString('en-GB') + ' EPC points in view.';
+                        }
+                    })
+                    .catch(function (err) {
+                        if (err && err.name === 'AbortError') return;
+                        if (statusEl) statusEl.textContent = 'EPC points could not be loaded right now.';
+                    });
+            }, 200);
+        }
+
+        map.on('moveend zoomend', loadPoints);
+        loadPoints();
+    });
+</script>
 @endsection

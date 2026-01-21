@@ -67,6 +67,8 @@ Route::get('/property/outer-prime-london', [OuterPrimeLondonController::class, '
 Route::get('/property/ultra-prime-central-london', [UltraLondonController::class, 'home'])->name('property.upcl');
 Route::get('/epc', [EpcController::class, 'home'])->name('epc.home');
 Route::get('/epc/search', [EpcController::class, 'search'])->name('epc.search');
+Route::get('/epc/points', [EpcController::class, 'points'])->name('epc.points');
+Route::get('/epc/points_scotland', [EpcController::class, 'pointsScotland'])->name('epc.points_scotland');
 // routes/web.php
 Route::get('/epc/search_scotland', [\App\Http\Controllers\EpcController::class, 'searchScotland'])
     ->name('epc.search_scotland');

@@ -381,7 +381,8 @@
             const cluster = L.markerClusterGroup({
                 chunkedLoading: true,
                 maxClusterRadius: 40,
-                disableClusteringAtZoom: 17,
+                spiderfyOnMaxZoom: true,
+                spiderfyDistanceMultiplier: 1.6,
                 removeOutsideVisibleBounds: true,
             });
             map.addLayer(cluster);
