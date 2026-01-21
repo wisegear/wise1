@@ -5,7 +5,7 @@
     
     {{-- CALCULATE STRESS LEVELS --}}
     @php
-        // Helper function to calculate indicator level based on consecutive bad quarters
+        // Helper function to calculate indicator level based on consecutive bad periods
         // This consolidates the repeated streak calculation logic used throughout the file
         function calculateStreakLevel($values, $direction = 'up') {
             if (!is_array($values) || count($values) < 2) {
@@ -15,7 +15,7 @@
             $n = count($values);
             $badStreak = 0;
 
-            // Count consecutive bad quarters from latest backwards
+            // Count consecutive bad periods from latest backwards
             for ($i = $n - 1; $i >= 1; $i--) {
                 $cur = (float) $values[$i];
                 $prev = (float) $values[$i - 1];
@@ -33,7 +33,7 @@
             if ($badStreak === 0) return 'green';
             if ($badStreak === 1) return 'amber';
             if ($badStreak === 2 || $badStreak === 3) return 'red';
-            return 'deep'; // 4+ consecutive bad quarters
+            return 'deep'; // 4+ consecutive bad periods
         }
 
         // Helper function to get CSS classes for level
@@ -697,13 +697,13 @@
         const ctx = el.getContext('2d');
         const labels = data[key]?.labels || values.map((_, i) => i + 1);
 
-        // Highlight bad quarters with red dots
+        // Highlight bad periods with red dots
         const pointBackgroundColor = [];
         const pointRadius = [];
         const neutralColor = 'rgba(148, 163, 184, 1)';
         const badColor = 'rgba(220, 38, 38, 1)';
 
-        // Determine which quarters are "bad" based on direction
+        // Determine which periods are "bad" based on direction
         values.forEach((v, i) => {
             if (i === 0) {
                 pointBackgroundColor.push(neutralColor);

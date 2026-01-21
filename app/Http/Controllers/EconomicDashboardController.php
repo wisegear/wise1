@@ -99,45 +99,22 @@ class EconomicDashboardController extends Controller
         // Build small sparkline series for each indicator (no caching for now)
         $sparklines = [];
 
-        // Helper: build quarterly sparkline (values + labels) from a monthly/dated collection
-        $makeQuarterSeries = function ($collection, string $dateField, callable $valueCallback) {
-            $grouped = [];
-
-            foreach ($collection as $row) {
-                $date = \Carbon\Carbon::parse($row->{$dateField});
-                $year = $date->year;
-                $quarter = $date->quarter;
-                $key = $year . '-Q' . $quarter;
-
-                if (! isset($grouped[$key])) {
-                    $grouped[$key] = [
-                        'sum'     => 0.0,
-                        'count'   => 0,
-                        'year'    => $year,
-                        'quarter' => $quarter,
-                    ];
-                }
-
-                $grouped[$key]['sum']   += (float) $valueCallback($row);
-                $grouped[$key]['count']++;
-            }
-
-            // Sort by year then quarter
-            usort($grouped, function ($a, $b) {
-                if ($a['year'] === $b['year']) {
-                    return $a['quarter'] <=> $b['quarter'];
-                }
-                return $a['year'] <=> $b['year'];
-            });
-
+        // Helper: build monthly sparkline (values + labels) from a dated collection
+        $makeMonthlySeries = function ($collection, string $dateField, callable $valueCallback) {
             $values = [];
             $labels = [];
 
-            foreach ($grouped as $bucket) {
-                if ($bucket['count'] > 0) {
-                    $values[] = $bucket['sum'] / $bucket['count'];
-                    $labels[] = $bucket['year'] . ' Q' . $bucket['quarter'];
+            foreach ($collection as $row) {
+                if (empty($row->{$dateField})) {
+                    continue;
                 }
+                try {
+                    $date = \Carbon\Carbon::parse($row->{$dateField});
+                } catch (\Throwable $e) {
+                    continue;
+                }
+                $values[] = (float) $valueCallback($row);
+                $labels[] = $date->format('M Y');
             }
 
             return [
@@ -153,7 +130,7 @@ class EconomicDashboardController extends Controller
             ->get()
             ->reverse()
             ->values();
-        $sparklines['interest'] = $makeQuarterSeries(
+        $sparklines['interest'] = $makeMonthlySeries(
             $interestSeries,
             'effective_date',
             fn ($r) => $r->rate
@@ -166,7 +143,7 @@ class EconomicDashboardController extends Controller
             ->get()
             ->reverse()
             ->values();
-        $sparklines['inflation'] = $makeQuarterSeries(
+        $sparklines['inflation'] = $makeMonthlySeries(
             $inflationSeries,
             'date',
             function ($row) use ($getMetric) {
@@ -181,7 +158,7 @@ class EconomicDashboardController extends Controller
             ->get()
             ->reverse()
             ->values();
-        $sparklines['wages'] = $makeQuarterSeries(
+        $sparklines['wages'] = $makeMonthlySeries(
             $wageSeries,
             'date',
             function ($row) {
@@ -202,7 +179,7 @@ class EconomicDashboardController extends Controller
             ->get()
             ->reverse()
             ->values();
-        $sparklines['unemployment'] = $makeQuarterSeries(
+        $sparklines['unemployment'] = $makeMonthlySeries(
             $unempSeries,
             'date',
             function ($row) use ($getMetric) {
@@ -210,58 +187,18 @@ class EconomicDashboardController extends Controller
             }
         );
 
-        // Mortgage Approvals: build quarterly sparkline from monthly data
+        // Mortgage Approvals: monthly series
         $approvalsRaw = DB::table('mortgage_approvals')
             ->orderBy('period', 'desc')
             ->limit(36)
             ->get()
             ->reverse()
             ->values();
-
-        $quarterBuckets = [];
-
-        foreach ($approvalsRaw as $row) {
-            if (!$row->period) {
-                continue;
-            }
-            try {
-                $dt = \Carbon\Carbon::parse($row->period);
-            } catch (\Throwable $e) {
-                continue;
-            }
-
-            $year = $dt->year;
-            $q = (int) ceil($dt->month / 3);
-            $key = $year . '-Q' . $q;
-
-            if (!isset($quarterBuckets[$key])) {
-                $quarterBuckets[$key] = ['sum' => 0.0, 'count' => 0, 'year' => $year, 'q' => $q];
-            }
-            $quarterBuckets[$key]['sum'] += (float) $row->value;
-            $quarterBuckets[$key]['count']++;
-        }
-
-        // Sort chronologically
-        usort($quarterBuckets, function ($a, $b) {
-            if ($a['year'] === $b['year']) {
-                return $a['q'] <=> $b['q'];
-            }
-            return $a['year'] <=> $b['year'];
-        });
-
-        $approvalsValues = [];
-        $approvalsLabels = [];
-        foreach ($quarterBuckets as $bucket) {
-            if ($bucket['count'] > 0) {
-                $approvalsValues[] = $bucket['sum'] / $bucket['count'];
-                $approvalsLabels[] = $bucket['year'] . ' Q' . $bucket['q'];
-            }
-        }
-
-        $sparklines['approvals'] = [
-            'values' => $approvalsValues,
-            'labels' => $approvalsLabels,
-        ];
+        $sparklines['approvals'] = $makeMonthlySeries(
+            $approvalsRaw,
+            'period',
+            fn ($row) => $row->value
+        );
 
         // Repossessions: last 16 quarters of MLAR possessions series
         $repossSeries = DB::table('mlar_arrears')
@@ -302,7 +239,7 @@ class EconomicDashboardController extends Controller
             ->get()
             ->reverse()
             ->values();
-        $sparklines['hpi'] = $makeQuarterSeries(
+        $sparklines['hpi'] = $makeMonthlySeries(
             $hpiSeries,
             'Date',
             fn ($r) => $r->AveragePrice
@@ -326,95 +263,36 @@ class EconomicDashboardController extends Controller
             'arrears'   => 0,
         ];
 
-        // Helper for direction scoring on a QUARTERLY basis
-        // For monthly series, we build simple 3-month blocks:
-        //  - latestQ = average of last 3 values
-        //  - prevQ   = average of previous 3
-        //  - prev2Q  = average of the 3 before that (for "two bad quarters" tests)
-        $quarterDirectionScore = function (array $vals, bool $inverse = false, bool $alreadyQuarterly = false) {
-            // If series is already quarterly (e.g. repossessions), treat each value as one quarter
-            if ($alreadyQuarterly) {
-                $n = count($vals);
-                if ($n < 2) {
-                    return 0;
-                }
-                $latestQ = (float)$vals[$n - 1];
-                $prevQ   = (float)$vals[$n - 2];
-                $prev2Q  = $n >= 3 ? (float)$vals[$n - 3] : null;
-
-                if (! $inverse) {
-                    // Higher is worse
-                    if ($latestQ <= $prevQ) {
-                        return 0; // green
-                    }
-                    if (!is_null($prev2Q) && $prevQ > $prev2Q) {
-                        return 2; // red: two worsening quarters
-                    }
-                    return 1; // amber: one worsening quarter
-                } else {
-                    // Lower is worse
-                    if ($latestQ >= $prevQ) {
-                        return 0; // green
-                    }
-                    if (!is_null($prev2Q) && $prevQ < $prev2Q) {
-                        return 2; // red: two worsening quarters
-                    }
-                    return 1; // amber
-                }
-            }
-
-            // Monthly series: need at least 6 points for two quarters
+        // Helper for direction scoring on a per-period basis (monthly or quarterly)
+        $directionScore = function (array $vals, bool $inverse = false) {
             $n = count($vals);
-            if ($n < 6) {
+            if ($n < 2) {
                 return 0;
             }
 
-            // Build last 3 quarters (each quarter = average of 3 months, working from the end)
-            $makeQuarter = function (int $endIndex) use ($vals) {
-                // endIndex is inclusive (last index of the block)
-                $start = $endIndex - 2;
-                if ($start < 0) {
-                    return null;
-                }
-                $sum = 0.0;
-                $count = 0;
-                for ($i = $start; $i <= $endIndex; $i++) {
-                    if (!isset($vals[$i])) {
-                        return null;
-                    }
-                    $sum += (float)$vals[$i];
-                    $count++;
-                }
-                return $count > 0 ? $sum / $count : null;
-            };
-
-            $latestQ = $makeQuarter($n - 1);       // last 3 months
-            $prevQ   = $makeQuarter($n - 4);       // 3 months before that
-            $prev2Q  = $makeQuarter($n - 7);       // 3 months before that
-
-            if ($latestQ === null || $prevQ === null) {
-                return 0;
-            }
+            $latest = (float) $vals[$n - 1];
+            $prev1  = (float) $vals[$n - 2];
+            $prev2  = $n >= 3 ? (float) $vals[$n - 3] : null;
 
             if (! $inverse) {
-                // Higher is worse (inflation, unemployment, interest, etc.)
-                if ($latestQ <= $prevQ) {
-                    return 0; // green
+                // Higher is worse
+                if ($latest <= $prev1) {
+                    return 0;
                 }
-                if ($prev2Q !== null && $prevQ > $prev2Q) {
-                    return 2; // red: two worsening quarters back-to-back
+                if (!is_null($prev2) && $prev1 > $prev2) {
+                    return 2;
                 }
-                return 1; // amber: one worsening quarter
-            } else {
-                // Lower is worse (approvals, HPI, real wages)
-                if ($latestQ >= $prevQ) {
-                    return 0; // green
-                }
-                if ($prev2Q !== null && $prevQ < $prev2Q) {
-                    return 2; // red: two worsening quarters back-to-back
-                }
-                return 1; // amber
+                return 1;
             }
+
+            // Lower is worse
+            if ($latest >= $prev1) {
+                return 0;
+            }
+            if (!is_null($prev2) && $prev1 < $prev2) {
+                return 2;
+            }
+            return 1;
         };
 
         // Arrears direction score (quarterly series, higher = worse)
@@ -458,7 +336,7 @@ class EconomicDashboardController extends Controller
         } elseif ($interest && $interest->rate >= 3.0) {
             $stress['interest'] += 1;
         }
-        $stress['interest'] += $quarterDirectionScore($sparklines['interest']['values'] ?? [], false, true);
+        $stress['interest'] += $directionScore($sparklines['interest']['values'] ?? [], false);
 
         // 2. Inflation level
         $inflVal = $inflation ? (float)$getMetric($inflation) : null;
@@ -466,7 +344,7 @@ class EconomicDashboardController extends Controller
             if ($inflVal >= 4.0) $stress['inflation'] += 2;
             elseif ($inflVal >= 2.0) $stress['inflation'] += 1;
         }
-        $stress['inflation'] += $quarterDirectionScore($sparklines['inflation']['values'] ?? [], false, true);
+        $stress['inflation'] += $directionScore($sparklines['inflation']['values'] ?? [], false);
 
         // 3. Real wage level + direction
         $wSeries = $sparklines['wages']['values'] ?? [];
@@ -482,7 +360,7 @@ class EconomicDashboardController extends Controller
             if ($latestReal <= -1.0) $stress['wages'] += 2;
             elseif ($latestReal < 0) $stress['wages'] += 1;
         }
-        $stress['wages'] += $quarterDirectionScore($realSeries, true, true);
+        $stress['wages'] += $directionScore($realSeries, true);
 
         // 4. Unemployment level + direction
         $uVal = $unemp ? (float)$getMetric($unemp) : null;
@@ -490,7 +368,7 @@ class EconomicDashboardController extends Controller
             if ($uVal >= 2000000) $stress['unemp'] += 2;
             elseif ($uVal >= 1500000) $stress['unemp'] += 1;
         }
-        $stress['unemp'] += $quarterDirectionScore($sparklines['unemployment']['values'] ?? [], false, true);
+        $stress['unemp'] += $directionScore($sparklines['unemployment']['values'] ?? [], false);
 
         // 5. Mortgage approvals level + direction
         $aVal = $approvals ? (float)$approvals->value : null;
@@ -498,7 +376,7 @@ class EconomicDashboardController extends Controller
             if ($aVal <= 40000) $stress['approvals'] += 2;
             elseif ($aVal <= 60000) $stress['approvals'] += 1;
         }
-        $stress['approvals'] += $quarterDirectionScore($sparklines['approvals']['values'] ?? [], true, false);
+        $stress['approvals'] += $directionScore($sparklines['approvals']['values'] ?? [], true);
 
         // 6. Repossessions level + direction (MLAR possessions % of loans)
         $rVal = $reposs ? (float)$reposs->total : null;
@@ -510,7 +388,7 @@ class EconomicDashboardController extends Controller
                 $stress['reposs'] += 1; // amber: 0.5%–0.99%
             }
         }
-        $stress['reposs'] += $quarterDirectionScore($sparklines['repossessions']['values'] ?? [], false, true);
+        $stress['reposs'] += $directionScore($sparklines['repossessions']['values'] ?? [], false);
 
         // 7. HPI level + direction
         $hVal = $hpi ? (float)$hpi->AveragePrice : null;
@@ -523,7 +401,7 @@ class EconomicDashboardController extends Controller
                 elseif ($change < 0) $stress['hpi'] += 1;
             }
         }
-        $stress['hpi'] += $quarterDirectionScore($sparklines['hpi']['values'] ?? [], true, true);
+        $stress['hpi'] += $directionScore($sparklines['hpi']['values'] ?? [], true);
 
         // 8. Arrears direction only (total arrears 2.5%+ of balance)
         // We treat higher arrears as worse; scoring uses the custom arrearsDirectionScore
