@@ -30,7 +30,7 @@
     <div class="flex-grow max-w-7xl mx-auto px-4 lg:px-0">
         <!-- Split into 2, one for articles and another for whatever -->
         <main class="my-10 md:my-16 flex flex-col lg:flex-row gap-8 lg:gap-10">
-            <div class="lg:w-8/12">
+            <div class="lg:w-9/12">
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
                     @foreach($posts as $post)
                         <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
