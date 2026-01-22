@@ -299,8 +299,7 @@
         @if(isset($hasB) ? $hasB : ($results->pluck('PPDCategoryType')->contains('B')))
         <div class="text-center mt-2 text-sm">
             <p>The Property history above contains Category B sales, as these are not sales at an arm's length and can skew the charts below; no Category B sales are included.
-                Category B sales are included in the table above for information only. In the event there are only Category B sales, the price history of the property chart will 
-                show no data.
+                Category B sales are included in the table above for information only. In the event there are only Category B sales, the charts below may show no data.
             </p>
         </div>
         @endif
@@ -465,11 +464,7 @@
         <p class="text-center text-zinc-700 text-sm">The charts below show the price history of the specific property type being viewed <span class="text-blue-700">({{ strtolower($propertyTypeLabel) }})</span>. Price data is shown for the locality, town/city, district and county.
         <span class="font-semibold">If you want to see more detail about a specific area and or property type go back and use the <a class="text-lime-600 hover:underline" href="../property/search">search by area</a> option</span>.</p>
     </div>
-    <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
-            <h2 class="text-base font-semibold mb-3">Price History of this property</h2>
-            <canvas id="priceHistoryChart" class="block w-full"></canvas>
-        </div>
+    <div class="my-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="border border-zinc-200 rounded-md p-2 bg-white shadow-lg">
             <h2 class="text-base font-semibold mb-3">Average Price of a {{ $propertyTypeLabel }} in {{ $postcode }}</h2>
             <canvas id="postcodePriceChart" class="block w-full"></canvas>
@@ -478,6 +473,8 @@
             <h2 class="text-base font-semibold mb-3">Number of {{ $propertyTypeLabel }} Sales in {{ $postcode }}</h2>
             <canvas id="postcodeSalesChart" class="block w-full"></canvas>
         </div>
+    </div>
+    <div class="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Locality Charts (moved up) -->
         @if($showLocalityCharts)
         <!-- Locality Charts (shown only when locality is present and distinct) -->
@@ -545,70 +542,6 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('priceHistoryChart').getContext('2d');
-const priceData = @json($priceHistory->pluck('avg_price'));
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: @json($priceHistory->pluck('year')),
-        datasets: [{
-            label: 'Sale Price (£)',
-            data: priceData,
-            borderColor: 'rgb(54, 162, 235)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            tension: 0.1,
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            pointBackgroundColor: function(context) {
-                const index = context.dataIndex;
-                const value = Number(context.dataset.data[index]);
-                const prev = index > 0 ? Number(context.dataset.data[index - 1]) : value;
-                const epsilon = 1; // ignore tiny rounding differences
-                return value < prev - epsilon ? 'red' : 'rgb(54, 162, 235)';
-            }
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        // Format as currency with commas
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        let value = context.parsed.y !== undefined ? context.parsed.y : context.formattedValue;
-                        return label + '£' + value.toLocaleString();
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    autoSkip: true,
-                    autoSkipPadding: 8,
-                    minRotation: 45,
-                    maxRotation: 45,
-                    font: { size: 11 },
-                    padding: 4
-                }
-            },
-            y: {
-                beginAtZero: false,
-                ticks: {
-                    callback: function(value) {
-                        return '£' + value.toLocaleString();
-                    }
-                }
-            }
-        }
-    }
-});
-
 const ctxPostcode = document.getElementById('postcodePriceChart').getContext('2d');
 const postcodePriceData = @json(($postcodePriceHistory ?? collect())->pluck('avg_price'));
 new Chart(ctxPostcode, {
