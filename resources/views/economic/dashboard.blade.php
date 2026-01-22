@@ -522,7 +522,7 @@
                 <div class="flex items-start justify-between mb-1">
                     <div>
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
-                        <p class="text-[11px] text-gray-600">Share of regulated mortgages in possession. Lower is positive.</p>
+                        <p class="text-[11px] text-gray-600">Share of residential mortgages in possession. Lower is positive.</p>
                     </div>
                     <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
                         <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
