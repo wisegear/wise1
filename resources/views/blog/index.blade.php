@@ -113,7 +113,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="">
+                <div class="mt-10">
                     {{ $posts->links() }}
                 </div>
             
