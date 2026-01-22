@@ -31,14 +31,14 @@
         <!-- Split into 2, one for articles and another for whatever -->
         <main class="my-10 md:my-16 flex flex-col lg:flex-row gap-8 lg:gap-10">
             <div class="lg:w-8/12">
-                <div>
+                <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
                     @foreach($posts as $post)
-                        <article class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                        <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                             <!-- Post image -->
                             <div class="max-w-3xl mx-auto mb-4">
-                                <div class="w-full max-w-[800px] mx-auto overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-[350px]">
+                                <div class="w-full max-w-[800px] mx-auto overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-[200px]">
                                     <img
-                                        src="{{ asset('assets/images/uploads/medium_' . $post->original_image) }}"
+                                        src="{{ asset('assets/images/uploads/small_' . $post->original_image) }}"
                                         alt="{{ $post->title }}"
                                         class="w-full h-full"
                                         loading="lazy"
