@@ -79,8 +79,24 @@
             </div>
         </div>
 
-        {{-- UK Average Price --}}
+        {{-- EPC Records --}}
         <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-100"
+             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">EPC Records</p>
+                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words" x-text="epcCount.toLocaleString()">0</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- UK Average Price --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-200"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
@@ -96,7 +112,7 @@
         </div>
 
         {{-- UK Average Rent --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-150"
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-300"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
@@ -112,7 +128,7 @@
         </div>
 
         {{-- Bank Rate --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-200"
+        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-400"
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
@@ -127,21 +143,6 @@
             </div>
         </div>
 
-        {{-- EPC Records --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-500 delay-300"
-             :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">EPC Records</p>
-                    <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words" x-text="epcCount.toLocaleString()">0</p>
-                </div>
-            </div>
-        </div>
     </section>
 
     {{-- Property Stress Index --}}
