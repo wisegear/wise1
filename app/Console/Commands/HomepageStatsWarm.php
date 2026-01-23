@@ -62,4 +62,5 @@ class HomepageStatsWarm extends Command
 
         return Command::SUCCESS;
     }
+
 }

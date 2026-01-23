@@ -87,7 +87,7 @@
                     </svg>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">UK Avg Price</p>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">UK Average House Price</p>
                     <p class="text-lg sm:text-2xl font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words">&pound;<span x-text="ukAvgPrice.toLocaleString()">0</span></p>
                 </div>
             </div>
