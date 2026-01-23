@@ -24,6 +24,7 @@ class PagesController extends Controller
         $stats = Cache::get('homepage_stats', [
             'property_records' => 0,
             'uk_avg_price' => 0,
+            'uk_avg_rent' => 0,
             'bank_rate' => 0,
             'epc_count' => 0,
         ]);

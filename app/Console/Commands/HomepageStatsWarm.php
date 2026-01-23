@@ -31,6 +31,59 @@ class HomepageStatsWarm extends Command
         $ukAvgPrice = $latestHpi->AveragePrice ?? 0;
         $this->line("   £" . number_format($ukAvgPrice));
 
+        // UK average rent (latest quarter)
+        $this->line('→ Fetching UK average rent...');
+        $ukAvgRent = 0;
+        $rentRows = DB::table('rental_costs')
+            ->select(['time_period', 'rental_price'])
+            ->where('area_name', 'United Kingdom')
+            ->get();
+
+        $latestQuarterKey = null;
+        $latestQuarterTs = null;
+
+        foreach ($rentRows as $row) {
+            $date = $this->parseTimePeriod($row->time_period);
+            if (!$date) {
+                continue;
+            }
+
+            $quarter = (int) ceil(((int) $date->format('n')) / 3);
+            $key = $date->format('Y') . '-Q' . $quarter;
+            $ts = $date->getTimestamp();
+
+            if ($latestQuarterTs === null || $ts > $latestQuarterTs) {
+                $latestQuarterTs = $ts;
+                $latestQuarterKey = $key;
+            }
+        }
+
+        if ($latestQuarterKey) {
+            $sum = 0.0;
+            $count = 0;
+
+            foreach ($rentRows as $row) {
+                $date = $this->parseTimePeriod($row->time_period);
+                if (!$date) {
+                    continue;
+                }
+
+                $quarter = (int) ceil(((int) $date->format('n')) / 3);
+                $key = $date->format('Y') . '-Q' . $quarter;
+                if ($key !== $latestQuarterKey) {
+                    continue;
+                }
+
+                if ($row->rental_price !== null) {
+                    $sum += (float) $row->rental_price;
+                    $count++;
+                }
+            }
+
+            $ukAvgRent = $count ? ($sum / $count) : 0;
+        }
+        $this->line("   £" . number_format($ukAvgRent));
+
         // Latest bank rate
         $this->line('→ Fetching latest bank rate...');
         $latestRate = DB::table('interest_rates')
@@ -48,6 +101,7 @@ class HomepageStatsWarm extends Command
         $stats = [
             'property_records' => $propertyCount,
             'uk_avg_price' => round($ukAvgPrice),
+            'uk_avg_rent' => round($ukAvgRent),
             'bank_rate' => $bankRate,
             'epc_count' => $epcCount,
         ];
@@ -63,4 +117,48 @@ class HomepageStatsWarm extends Command
         return Command::SUCCESS;
     }
 
+    private function parseTimePeriod(?string $value): ?\DateTimeImmutable
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (is_numeric($trimmed)) {
+            return $this->excelSerialToDateTime((float) $trimmed);
+        }
+
+        $formats = ['M-Y', 'Y-m', 'Y-m-d'];
+        foreach ($formats as $format) {
+            $date = \DateTimeImmutable::createFromFormat($format, $trimmed, new \DateTimeZone('UTC'));
+            if ($date instanceof \DateTimeImmutable) {
+                return $date;
+            }
+        }
+
+        $parsed = date_create($trimmed, new \DateTimeZone('UTC'));
+        return $parsed ? \DateTimeImmutable::createFromMutable($parsed) : null;
+    }
+
+    private function excelSerialToDateTime(float $serial): ?\DateTimeImmutable
+    {
+        if ($serial < 1) {
+            return null;
+        }
+
+        $days = (int) floor($serial);
+        $seconds = (int) round(($serial - $days) * 86400);
+
+        $base = new \DateTimeImmutable('1899-12-30', new \DateTimeZone('UTC'));
+        $date = $base->modify('+' . $days . ' days');
+        if ($seconds > 0) {
+            $date = $date->modify('+' . $seconds . ' seconds');
+        }
+
+        return $date;
+    }
 }
