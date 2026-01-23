@@ -15,7 +15,9 @@
                 <span class="ml-2 text-neutral-600">|
                     Data last cached:
                     @php
-                        $ts = $lastCachedAt ?? \Illuminate\Support\Facades\Cache::get('pcl:v2:catA:last_warm');
+                        $ts = $lastCachedAt
+                            ?? \Illuminate\Support\Facades\Cache::get('pcl:v3:catA:last_warm')
+                            ?? \Illuminate\Support\Facades\Cache::get('pcl:v2:catA:last_warm');
                     @endphp
                     @if(!empty($ts))
                         {{ \Carbon\Carbon::parse($ts)->timezone(config('app.timezone'))->format('j M Y, H:i') }}
