@@ -97,7 +97,9 @@ class ImportRentalCosts extends Command
             $hasData = false;
             foreach ($headerColumns as $index => $column) {
                 $value = $rowValues[$index] ?? null;
-                $normalized = $this->normalizeValue($value);
+                $normalized = $column === 'time_period'
+                    ? $this->normalizeTimePeriod($value)
+                    : $this->normalizeValue($value);
                 if ($normalized !== null && $normalized !== '') {
                     $hasData = true;
                 }
@@ -308,5 +310,39 @@ class ImportRentalCosts extends Command
         }
 
         return $trimmed;
+    }
+
+    private function normalizeTimePeriod(?string $value): ?string
+    {
+        $normalized = $this->normalizeValue($value);
+        if ($normalized === null || $normalized === '') {
+            return null;
+        }
+
+        if (is_numeric($normalized)) {
+            $date = $this->excelSerialToDateTime((float) $normalized);
+            return $date ? $date->format('M-Y') : $normalized;
+        }
+
+        $parsed = date_create($normalized);
+        return $parsed ? $parsed->format('M-Y') : $normalized;
+    }
+
+    private function excelSerialToDateTime(float $serial): ?\DateTimeImmutable
+    {
+        if ($serial < 1) {
+            return null;
+        }
+
+        $days = (int) floor($serial);
+        $seconds = (int) round(($serial - $days) * 86400);
+
+        $base = new \DateTimeImmutable('1899-12-30', new \DateTimeZone('UTC'));
+        $date = $base->modify('+' . $days . ' days');
+        if ($seconds > 0) {
+            $date = $date->modify('+' . $seconds . ' seconds');
+        }
+
+        return $date;
     }
 }

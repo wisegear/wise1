@@ -338,6 +338,12 @@
                         </div>
                     </div>
 
+                    <!-- Rental Link -->
+                    <a href="{{ url('/rental') }}"
+                       class="px-3 py-2 rounded {{ request()->is('rental') ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-700 hover:text-lime-600' }}">
+                        Rental
+                    </a>
+
                     <!-- Calculators Dropdown Menu -->
                     <div class="relative">
                         <button id="calculatorsMenuButton" 
@@ -591,6 +597,12 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Rental Link -->
+                <a href="{{ url('/rental') }}"
+                   class="block px-3 py-2 rounded text-zinc-700 hover:bg-zinc-100">
+                    Rental
+                </a>
 
                 <!-- Calculators Dropdown (Mobile) -->
                 <div>

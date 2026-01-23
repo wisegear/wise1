@@ -21,6 +21,7 @@ use App\Http\Controllers\AffordabilityController;
 use App\Http\Controllers\DeprivationController;
 use App\Http\Controllers\MlarArrearsController;
 use App\Http\Controllers\SupportController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\Admin\DataUpdateController;
 use App\Http\Controllers\PropertyAreaController;
 use App\Http\Controllers\LocalAuthorityController;
@@ -76,6 +77,11 @@ Route::get('/epc/scotland/{rrn}', [\App\Http\Controllers\EpcController::class, '
     ->name('epc.scotland.show');
 Route::get('/epc/{lmk}', [EpcController::class, 'show'])->name('epc.show');
 Route::get('/hpi', [HpiDashboardController::class, 'index'])->name('hpi.home');
+Route::get('/rental', [RentalController::class, 'index'])->name('rental.index');
+Route::get('/rental/england', [RentalController::class, 'england'])->name('rental.england');
+Route::get('/rental/scotland', [RentalController::class, 'scotland'])->name('rental.scotland');
+Route::get('/rental/wales', [RentalController::class, 'wales'])->name('rental.wales');
+Route::get('/rental/northern-ireland', [RentalController::class, 'northernIreland'])->name('rental.northern-ireland');
 // New vs Existing (New/Old) dashboard
 Route::get('/new-old', [NewOldController::class, 'index'])->name('newold.index');
 Route::match(['get', 'post'], '/mortgage-calculator', [MortgageCalcController::class, 'index'])->name('mortgagecalc.index');
