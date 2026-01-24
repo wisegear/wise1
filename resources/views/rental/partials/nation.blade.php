@@ -11,7 +11,8 @@
                 <span class="font-semibold">Quarterly rental costs and changes for {{ $nationName }}.</span>
             </p>
             <p class="mt-2 text-sm leading-6 text-gray-700">
-                Charts show average rent levels alongside quarter-on-quarter percentage changes.
+                Charts show average rent levels alongside quarter-on-quarter percentage changes.  Information shows average overall and then splits it down into 1,2,3, 
+                and 4+ bedroom properties. Alsco covers detached, semi-detached, terraced, and flats.
             </p>
             @if($latestPeriod)
                 <p class="mt-2 text-sm leading-6 text-gray-700">

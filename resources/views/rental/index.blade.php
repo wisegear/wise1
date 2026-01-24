@@ -5,13 +5,14 @@
     {{-- Hero / summary card --}}
     <section class="relative z-0 overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         @include('partials.hero-background')
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Rental Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 <span class="font-semibold">Quarterly rental costs and changes for UK and each nation.</span>
             </p>
             <p class="mt-2 text-sm leading-6 text-gray-700">
-                Charts show average rent levels alongside quarter-on-quarter percentage changes.
+                Charts show average rent levels alongside quarter-on-quarter percentage changes.  click on the butons below to isolate England, Scotland, Wales, or Northern Ireland data.
+                Information shows average overall and then splits it down into 1,2,3, and 4+ bedroom properties.  Alsco covers detached, semi-detached, terraced, and flats.
             </p>
             @if($latestPeriod)
                 <p class="mt-2 text-sm leading-6 text-gray-700">
