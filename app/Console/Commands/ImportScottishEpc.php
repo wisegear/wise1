@@ -89,6 +89,10 @@ class ImportScottishEpc extends Command
             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'epc_certificates_scotland'
         SQL);
         $tableColNames = array_map(fn($r) => $r->COLUMN_NAME, $tableCols);
+        $normalizedTableCols = [];
+        foreach ($tableColNames as $name) {
+            $normalizedTableCols[$this->stripBom($name)] = $name;
+        }
 
         foreach ($files as $file) {
             // Parse this file's header (Row 1 is machine names; Row 2 human-readable)
@@ -110,8 +114,10 @@ class ImportScottishEpc extends Command
             $missing = [];
             $tokens = [];
             foreach ($columns as $c) {
-                if (in_array($c, $tableColNames, true)) {
-                    $tokens[] = "`{$c}`";
+                $normalized = $this->stripBom($c);
+                if (isset($normalizedTableCols[$normalized])) {
+                    $actual = $normalizedTableCols[$normalized];
+                    $tokens[] = "`{$actual}`";
                 } else {
                     $missing[] = $c;
                     $tokens[] = '@skip_' . preg_replace('/[^A-Za-z0-9_]+/', '_', $c);
@@ -163,7 +169,8 @@ class ImportScottishEpc extends Command
         $stringCols = ['POSTCODE', 'REPORT_REFERENCE_NUMBER', 'LODGEMENT_DATE'];
         $lines = [];
         foreach ($columns as $c) {
-            if (in_array($c, $stringCols, true)) {
+            $col = $this->stripBom($c);
+            if (in_array($col, $stringCols, true)) {
                 $lines[] = "            $" . "table->string('{$c}')->nullable();";
             } else {
                 $lines[] = "            $" . "table->text('{$c}')->nullable();";
@@ -197,5 +204,10 @@ return new class extends Migration {
     }
 };
 PHP;
+    }
+
+    private function stripBom(string $value): string
+    {
+        return ltrim($value, "\xEF\xBB\xBF");
     }
 }

@@ -13,9 +13,9 @@
            <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
                Market notes, data checks &amp; field commentary
            </h1>
-           <p class="mt-3 text-md leading-7 text-zinc-600">
-               A running log of housing-market research, methodology updates, and source notes, built to show how the
-               signals are interpreted and where the numbers come from.
+           <p class="mt-3 text-base leading-7 text-zinc-600">
+               Soem notes on housing-market research, methodology updates, and source notes, built to show how the
+               signals are interpreted and where the numbers come from.  Best case, you find it interesting, worst, you killed some time whilst the kettle boils.
            </p>
        </div>
        <div class="mt-6 lg:mt-0 lg:ml-8 flex-shrink-0 relative z-10">

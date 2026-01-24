@@ -5,11 +5,12 @@
     {{-- Hero / summary card --}}
     <section class="relative z-0 overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         @include('partials.hero-background')
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Ultra Prime Central London</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 Analysis of London's most prestigious postcodes.
-                <span class="font-semibold">Category A sales only</span>
+                <span class="font-semibold">Category A sales only</span>. This represents the widely accepted postcodes in the Ultra Prime areas. 
+                Some will refine that down further to specific streets or neighbourhoods, but for this site it's suitable for a broad overview.
             </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 30-year history • sourced from Land Registry

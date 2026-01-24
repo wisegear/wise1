@@ -6,14 +6,16 @@
     {{-- Hero / summary card --}}
     <section class="relative z-0 overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
         @include('partials.hero-background')
-        <div class="max-w-3xl">
+        <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">HPI Dashboard</h1>
             <p class="mt-2 text-sm leading-6 text-gray-700">
                 <span class="font-semibold">House Price Index for UK and England, Wales, Scotland & Northern Ireland.</span>
             </p>
-            <p class="mt-2 text-sm leading-6 text-gray-700">All data provided by Gov.uk from the various nations and presented here without modification.</p>
+            <p class="mt-2 text-sm leading-6 text-gray-700">All data provided by gov.uk from the various nations and presented here without modification.  There are many
+              versions of HPI from the Halifax, Nationwide, Rightmove etc but this is the official government data.  That is why figures may differ from other sources.
+            </p>
             <p class="mt-1 text-sm leading-6 text-gray-700">
-                Data covers the period from 1969 to 2025 (October).  Next Update expected January 2026.
+                Data covers the period from 1969 to 2025 (November).  Next Update expected January 2026.
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">

@@ -18,10 +18,10 @@
             <p class="mt-1 text-sm leading-6 text-gray-700">
                 @if(($nation ?? 'ew') === 'scotland')
                     Data covers the period from 2015 to {{ \Carbon\Carbon::parse($stats['latest_lodgement'])->format('M Y') }}.  Data is sourced quarterly.
-                    Note that the data quality of the EPC reports is poor so bear that in mind when you are reviewing the reports themselves.
+                    Note that the data quality of the EPC reports is poor in places so bear that in mind when you are reviewing the reports themselves.
                 @else
                     Data covers the period from January 2008 to {{ \Carbon\Carbon::parse($stats['latest_lodgement'])->format('M Y') }}.  Data is provided Monthly.
-                    Note that the data quality of the EPC reports is poor so bear that in mind when you are reviewing the reports themselves.
+                    Note that the data quality of the EPC reports is poor in places so bear that in mind when you are reviewing the reports themselves.
                 @endif
             </p>
             <div class="mt-4 flex flex-wrap gap-2">
