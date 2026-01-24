@@ -26,6 +26,7 @@ class PagesController extends Controller
             'uk_avg_price' => 0,
             'uk_avg_rent' => 0,
             'bank_rate' => 0,
+            'inflation_rate' => 0,
             'epc_count' => 0,
         ]);
 

@@ -92,9 +92,19 @@ class HomepageStatsWarm extends Command
         $bankRate = $latestRate->rate ?? 0;
         $this->line("   {$bankRate}%");
 
+        // Latest inflation rate (CPIH)
+        $this->line('→ Fetching latest inflation rate (CPIH)...');
+        $latestInflation = DB::table('inflation_cpih_monthly')
+            ->orderBy('date', 'desc')
+            ->first();
+        $inflationRate = $latestInflation->rate ?? 0;
+        $this->line("   {$inflationRate}%");
+
         // Total EPC records
         $this->line('→ Counting EPC records...');
-        $epcCount = DB::table('epc_certificates')->count();
+        $epcCountEnglandWales = DB::table('epc_certificates')->count();
+        $epcCountScotland = DB::table('epc_certificates_scotland')->count();
+        $epcCount = $epcCountEnglandWales + $epcCountScotland;
         $this->line("   " . number_format($epcCount) . " records");
 
         // Store in cache
@@ -103,6 +113,7 @@ class HomepageStatsWarm extends Command
             'uk_avg_price' => round($ukAvgPrice),
             'uk_avg_rent' => round($ukAvgRent),
             'bank_rate' => $bankRate,
+            'inflation_rate' => $inflationRate,
             'epc_count' => $epcCount,
         ];
 
