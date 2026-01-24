@@ -3,10 +3,8 @@
 @section('content')
 
    {{-- Hero --}}
-   <section class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto my-10">
-       <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(#e2e8f0_1px,transparent_1px),linear-gradient(90deg,#e2e8f0_1px,transparent_1px)] bg-[size:28px_28px] opacity-30"></div>
-       <div class="pointer-events-none absolute -left-20 -top-16 h-64 w-64 rounded-full bg-lime-100/60 blur-3xl"></div>
-       <div class="pointer-events-none absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-sky-100/50 blur-3xl"></div>
+   <section class="relative z-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto my-10">
+       @include('partials.hero-background')
        <div class="max-w-5xl relative z-10">
            <div class="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                <span class="h-2 w-2 rounded-full bg-lime-500"></span>

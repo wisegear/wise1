@@ -2,7 +2,8 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {{-- Hero / header card --}}
-        <div class="bg-white border border-zinc-200 rounded-xl shadow-sm px-5 py-6 sm:px-8 sm:py-7 mb-8">
+        <div class="relative z-0 overflow-hidden bg-white border border-zinc-200 rounded-xl shadow-sm px-5 py-6 sm:px-8 sm:py-7 mb-8">
+            @include('partials.hero-background')
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-100">Admin Console</span>

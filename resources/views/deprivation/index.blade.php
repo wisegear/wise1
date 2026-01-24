@@ -5,7 +5,8 @@
 @section('content')
 <div class="max-w-7xl mx-auto p-6 space-y-8">
   {{-- Hero / summary card --}}
-  <section class="relative overflow-hidden rounded border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
+  <section class="relative z-0 overflow-hidden rounded border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
+      @include('partials.hero-background')
     <div class="max-w-4xl">
       <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-600">Deprivation Index</h1>
       <p class="mt-2 text-sm leading-6 text-gray-700">

@@ -4,7 +4,8 @@
 
 <div class="max-w-7xl mx-auto px-4">
     {{-- Header / Hero --}}
-    <section class="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+    <section class="relative z-0 overflow-hidden rounded-xl border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        @include('partials.hero-background')
         <div>
             <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                 <span class="h-2 w-2 rounded-full bg-lime-500"></span>

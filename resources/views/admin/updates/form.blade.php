@@ -5,7 +5,8 @@
 @section('content')
 <div class="max-w-5xl mx-auto px-4">
     {{-- Header / Hero --}}
-    <section class="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm mb-8">
+    <section class="relative z-0 overflow-hidden rounded-xl border border-zinc-200 bg-white p-8 shadow-sm mb-8">
+        @include('partials.hero-background')
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
                 <div class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/70 px-3 py-1 text-xs text-zinc-700 shadow-sm">

@@ -5,7 +5,8 @@
 <div class="mx-auto max-w-7xl px-4 md:py-12">
 
     {{-- Hero / summary card --}}
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center">
+    <section class="relative z-0 overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-center">
+        @include('partials.hero-background')
         <div class="max-w-4xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Mortgage Affordability Calculator</h1>
             <p class="text-sm text-zinc-600 pt-2">Knowing whether you can afford a mortgage from a lenders perspective can be quite tricky, unless you have spent many years in different lenders making those decision, which I have.

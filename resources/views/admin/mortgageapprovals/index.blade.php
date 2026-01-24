@@ -7,7 +7,8 @@
 <div class="max-w-7xl mx-auto">
 
     {{-- Hero --}}
-    <div class="bg-white p-6 rounded shadow mb-6">
+    <div class="relative z-0 overflow-hidden bg-white p-6 rounded shadow mb-6">
+        @include('partials.hero-background')
         <h1 class="text-2xl font-bold text-zinc-800">Mortgage Approvals</h1>
         <p class="text-zinc-600 mt-1">Manage monthly mortgage approval values from the Bank of England.</p>
     </div>

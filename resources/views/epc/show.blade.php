@@ -6,7 +6,8 @@
 <div class="mx-auto max-w-7xl px-4 py-10 md:py-12">
 
     {{-- Hero Panel --}}
-    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm mb-8">
+    <section class="relative z-0 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm mb-8">
+        @include('partials.hero-background')
         <div class="flex flex-col md:flex-row justify-between items-center p-8 gap-6">
             <div class="flex-1">
                 <h1 class="text-3xl font-semibold text-zinc-900 mb-2">Energy Performance Certificate</h1>

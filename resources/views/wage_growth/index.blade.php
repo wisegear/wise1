@@ -4,7 +4,8 @@
 <div class="mx-auto max-w-7xl px-4 py-8 md:py-12">
 
     {{-- HERO SECTION: Displays latest wage growth statistics and trends --}}
-    <section class="relative overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
+    <section class="relative z-0 overflow-hidden rounded-lg border border-gray-200 bg-white/80 p-6 md:p-8 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-center">
+        @include('partials.hero-background')
         <div class="max-w-3xl">
             <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">UK Wage Growth</h1>
 

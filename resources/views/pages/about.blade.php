@@ -4,7 +4,8 @@
 <div class="mx-auto max-w-7xl px-4 py-10 md:py-10">
 
     {{-- Hero --}}
-    <section class="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center mb-10">
+    <section class="relative z-0 overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm flex flex-col md:flex-row justify-between items-center mb-10">
+        @include('partials.hero-background')
         <div class="max-w-5xl relative z-10">
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
                 About Property Research
