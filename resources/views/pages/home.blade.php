@@ -13,7 +13,7 @@
                 Fresh, independent property data
             </div>
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
-                Property Research > <span class="text-lime-600">free</span>, clear, credible & fast datasets
+                Property Research > clear, credible & fast datasets
             </h1>
             <p class="mt-3 text-md leading-7 text-zinc-500">
                 Explore sales, repossessions and market signals across England &amp; Wales (some Scotland & NI). Built for clarity, speed and repeatable analysis.  Best on larger screens, some tables are too wide for mobiles.
@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('/assets/images/site/home.svg') }}" alt="Property Research" class="w-64 h-auto">
+            <img src="{{ asset('/assets/images/site/home.png') }}" alt="Property Research" class="w-88 h-auto">
         </div>
     </section>
 
