@@ -20,7 +20,7 @@
        </div>
        <div class="mt-6 lg:mt-0 lg:ml-8 flex-shrink-0 relative z-10">
            <div class="">
-               <img src="{{ asset('/assets/images/site/blog.svg') }}" alt="Blog" class="w-64 h-auto">
+               <img src="{{ asset('/assets/images/site/blog.png') }}" alt="Blog" class="w-64 h-auto">
            </div>
        </div>
    </section>

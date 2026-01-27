@@ -32,7 +32,7 @@
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('/assets/images/site/home.png') }}" alt="Property Research" class="w-88 h-auto">
+            <img src="{{ asset('/assets/images/site/home.jpg') }}" alt="Property Research" class="w-88 h-auto">
         </div>
     </section>
 
