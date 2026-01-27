@@ -18,7 +18,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/property_search.svg') }}" alt="Property search" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/search.jpg') }}" alt="Property search" class="w-72 h-auto">
         </div>
     </section>
 
