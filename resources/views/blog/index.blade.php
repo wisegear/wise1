@@ -5,7 +5,7 @@
    {{-- Hero --}}
    <section class="relative z-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto my-10">
        @include('partials.hero-background')
-       <div class="max-w-5xl relative z-10">
+       <div class="max-w-4xl relative z-10">
            <div class="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs text-zinc-700 shadow-sm">
                <span class="h-2 w-2 rounded-full bg-lime-500"></span>
                Property research desk
@@ -14,13 +14,13 @@
                Market notes, data checks &amp; field commentary
            </h1>
            <p class="mt-3 text-base leading-7 text-zinc-600">
-               Soem notes on housing-market research, methodology updates, and source notes, built to show how the
+               Some notes on housing-market research, methodology updates, and source notes, built to show how the
                signals are interpreted and where the numbers come from.  Best case, you find it interesting, worst, you killed some time whilst the kettle boils.
            </p>
        </div>
        <div class="mt-6 lg:mt-0 lg:ml-8 flex-shrink-0 relative z-10">
            <div class="">
-               <img src="{{ asset('/assets/images/site/blog.jpg') }}" alt="Blog" class="w-64 h-auto">
+               <img src="{{ asset('/assets/images/site/blog.jpg') }}" alt="Blog" class="w-72 h-auto">
            </div>
        </div>
    </section>

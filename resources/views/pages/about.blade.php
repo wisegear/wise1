@@ -17,7 +17,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('/assets/images/site/about.svg') }}" alt="About Property Research" class="w-64 h-auto">
+            <img src="{{ asset('/assets/images/site/about.jpg') }}" alt="About Property Research" class="w-64 h-auto">
         </div>
     </section>
 
