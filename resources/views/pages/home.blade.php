@@ -106,7 +106,7 @@
              :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'">
             <div class="flex items-center min-w-0">
                 <div class="min-w-0">
-                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Average Rent</p>
+                    <p class="text-xs font-medium text-zinc-500 uppercase tracking-wide">Average UK Rent</p>
                     <p class="text-base sm:text-base font-bold text-zinc-900 leading-tight tracking-tight tabular-nums break-words">&pound;<span x-text="ukAvgRent.toLocaleString()">0</span></p>
                 </div>
             </div>
