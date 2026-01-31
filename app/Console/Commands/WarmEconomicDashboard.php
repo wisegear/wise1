@@ -2,14 +2,15 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\EconomicDashboardController;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class WarmEconomicDashboard extends Command
 {
     protected $signature = 'eco:dashboard-warm';
+
     protected $description = 'Warm cached values used on the economic dashboard';
 
     public function handle(): int
@@ -17,6 +18,7 @@ class WarmEconomicDashboard extends Command
         $this->info('Warming economic dashboard caches...');
 
         $ttl = now()->addHours(6);
+        $approvalsSeriesCode = 'LPMVTVX';
 
         // 1. Interest Rates (latest)
         $interest = DB::table('interest_rates')
@@ -48,6 +50,7 @@ class WarmEconomicDashboard extends Command
 
         // 5. Mortgage Approvals (latest)
         $approvals = DB::table('mortgage_approvals')
+            ->where('series_code', $approvalsSeriesCode)
             ->orderBy('period', 'desc')
             ->first();
         Cache::put('eco:last_approvals', $approvals, $ttl);
@@ -57,14 +60,14 @@ class WarmEconomicDashboard extends Command
         $latestReposs = DB::table('mlar_arrears')
             ->where('description', 'In possession')
             ->orderBy('year', 'desc')
-            ->orderByRaw("FIELD(quarter, 'Q4','Q3','Q2','Q1')")
+            ->orderByRaw("CASE quarter WHEN 'Q4' THEN 4 WHEN 'Q3' THEN 3 WHEN 'Q2' THEN 2 WHEN 'Q1' THEN 1 ELSE 0 END DESC")
             ->first();
 
         if ($latestReposs) {
             $repossObj = (object) [
-                'year'    => $latestReposs->year,
+                'year' => $latestReposs->year,
                 'quarter' => $latestReposs->quarter,
-                'total'   => (float) $latestReposs->value,
+                'total' => (float) $latestReposs->value,
             ];
             Cache::put('eco:last_reposs_v2', $repossObj, $ttl);
             $this->line('→ eco:last_reposs_v2 warmed');
@@ -88,10 +91,10 @@ class WarmEconomicDashboard extends Command
 
         // Also compute total stress so the homepage gauge can render from cache.
         try {
-            (new EconomicDashboardController())->index();
+            (new EconomicDashboardController)->index();
             $this->line('→ eco:total_stress refreshed');
         } catch (\Throwable $e) {
-            $this->warn('→ eco:total_stress not refreshed: ' . $e->getMessage());
+            $this->warn('→ eco:total_stress not refreshed: '.$e->getMessage());
         }
 
         return Command::SUCCESS;

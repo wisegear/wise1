@@ -469,7 +469,7 @@
                 <div class="flex items-start justify-between mb-1">
                     <div>
                         <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
-                        <p class="text-[11px] text-gray-600">Higher approvals are supportive; persistent declines signal tightening credit.</p>
+                        <p class="text-[11px] text-gray-600">Higher approvals (purchases only) are supportive; persistent declines may signal stress.</p>
                     </div>
                     <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
                         <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">

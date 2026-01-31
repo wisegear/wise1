@@ -7,22 +7,30 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
+        DB::statement('
             ALTER TABLE prime_postcodes 
             MODIFY COLUMN category VARCHAR(50) 
             CHARACTER SET utf8mb4 
             COLLATE utf8mb4_unicode_ci
-        ");
+        ');
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Optional: revert to original collation
-        DB::statement("
+        DB::statement('
             ALTER TABLE prime_postcodes 
             MODIFY COLUMN category VARCHAR(50) 
             CHARACTER SET utf8mb4 
             COLLATE utf8mb4_0900_ai_ci
-        ");
+        ');
     }
 };

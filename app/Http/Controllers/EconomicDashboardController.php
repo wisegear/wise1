@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class EconomicDashboardController extends Controller
 {
     public function index()
     {
         $ttl = now()->addHours(6);
+        $approvalsSeriesCode = 'LPMVTVX';
 
         // Helper to extract a numeric metric from a DB row when column names vary
         $getMetric = function ($row, array $extraExclude = []) {
@@ -30,6 +30,7 @@ class EconomicDashboardController extends Controller
                     return (float) $val;
                 }
             }
+
             return null;
         };
 
@@ -62,8 +63,9 @@ class EconomicDashboardController extends Controller
         });
 
         // 5. Mortgage Approvals (latest)
-        $approvals = Cache::remember('eco:last_approvals', $ttl, function () {
+        $approvals = Cache::remember('eco:last_approvals', $ttl, function () use ($approvalsSeriesCode) {
             return DB::table('mortgage_approvals')
+                ->where('series_code', $approvalsSeriesCode)
                 ->orderBy('period', 'desc')
                 ->first();
         });
@@ -73,7 +75,7 @@ class EconomicDashboardController extends Controller
             $latest = DB::table('mlar_arrears')
                 ->where('description', 'In possession')
                 ->orderBy('year', 'desc')
-                ->orderByRaw("FIELD(quarter, 'Q4','Q3','Q2','Q1')")
+                ->orderByRaw("CASE quarter WHEN 'Q4' THEN 4 WHEN 'Q3' THEN 3 WHEN 'Q2' THEN 2 WHEN 'Q1' THEN 1 ELSE 0 END DESC")
                 ->first();
 
             if (! $latest) {
@@ -81,10 +83,10 @@ class EconomicDashboardController extends Controller
             }
 
             return (object) [
-                'year'    => $latest->year,
+                'year' => $latest->year,
                 'quarter' => $latest->quarter,
                 // MLAR value is already "% of loans" in the possessions series
-                'total'   => (float) $latest->value,
+                'total' => (float) $latest->value,
             ];
         });
 
@@ -168,6 +170,7 @@ class EconomicDashboardController extends Controller
                 if (isset($row->single_month_yoy)) {
                     return $row->single_month_yoy;
                 }
+
                 return 0;
             }
         );
@@ -189,6 +192,7 @@ class EconomicDashboardController extends Controller
 
         // Mortgage Approvals: monthly series
         $approvalsRaw = DB::table('mortgage_approvals')
+            ->where('series_code', $approvalsSeriesCode)
             ->orderBy('period', 'desc')
             ->limit(36)
             ->get()
@@ -204,13 +208,13 @@ class EconomicDashboardController extends Controller
         $repossSeries = DB::table('mlar_arrears')
             ->where('description', 'In possession')
             ->orderBy('year', 'desc')
-            ->orderByRaw("FIELD(quarter, 'Q4','Q3','Q2','Q1')")
+            ->orderByRaw("CASE quarter WHEN 'Q4' THEN 4 WHEN 'Q3' THEN 3 WHEN 'Q2' THEN 2 WHEN 'Q1' THEN 1 ELSE 0 END DESC")
             ->limit(16)
             ->get()
             ->reverse()
             ->values();
         $sparklines['repossessions'] = [
-            'values' => $repossSeries->map(fn ($r) => (float)$r->value)->values()->all(),
+            'values' => $repossSeries->map(fn ($r) => (float) $r->value)->values()->all(),
             'labels' => $repossSeries->map(fn ($r) => $r->year.' '.$r->quarter)->values()->all(),
         ];
 
@@ -222,14 +226,13 @@ class EconomicDashboardController extends Controller
             ->where('band', '!=', '1.5_2.5')
             ->groupBy('year', 'quarter')
             ->orderBy('year')
-            ->orderByRaw("FIELD(quarter, 'Q1','Q2','Q3','Q4')")
+            ->orderByRaw("CASE quarter WHEN 'Q1' THEN 1 WHEN 'Q2' THEN 2 WHEN 'Q3' THEN 3 WHEN 'Q4' THEN 4 ELSE 5 END")
             ->get();
 
         $sparklines['arrears'] = [
-            'values' => $arrearsSeries->map(fn ($r) => (float)$r->total)->values()->all(),
+            'values' => $arrearsSeries->map(fn ($r) => (float) $r->total)->values()->all(),
             'labels' => $arrearsSeries->map(fn ($r) => $r->year.' '.$r->quarter)->values()->all(),
         ];
-
 
         // HPI: last 60 months, UK only
         $hpiSeries = DB::table('hpi_monthly')
@@ -253,14 +256,14 @@ class EconomicDashboardController extends Controller
         // ------------------------------------------------------------
 
         $stress = [
-            'interest'  => 0,
+            'interest' => 0,
             'inflation' => 0,
-            'wages'     => 0,
-            'unemp'     => 0,
+            'wages' => 0,
+            'unemp' => 0,
             'approvals' => 0,
-            'reposs'    => 0,
-            'hpi'       => 0,
-            'arrears'   => 0,
+            'reposs' => 0,
+            'hpi' => 0,
+            'arrears' => 0,
         ];
 
         // Helper for direction scoring on a per-period basis (monthly or quarterly)
@@ -271,17 +274,18 @@ class EconomicDashboardController extends Controller
             }
 
             $latest = (float) $vals[$n - 1];
-            $prev1  = (float) $vals[$n - 2];
-            $prev2  = $n >= 3 ? (float) $vals[$n - 3] : null;
+            $prev1 = (float) $vals[$n - 2];
+            $prev2 = $n >= 3 ? (float) $vals[$n - 3] : null;
 
             if (! $inverse) {
                 // Higher is worse
                 if ($latest <= $prev1) {
                     return 0;
                 }
-                if (!is_null($prev2) && $prev1 > $prev2) {
+                if (! is_null($prev2) && $prev1 > $prev2) {
                     return 2;
                 }
+
                 return 1;
             }
 
@@ -289,9 +293,10 @@ class EconomicDashboardController extends Controller
             if ($latest >= $prev1) {
                 return 0;
             }
-            if (!is_null($prev2) && $prev1 < $prev2) {
+            if (! is_null($prev2) && $prev1 < $prev2) {
                 return 2;
             }
+
             return 1;
         };
 
@@ -307,9 +312,9 @@ class EconomicDashboardController extends Controller
             }
 
             $latest = (float) $vals[$n - 1];
-            $prev1  = (float) $vals[$n - 2];
-            $prev2  = $n >= 3 ? (float) $vals[$n - 3] : null;
-            $prev3  = $n >= 4 ? (float) $vals[$n - 4] : null;
+            $prev1 = (float) $vals[$n - 2];
+            $prev2 = $n >= 3 ? (float) $vals[$n - 3] : null;
+            $prev3 = $n >= 4 ? (float) $vals[$n - 4] : null;
 
             // If latest is not higher than previous, treat as green
             if ($latest <= $prev1) {
@@ -339,10 +344,13 @@ class EconomicDashboardController extends Controller
         $stress['interest'] += $directionScore($sparklines['interest']['values'] ?? [], false);
 
         // 2. Inflation level
-        $inflVal = $inflation ? (float)$getMetric($inflation) : null;
-        if (!is_null($inflVal)) {
-            if ($inflVal >= 4.0) $stress['inflation'] += 2;
-            elseif ($inflVal >= 2.0) $stress['inflation'] += 1;
+        $inflVal = $inflation ? (float) $getMetric($inflation) : null;
+        if (! is_null($inflVal)) {
+            if ($inflVal >= 4.0) {
+                $stress['inflation'] += 2;
+            } elseif ($inflVal >= 2.0) {
+                $stress['inflation'] += 1;
+            }
         }
         $stress['inflation'] += $directionScore($sparklines['inflation']['values'] ?? [], false);
 
@@ -352,35 +360,44 @@ class EconomicDashboardController extends Controller
         $realSeries = [];
         if (count($wSeries) === count($iSeries)) {
             for ($x = 0; $x < count($wSeries); $x++) {
-                $realSeries[] = (float)$wSeries[$x] - (float)$iSeries[$x];
+                $realSeries[] = (float) $wSeries[$x] - (float) $iSeries[$x];
             }
         }
         if (count($realSeries) > 0) {
             $latestReal = end($realSeries);
-            if ($latestReal <= -1.0) $stress['wages'] += 2;
-            elseif ($latestReal < 0) $stress['wages'] += 1;
+            if ($latestReal <= -1.0) {
+                $stress['wages'] += 2;
+            } elseif ($latestReal < 0) {
+                $stress['wages'] += 1;
+            }
         }
         $stress['wages'] += $directionScore($realSeries, true);
 
         // 4. Unemployment level + direction
-        $uVal = $unemp ? (float)$getMetric($unemp) : null;
-        if (!is_null($uVal)) {
-            if ($uVal >= 2000000) $stress['unemp'] += 2;
-            elseif ($uVal >= 1500000) $stress['unemp'] += 1;
+        $uVal = $unemp ? (float) $getMetric($unemp) : null;
+        if (! is_null($uVal)) {
+            if ($uVal >= 2000000) {
+                $stress['unemp'] += 2;
+            } elseif ($uVal >= 1500000) {
+                $stress['unemp'] += 1;
+            }
         }
         $stress['unemp'] += $directionScore($sparklines['unemployment']['values'] ?? [], false);
 
         // 5. Mortgage approvals level + direction
-        $aVal = $approvals ? (float)$approvals->value : null;
-        if (!is_null($aVal)) {
-            if ($aVal <= 40000) $stress['approvals'] += 2;
-            elseif ($aVal <= 60000) $stress['approvals'] += 1;
+        $aVal = $approvals ? (float) $approvals->value : null;
+        if (! is_null($aVal)) {
+            if ($aVal <= 40000) {
+                $stress['approvals'] += 2;
+            } elseif ($aVal <= 60000) {
+                $stress['approvals'] += 1;
+            }
         }
         $stress['approvals'] += $directionScore($sparklines['approvals']['values'] ?? [], true);
 
         // 6. Repossessions level + direction (MLAR possessions % of loans)
-        $rVal = $reposs ? (float)$reposs->total : null;
-        if (!is_null($rVal)) {
+        $rVal = $reposs ? (float) $reposs->total : null;
+        if (! is_null($rVal)) {
             // Thresholds now in percentage points of loans in 10%+ arrears
             if ($rVal >= 1.0) {
                 $stress['reposs'] += 2; // red: 1% or more of loans in severe arrears
@@ -391,14 +408,17 @@ class EconomicDashboardController extends Controller
         $stress['reposs'] += $directionScore($sparklines['repossessions']['values'] ?? [], false);
 
         // 7. HPI level + direction
-        $hVal = $hpi ? (float)$hpi->AveragePrice : null;
-        if (!is_null($hVal)) {
+        $hVal = $hpi ? (float) $hpi->AveragePrice : null;
+        if (! is_null($hVal)) {
             $series = $sparklines['hpi']['values'];
             $n = count($series);
             if ($n >= 2) {
-                $change = $series[$n-1] - $series[$n-2];
-                if ($change <= -5000) $stress['hpi'] += 2;
-                elseif ($change < 0) $stress['hpi'] += 1;
+                $change = $series[$n - 1] - $series[$n - 2];
+                if ($change <= -5000) {
+                    $stress['hpi'] += 2;
+                } elseif ($change < 0) {
+                    $stress['hpi'] += 1;
+                }
             }
         }
         $stress['hpi'] += $directionScore($sparklines['hpi']['values'] ?? [], true);
@@ -406,12 +426,12 @@ class EconomicDashboardController extends Controller
         // 8. Arrears direction only (total arrears 2.5%+ of balance)
         // We treat higher arrears as worse; scoring uses the custom arrearsDirectionScore
         // with 0 (green) to 3 (dark red) based on consecutive worsening quarters.
-        if (!empty($sparklines['arrears']['values'] ?? [])) {
+        if (! empty($sparklines['arrears']['values'] ?? [])) {
             $stress['arrears'] += $arrearsDirectionScore($sparklines['arrears']['values']);
         }
 
         // Repossessions direction score (reuse arrearsDirectionScore: 0–3)
-        if (!empty($sparklines['repossessions']['values'] ?? [])) {
+        if (! empty($sparklines['repossessions']['values'] ?? [])) {
             $repossDirection = $arrearsDirectionScore($sparklines['repossessions']['values']);
         }
 
@@ -419,7 +439,7 @@ class EconomicDashboardController extends Controller
         // Both direction and headline value use the total arrears across all bands
         // excluding the lowest (1.5–2.5%) band, taken directly from the sparkline
         // so the panel value always matches the last point on the chart.
-        if (!empty($sparklines['arrears']['values'] ?? [])) {
+        if (! empty($sparklines['arrears']['values'] ?? [])) {
             $arrearsValues = $sparklines['arrears']['values'];
             $arrearsLabels = $sparklines['arrears']['labels'] ?? [];
 
@@ -438,11 +458,11 @@ class EconomicDashboardController extends Controller
                 }
             }
 
-            if (!is_null($year) && !is_null($quarter)) {
+            if (! is_null($year) && ! is_null($quarter)) {
                 $arrearsPanel = [
-                    'year'      => $year,
-                    'quarter'   => $quarter,
-                    'value'     => $lastValue,
+                    'year' => $year,
+                    'quarter' => $quarter,
+                    'value' => $lastValue,
                     'direction' => $arrearsDir,
                 ];
             }
@@ -454,18 +474,18 @@ class EconomicDashboardController extends Controller
         Cache::forever('eco:total_stress_persist', $totalStress);
 
         return view('economic.dashboard', [
-            'interest'        => $interest,
-            'inflation'       => $inflation,
-            'wages'           => $wages,
-            'unemp'           => $unemp,
-            'approvals'       => $approvals,
-            'reposs'          => $reposs,
+            'interest' => $interest,
+            'inflation' => $inflation,
+            'wages' => $wages,
+            'unemp' => $unemp,
+            'approvals' => $approvals,
+            'reposs' => $reposs,
             'repossDirection' => $repossDirection,
-            'hpi'             => $hpi,
-            'sparklines'      => $sparklines,
-            'stress'          => $stress,
-            'totalStress'     => $totalStress,
-            'arrearsPanel'    => $arrearsPanel,
+            'hpi' => $hpi,
+            'sparklines' => $sparklines,
+            'stress' => $stress,
+            'totalStress' => $totalStress,
+            'arrearsPanel' => $arrearsPanel,
         ]);
     }
 }
