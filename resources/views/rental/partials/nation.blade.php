@@ -46,7 +46,7 @@
             </div>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/rental.jpg') }}" alt="Rental dashboard" class="w-72 h-auto">
+            <img src="{{ asset('assets/images/site/rental.jpg') }}" alt="Rental dashboard" class="w-80 h-auto">
         </div>
     </section>
 

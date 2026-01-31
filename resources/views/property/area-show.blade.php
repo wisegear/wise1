@@ -118,7 +118,7 @@
             <p class="mt-2 text-sm leading-6 text-gray-700">This page provides a detailed breakdown of historical property sales, prices, and market composition for {{ ucfirst(strtolower($areaName)) }}, based on Land Registry transaction data.</p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/area.svg') }}" alt="Area" class="w-32 h-auto">
+            <img src="{{ asset('assets/images/site/propertysearch.jpg') }}" alt="Area" class="w-72 h-auto">
         </div>
     </section>
 

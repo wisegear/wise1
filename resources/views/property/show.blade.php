@@ -89,10 +89,10 @@
         </div>
 
         <!-- Right: illustration -->
-        <div class="hidden md:flex md:w-1/5 justify-end">
-            <img src="/assets/images/site/ordinary_day.svg"
+        <div class="hidden md:flex md:w-2/5 justify-end">
+            <img src="/assets/images/site/property_show.jpg"
                  alt="Property Illustration"
-                 class="max-w-full h-32">
+                 class="w-82 h-auto">
         </div>
 
     </div>

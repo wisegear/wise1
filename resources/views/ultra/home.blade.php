@@ -28,7 +28,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/ultra_prime.svg') }}" alt="Ultra Prime Central London" class="w-60 h-auto">
+            <img src="{{ asset('assets/images/site/property1.jpg') }}" alt="Ultra Prime Central London" class="w-72 h-auto">
         </div>
     </section>
 

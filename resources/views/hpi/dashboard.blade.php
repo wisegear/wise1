@@ -19,7 +19,7 @@
             </p>
         </div>
         <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
-            <img src="{{ asset('assets/images/site/hpi.svg') }}" alt="HPI Dashboard" class="w-64 h-auto">
+            <img src="{{ asset('assets/images/site/hp_index.jpg') }}" alt="HPI Dashboard" class="w-64 h-auto">
         </div>
     </section>
 

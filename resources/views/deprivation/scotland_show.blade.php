@@ -56,9 +56,9 @@
   </div>
   <div class="mt-6 md:mt-0 md:ml-8 flex-shrink-0">
     <img
-      src="{{ asset('assets/images/site/deprivation2.svg') }}"
+      src="{{ asset('assets/images/site/deprivation.jpg') }}"
       alt="Deprivation illustration"
-      class="h-24 md:h-40 w-auto opacity-90"
+      class="w-72 h-auto"
     >
   </div>
   
