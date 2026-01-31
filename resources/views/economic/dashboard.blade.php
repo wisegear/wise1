@@ -218,6 +218,114 @@
     {{-- INDICATOR GRID: All 8 economic indicators --}}
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
 
+        {{-- MORTGAGE APPROVALS --}}
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['approvals']) }}" 
+             title="{{ $trendTexts['approvals'] ?? '' }}">
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['approvals']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
+                        <p class="text-[11px] text-gray-600">Higher approvals (purchases only) are supportive; persistent declines may signal stress.</p>
+                    </div>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['approvals']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                
+                @if($approvals)
+                    <div class="text-2xl font-semibold">{{ number_format((float) $approvals->value) }}</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($approvals->period)->format('M Y') }}
+                        @if(!empty($sparklines['approvals']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-approvals"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
+            </div>
+        </div>
+
+        {{-- HOUSE PRICE INDEX --}}
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['hpi']) }}" 
+             title="{{ $trendTexts['hpi'] ?? '' }}">
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['hpi']) }}"></div>
+            <div class="relative z-10">
+                <div class="flex items-start justify-between mb-1">
+                    <div>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">House Price Index (UK)</div>
+                        <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls signal stress.</p>
+                    </div>
+                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
+                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
+                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
+                                  fill="none"
+                                  stroke="#6ee7b7"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
+                                  fill="none"
+                                  stroke="#fcd34d"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
+                                  fill="none"
+                                  stroke="#fca5a5"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
+                                  fill="none"
+                                  stroke="#fb7185"
+                                  stroke-width="12"
+                                  stroke-linecap="round" />
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['hpi']) }}, 60, 60)">
+                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                
+                @if($hpi)
+                    <div class="text-2xl font-semibold">£{{ number_format($hpi->AveragePrice, 0) }}</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        {{ \Carbon\Carbon::parse($hpi->Date)->format('M Y') }}
+                        @if(!empty($sparklines['hpi']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-hpi"></canvas></div>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-gray-500 text-sm">No data</div>
+                @endif
+            </div>
+        </div>
+
         {{-- INTEREST RATES --}}
         <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['interest']) }}" 
              title="{{ $trendTexts['interest'] ?? '' }}">
@@ -461,113 +569,6 @@
             </div>
         </div>
 
-        {{-- MORTGAGE APPROVALS --}}
-        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['approvals']) }}" 
-             title="{{ $trendTexts['approvals'] ?? '' }}">
-            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['approvals']) }}"></div>
-            <div class="relative z-10">
-                <div class="flex items-start justify-between mb-1">
-                    <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Mortgage Approvals</div>
-                        <p class="text-[11px] text-gray-600">Higher approvals (purchases only) are supportive; persistent declines may signal stress.</p>
-                    </div>
-                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
-                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
-                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
-                                  fill="none"
-                                  stroke="#6ee7b7"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
-                                  fill="none"
-                                  stroke="#fcd34d"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
-                                  fill="none"
-                                  stroke="#fca5a5"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
-                                  fill="none"
-                                  stroke="#fb7185"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <g transform="rotate({{ getLevelNeedleRotation($levels['approvals']) }}, 60, 60)">
-                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
-                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-                
-                @if($approvals)
-                    <div class="text-2xl font-semibold">{{ number_format((float) $approvals->value) }}</div>
-                    <div class="text-sm text-gray-600 mt-1">
-                        {{ \Carbon\Carbon::parse($approvals->period)->format('M Y') }}
-                        @if(!empty($sparklines['approvals']['values'] ?? []))
-                            <div class="h-28 pt-8"><canvas id="spark-approvals"></canvas></div>
-                        @endif
-                    </div>
-                @else
-                    <div class="text-gray-500 text-sm">No data</div>
-                @endif
-            </div>
-        </div>
-
-        {{-- REPOSSESSIONS --}}
-        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['repossessions']) }}" 
-             title="{{ $trendTexts['repossessions'] ?? '' }}">
-            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['repossessions']) }}"></div>
-            <div class="relative z-10">
-                <div class="flex items-start justify-between mb-1">
-                    <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
-                        <p class="text-[11px] text-gray-600">Share of residential mortgages in possession. Lower is positive.</p>
-                    </div>
-                    <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
-                        <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
-                            <path d="M 12 60 A 48 48 0 0 1 36 18.43"
-                                  fill="none"
-                                  stroke="#6ee7b7"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 36 18.43 A 48 48 0 0 1 76.42 14.89"
-                                  fill="none"
-                                  stroke="#fcd34d"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 76.42 14.89 A 48 48 0 0 1 101.57 36"
-                                  fill="none"
-                                  stroke="#fca5a5"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <path d="M 101.57 36 A 48 48 0 0 1 108 60"
-                                  fill="none"
-                                  stroke="#fb7185"
-                                  stroke-width="12"
-                                  stroke-linecap="round" />
-                            <g transform="rotate({{ getLevelNeedleRotation($levels['repossessions']) }}, 60, 60)">
-                                <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
-                                <circle cx="60" cy="60" r="4" fill="#1f2937" />
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-                
-                @if($reposs)
-                    <div class="text-2xl font-semibold">{{ number_format((float) $reposs->total, 3) }}%</div>
-                    <div class="text-sm text-gray-600 mt-1">
-                        {{ $reposs->year }} {{ $reposs->quarter }}
-                        @if(!empty($sparklines['repossessions']['values'] ?? []))
-                            <div class="h-28 pt-8"><canvas id="spark-repossessions"></canvas></div>
-                        @endif
-                    </div>
-                @else
-                    <div class="text-gray-500 text-sm">No data</div>
-                @endif
-            </div>
-        </div>
 
         {{-- MORTGAGE ARREARS --}}
         <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['arrears']) }}" 
@@ -623,15 +624,15 @@
             </div>
         </div>
 
-        {{-- HOUSE PRICE INDEX --}}
-        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['hpi']) }}" 
-             title="{{ $trendTexts['hpi'] ?? '' }}">
-            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['hpi']) }}"></div>
+        {{-- REPOSSESSIONS --}}
+        <div class="relative overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {{ getLevelClasses($levels['repossessions']) }}" 
+             title="{{ $trendTexts['repossessions'] ?? '' }}">
+            <div class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl {{ getLevelAccentClasses($levels['repossessions']) }}"></div>
             <div class="relative z-10">
                 <div class="flex items-start justify-between mb-1">
                     <div>
-                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">House Price Index (UK)</div>
-                        <p class="text-[11px] text-gray-600">Modest growth or stability is normal; persistent falls signal stress.</p>
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Repossessions (MLAR)</div>
+                        <p class="text-[11px] text-gray-600">Share of residential mortgages in possession. Lower is positive.</p>
                     </div>
                     <div class="ml-3 flex h-11 w-11 items-center justify-center rounded-full">
                         <svg class="h-7 w-11" viewBox="0 0 120 70" aria-hidden="true">
@@ -655,7 +656,7 @@
                                   stroke="#fb7185"
                                   stroke-width="12"
                                   stroke-linecap="round" />
-                            <g transform="rotate({{ getLevelNeedleRotation($levels['hpi']) }}, 60, 60)">
+                            <g transform="rotate({{ getLevelNeedleRotation($levels['repossessions']) }}, 60, 60)">
                                 <line x1="60" y1="60" x2="60" y2="18" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
                                 <circle cx="60" cy="60" r="4" fill="#1f2937" />
                             </g>
@@ -663,12 +664,12 @@
                     </div>
                 </div>
                 
-                @if($hpi)
-                    <div class="text-2xl font-semibold">£{{ number_format($hpi->AveragePrice, 0) }}</div>
+                @if($reposs)
+                    <div class="text-2xl font-semibold">{{ number_format((float) $reposs->total, 3) }}%</div>
                     <div class="text-sm text-gray-600 mt-1">
-                        {{ \Carbon\Carbon::parse($hpi->Date)->format('M Y') }}
-                        @if(!empty($sparklines['hpi']['values'] ?? []))
-                            <div class="h-28 pt-8"><canvas id="spark-hpi"></canvas></div>
+                        {{ $reposs->year }} {{ $reposs->quarter }}
+                        @if(!empty($sparklines['repossessions']['values'] ?? []))
+                            <div class="h-28 pt-8"><canvas id="spark-repossessions"></canvas></div>
                         @endif
                     </div>
                 @else
