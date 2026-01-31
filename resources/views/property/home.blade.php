@@ -11,6 +11,7 @@
             <p class="mt-2 text-sm leading-6 text-gray-700">All property data includes <span class="text-lime-600 font-bold">Category A</span> sales only, these are sales at market value on an arms length basis.  <span class="text-rose-500 font-bold">Category B</span> sales are not included as they are transactions for a variety of reasons not neccessairly at 
                 arms length therefore skew the data so are excluded. Read more about this <a href="/blog/category-a-vs-category-b-property-sales-what-the-land-registry-is-actually-telling-you" class="text-lime-600 hover:text-lime-700">Here.</a>All data provided from the Land Registry.</p>     
             <div class="mt-4 flex flex-wrap gap-2"> <!-- Avoids unset in css -->
+                <a href="{{ route('property.search', absolute: false) }}" class="inner-button bg-lime-600! hover:bg-lime-700!">Property Search</a>
                 <a href="/property/outer-prime-london" class="inner-button">Outer Prime London</a>
                 <a href="/property/prime-central-london" class="inner-button">Prime Central London</a>
                 <a href="/property/ultra-prime-central-london" class="inner-button">Ultra Prime Central London</a>
