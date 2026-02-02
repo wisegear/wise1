@@ -122,11 +122,11 @@
                             <i class="fa-brands fa-square-facebook text-sm"></i>
                         </a>
                         
-                        <!-- X (formerly Twitter) -->
-                        <a href="https://x.com/Propertyda03" target="_blank" rel="noopener"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded border border-zinc-300 bg-white/80 text-black hover:bg-zinc-100 transition shadow-sm"
-                           aria-label="X profile">
-                            <i class="fa-brands fa-x-twitter text-sm"></i>
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/447720868799?text=Hi%20Lee%2C%20I%27m%20contacting%20you%20about%20propertyresearch.uk" target="_blank" rel="noopener"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded border border-zinc-300 bg-white/80 text-[#25D366] hover:bg-zinc-100 transition shadow-sm"
+                           aria-label="WhatsApp chat">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
                         </a>
                     </div>
                 </div>
@@ -719,13 +719,13 @@
                             <i class="fa-brands fa-square-facebook text-sm"></i>
                         </a>
                         
-                        <!-- X (Twitter) -->
-                        <a href="https://x.com/Propertyda03" 
-                           target="_blank" 
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/447720868799?text=Hi%20Lee%2C%20I%27m%20contacting%20you%20about%20propertyresearch.uk"
+                           target="_blank"
                            rel="noopener"
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white text-black hover:bg-zinc-100 transition shadow-sm"
-                           aria-label="X profile">
-                            <i class="fa-brands fa-x-twitter text-sm"></i>
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-zinc-300 bg-white text-[#25D366] hover:bg-zinc-100 transition shadow-sm"
+                           aria-label="WhatsApp chat">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
                         </a>
                     </div>
                 </div>

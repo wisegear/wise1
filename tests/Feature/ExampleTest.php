@@ -12,8 +12,12 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $renderedLayout = view('layouts.app')->render();
 
-        $response->assertStatus(200);
+        $this->assertStringContainsString(
+            'https://wa.me/447720868799?text=Hi%20Lee%2C%20I%27m%20contacting%20you%20about%20propertyresearch.uk',
+            $renderedLayout
+        );
+        $this->assertStringNotContainsString('https://x.com/Propertyda03', $renderedLayout);
     }
 }
