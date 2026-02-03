@@ -3,38 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
-//now includes all regions
+// now includes all regions
 
 class DeprivationController extends Controller
 {
     public function index(Request $req)
     {
         // Filters
-        $q        = trim((string)$req->input('q'));          // search in LSOA name or LAD
-        $decile   = $req->input('decile');                   // 1..10
-        $ruc      = $req->input('ruc');                      // RUC21CD or RUC21NM
-        $lad      = $req->input('lad');                      // LAD (by name fragment)
-        $perPage  = (int)($req->input('perPage') ?? 25);
+        $q = trim((string) $req->input('q'));          // search in LSOA name or LAD
+        $decile = $req->input('decile');                   // 1..10
+        $ruc = $req->input('ruc');                      // RUC21CD or RUC21NM
+        $lad = $req->input('lad');                      // LAD (by name fragment)
+        $perPage = (int) ($req->input('perPage') ?? 25);
 
         // Optional: direct postcode search (redirects to details page)
-        $postcode = trim((string)$req->input('postcode'));
+        $postcode = trim((string) $req->input('postcode'));
         if ($postcode !== '') {
             // Standardize postcode to PCDS format (e.g., "WR5 3EU")
             $std = function (string $s): string {
                 $s = strtoupper(preg_replace('/[^A-Z0-9]/', '', $s));
-                if ($s === '' || strlen($s) <= 3) return $s;
-                return substr($s, 0, -3) . ' ' . substr($s, -3);
+                if ($s === '' || strlen($s) <= 3) {
+                    return $s;
+                }
+
+                return substr($s, 0, -3).' '.substr($s, -3);
             };
 
             $pcStd = $std($postcode);                                // e.g. "WR5 3EU"
             $pcKey = strtoupper(str_replace(' ', '', $postcode));    // e.g. "WR53EU"
-            $cacheKey = 'onspd:pcmap:' . $pcKey;                     // strict, space-free key
+            $cacheKey = 'onspd:pcmap:'.$pcKey;                     // strict, space-free key
 
             $row = Cache::get($cacheKey);
-            if (!$row) {
+            if (! $row) {
                 // 1) Try exact indexed match on PCDS for current records first
                 $hit = null;
                 if ($pcStd !== '') {
@@ -48,7 +51,7 @@ class DeprivationController extends Controller
                         ->first();
                 }
 
-                if (!$hit) {
+                if (! $hit) {
                     // 2) Fallback to normalized comparisons across pcds/pcd2/pcd
                     $hit = DB::table('onspd')
                         ->select(['lsoa21', 'lsoa11', 'ctry', 'pcds'])
@@ -69,7 +72,7 @@ class DeprivationController extends Controller
                 $lsoa21 = $row->lsoa21 ?? null;
 
                 // If only LSOA11 exists, bridge to 2021 code
-                if (!$lsoa21 && !empty($row->lsoa11)) {
+                if (! $lsoa21 && ! empty($row->lsoa11)) {
                     $map = DB::table('lsoa_2011_to_2021')
                         ->select('LSOA21CD')
                         ->where('LSOA11CD', $row->lsoa11)
@@ -78,15 +81,15 @@ class DeprivationController extends Controller
                 }
 
                 // If this is a Welsh postcode (WIMD coverage)
-                if (isset($row->ctry) && $row->ctry === 'W92000004' && !empty($row->lsoa11)) {
+                if (isset($row->ctry) && $row->ctry === 'W92000004' && ! empty($row->lsoa11)) {
                     return redirect()->route('deprivation.wales.show', [
                         'lsoa' => $row->lsoa11,
-                        'pcd'  => $pcStd ?: $pcKey,
+                        'pcd' => $pcStd ?: $pcKey,
                     ]);
                 }
 
                 // If this is a Scottish postcode (Data Zone held in lsoa11 as S010…)
-                if (!empty($row->lsoa11) && (function_exists('str_starts_with') ? str_starts_with($row->lsoa11, 'S010') : substr($row->lsoa11, 0, 4) === 'S010')) {
+                if (! empty($row->lsoa11) && (function_exists('str_starts_with') ? str_starts_with($row->lsoa11, 'S010') : substr($row->lsoa11, 0, 4) === 'S010')) {
                     return redirect()->route('deprivation.scot.show', ['dz' => $row->lsoa11, 'pcd' => $pcStd ?: $pcKey]);
                 }
 
@@ -122,6 +125,7 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('imd25:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -131,6 +135,7 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('imd25:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -149,6 +154,7 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('simd:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -166,6 +172,7 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('simd:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -184,6 +191,7 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('wimd:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -193,12 +201,14 @@ class DeprivationController extends Controller
                 ->limit(10)
                 ->get();
             Cache::put('wimd:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
         // Northern Ireland — total areas so we can calculate deciles
         $totalNI = Cache::rememberForever('nimdm.total_rank', function () {
             $n = (int) (DB::table('ni_deprivation')->max('MDM_rank') ?? 0);
+
             // NIMDM2017 covers all NI Small Areas (~4,500). If query fails, fall back.
             return $n ?: 4537;
         });
@@ -220,7 +230,7 @@ class DeprivationController extends Controller
 
             // Calculate decile (1 = most deprived, 10 = least deprived)
             foreach ($data as $row) {
-                if (!is_null($row->rank)) {
+                if (! is_null($row->rank)) {
                     $row->decile = max(
                         1,
                         min(
@@ -234,6 +244,7 @@ class DeprivationController extends Controller
             }
 
             Cache::put('nimdm:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
@@ -245,7 +256,7 @@ class DeprivationController extends Controller
 
             // Calculate decile (1 = most deprived, 10 = least deprived)
             foreach ($data as $row) {
-                if (!is_null($row->rank)) {
+                if (! is_null($row->rank)) {
                     $row->decile = max(
                         1,
                         min(
@@ -259,39 +270,43 @@ class DeprivationController extends Controller
             }
 
             Cache::put('nimdm:last_warm', now()->toDateTimeString());
+
             return $data;
         });
 
         // Total ranks for contextual percentages (IMD 2025)
         $totalIMD = Cache::rememberForever('imd25.total_rank', function () {
             $n = (int) (DB::table('imd2025')->max('Index_of_Multiple_Deprivation_Rank') ?? 0);
+
             return $n ?: 33755;
         });
 
         $totalSIMD = Cache::rememberForever('simd.total_rank', function () {
             $row = DB::table('simd2020')->selectRaw("MAX(CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED)) as max_rank")->first();
-            $n = (int)($row->max_rank ?? 0);
+            $n = (int) ($row->max_rank ?? 0);
+
             return $n ?: 6976;
         });
 
         $totalWIMD = Cache::rememberForever('wimd.total_rank', function () {
             $n = (int) (DB::table('wimd2019')->max('WIMD_2019') ?? 0);
+
             return $n ?: 1909;
         });
 
         return view('deprivation.index', [
-            'engTop10'    => $engTop10,
+            'engTop10' => $engTop10,
             'engBottom10' => $engBottom10,
-            'scoTop10'    => $scoTop10,
+            'scoTop10' => $scoTop10,
             'scoBottom10' => $scoBottom10,
-            'walTop10'    => $walTop10,
+            'walTop10' => $walTop10,
             'walBottom10' => $walBottom10,
-            'niTop10'     => $niTop10,
-            'niBottom10'  => $niBottom10,
-            'totalIMD'    => $totalIMD,
-            'totalSIMD'   => $totalSIMD,
-            'totalWIMD'   => $totalWIMD,
-            'totalNI'     => $totalNI,
+            'niTop10' => $niTop10,
+            'niBottom10' => $niBottom10,
+            'totalIMD' => $totalIMD,
+            'totalSIMD' => $totalSIMD,
+            'totalWIMD' => $totalWIMD,
+            'totalNI' => $totalNI,
             // keep postcode input working on the page
             'q' => $q,
             'decile' => $decile,
@@ -344,29 +359,30 @@ class DeprivationController extends Controller
         // 2. Total LSOAs for England (for % context)
         $total = Cache::rememberForever('imd25.total_rank', function () {
             $n = (int) (DB::table('imd2025')->max('Index_of_Multiple_Deprivation_Rank') ?? 0);
+
             return $n ?: 33755; // IoD25: 33,755 LSOAs in England
         });
 
         $rank = (int) ($row->overall_rank ?? 0); // 1 = most deprived
-        $pct  = $rank
+        $pct = $rank
             ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100)))
             : null;
 
         // 3. Build domain breakdown list for the blade (mirrors Scotland/Wales style)
         $domains = [
-            [ 'label' => 'Income', 'rank' => $row->Income_Rank ?? null, 'decile' => $row->Income_Decile ?? null, 'weight' => '22.5%' ],
-            [ 'label' => 'Employment', 'rank' => $row->Employment_Rank ?? null, 'decile' => $row->Employment_Decile ?? null, 'weight' => '22.5%' ],
-            [ 'label' => 'Education, Skills & Training', 'rank' => $row->Education_Skills_Training_Rank ?? null, 'decile' => $row->Education_Skills_Training_Decile ?? null, 'weight' => '13.5%' ],
-            [ 'label' => 'Health Deprivation & Disability', 'rank' => $row->Health_Deprivation_Disability_Rank ?? null, 'decile' => $row->Health_Deprivation_Disability_Decile ?? null, 'weight' => '13.5%' ],
-            [ 'label' => 'Crime', 'rank' => $row->Crime_Rank ?? null, 'decile' => $row->Crime_Decile ?? null, 'weight' => '9.3%' ],
-            [ 'label' => 'Barriers to Housing & Services', 'rank' => $row->Barriers_Housing_Services_Rank ?? null, 'decile' => $row->Barriers_Housing_Services_Decile ?? null, 'weight' => '9.3%' ],
-            [ 'label' => 'Living Environment', 'rank' => $row->Living_Environment_Rank ?? null, 'decile' => $row->Living_Environment_Decile ?? null, 'weight' => '9.3%' ],
+            ['label' => 'Income', 'rank' => $row->Income_Rank ?? null, 'decile' => $row->Income_Decile ?? null, 'weight' => '22.5%'],
+            ['label' => 'Employment', 'rank' => $row->Employment_Rank ?? null, 'decile' => $row->Employment_Decile ?? null, 'weight' => '22.5%'],
+            ['label' => 'Education, Skills & Training', 'rank' => $row->Education_Skills_Training_Rank ?? null, 'decile' => $row->Education_Skills_Training_Decile ?? null, 'weight' => '13.5%'],
+            ['label' => 'Health Deprivation & Disability', 'rank' => $row->Health_Deprivation_Disability_Rank ?? null, 'decile' => $row->Health_Deprivation_Disability_Decile ?? null, 'weight' => '13.5%'],
+            ['label' => 'Crime', 'rank' => $row->Crime_Rank ?? null, 'decile' => $row->Crime_Decile ?? null, 'weight' => '9.3%'],
+            ['label' => 'Barriers to Housing & Services', 'rank' => $row->Barriers_Housing_Services_Rank ?? null, 'decile' => $row->Barriers_Housing_Services_Decile ?? null, 'weight' => '9.3%'],
+            ['label' => 'Living Environment', 'rank' => $row->Living_Environment_Rank ?? null, 'decile' => $row->Living_Environment_Decile ?? null, 'weight' => '9.3%'],
         ];
 
         return view('deprivation.show', [
-            'row'     => $row,
-            'total'   => $total,
-            'pct'     => $pct,
+            'row' => $row,
+            'total' => $total,
+            'pct' => $pct,
             'domains' => $domains,
             'overall' => [
                 'rank' => $row->overall_rank ?? null,
@@ -381,41 +397,44 @@ class DeprivationController extends Controller
 
         // Prefer the exact postcode row if provided, otherwise fall back to any row in the DZ
         $row = null;
-        if (!empty($pcd)) {
+        if (! empty($pcd)) {
             $row = DB::table('v_postcode_deprivation_scotland')
                 ->where('data_zone', $dz)
                 ->where('postcode', $pcd)
                 ->first();
         }
 
-        if (!$row) {
+        if (! $row) {
             $row = DB::table('v_postcode_deprivation_scotland')
                 ->where('data_zone', $dz)
                 ->orderBy('postcode')
                 ->first();
         }
 
-        if (!$row) {
+        if (! $row) {
             return back()->with('status', 'No SIMD data found for that Scottish Data Zone.');
         }
 
         // Total Data Zones for percentile (max rank); cache forever, fallback ~6976
         $total = Cache::rememberForever('simd.total_rank', function () {
             $row = DB::table('simd2020')->selectRaw("MAX(CAST(REPLACE(SIMD2020v2_Rank, ',', '') AS UNSIGNED)) as max_rank")->first();
-            $n = (int)($row->max_rank ?? 0);
+            $n = (int) ($row->max_rank ?? 0);
+
             return $n ?: 6976;
         });
 
         $rank = (int) str_replace(',', '', (string) ($row->rank ?? '0'));
-        $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
+        $pct = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
 
-        $row->income_rank      = $row->income_rank      !== null ? (int) str_replace(',', '', $row->income_rank)      : null;
-        $row->employment_rank  = $row->employment_rank  !== null ? (int) str_replace(',', '', $row->employment_rank)  : null;
-        $row->health_rank      = $row->health_rank      !== null ? (int) str_replace(',', '', $row->health_rank)      : null;
-        $row->education_rank   = $row->education_rank   !== null ? (int) str_replace(',', '', $row->education_rank)   : null;
-        $row->access_rank      = $row->access_rank      !== null ? (int) str_replace(',', '', $row->access_rank)      : null;
-        $row->crime_rank       = $row->crime_rank       !== null ? (int) str_replace(',', '', $row->crime_rank)       : null;
-        $row->housing_rank     = $row->housing_rank     !== null ? (int) str_replace(',', '', $row->housing_rank)     : null;
+        $row->rank = $rank ?: null;
+        $row->decile = $row->decile !== null ? (int) str_replace(',', '', (string) $row->decile) : null;
+        $row->income_rank = $row->income_rank !== null ? (int) str_replace(',', '', $row->income_rank) : null;
+        $row->employment_rank = $row->employment_rank !== null ? (int) str_replace(',', '', $row->employment_rank) : null;
+        $row->health_rank = $row->health_rank !== null ? (int) str_replace(',', '', $row->health_rank) : null;
+        $row->education_rank = $row->education_rank !== null ? (int) str_replace(',', '', $row->education_rank) : null;
+        $row->access_rank = $row->access_rank !== null ? (int) str_replace(',', '', $row->access_rank) : null;
+        $row->crime_rank = $row->crime_rank !== null ? (int) str_replace(',', '', $row->crime_rank) : null;
+        $row->housing_rank = $row->housing_rank !== null ? (int) str_replace(',', '', $row->housing_rank) : null;
 
         $domains = [
             ['label' => 'Income',     'rank' => $row->income_rank],
@@ -428,25 +447,28 @@ class DeprivationController extends Controller
         ];
 
         $toDecile = function (?int $rank) use ($total) {
-            if (!$rank || $total <= 0) return null;
+            if (! $rank || $total <= 0) {
+                return null;
+            }
+
             return max(1, min(10, (int) floor((($rank - 1) / $total) * 10) + 1));
         };
 
-        $row->income_decile     = $toDecile($row->income_rank);
+        $row->income_decile = $toDecile($row->income_rank);
         $row->employment_decile = $toDecile($row->employment_rank);
-        $row->health_decile     = $toDecile($row->health_rank);
-        $row->education_decile  = $toDecile($row->education_rank);
-        $row->access_decile     = $toDecile($row->access_rank);
-        $row->crime_decile      = $toDecile($row->crime_rank);
-        $row->housing_decile    = $toDecile($row->housing_rank);
+        $row->health_decile = $toDecile($row->health_rank);
+        $row->education_decile = $toDecile($row->education_rank);
+        $row->access_decile = $toDecile($row->access_rank);
+        $row->crime_decile = $toDecile($row->crime_rank);
+        $row->housing_decile = $toDecile($row->housing_rank);
 
         return view('deprivation.scotland_show', [
-            'dz'        => $dz,
-            'row'       => $row,
-            'total'     => $total,
+            'dz' => $dz,
+            'row' => $row,
+            'total' => $total,
             'totalSIMD' => $total,
-            'pct'       => $pct,
-            'domains'   => $domains,
+            'pct' => $pct,
+            'domains' => $domains,
         ]);
     }
 
@@ -456,31 +478,32 @@ class DeprivationController extends Controller
 
         // Prefer the exact postcode row if provided, otherwise any row for the LSOA
         $row = null;
-        if (!empty($pcd)) {
+        if (! empty($pcd)) {
             $row = DB::table('v_postcode_deprivation_wales')
                 ->where('lsoa_code', $lsoa)
                 ->where('postcode', $pcd)
                 ->first();
         }
-        if (!$row) {
+        if (! $row) {
             $row = DB::table('v_postcode_deprivation_wales')
                 ->where('lsoa_code', $lsoa)
                 ->orderBy('postcode')
                 ->first();
         }
-        if (!$row) {
+        if (! $row) {
             return back()->with('status', 'No WIMD data found for that Welsh LSOA.');
         }
 
         // Total LSOAs in Wales for percentile context (1,909)
         $total = Cache::rememberForever('wimd.total_rank', function () {
             $max = DB::table('wimd2019')->max('WIMD_2019');
-            $n = (int)($max ?? 0);
+            $n = (int) ($max ?? 0);
+
             return $n ?: 1909;
         });
 
         $rank = (int) ($row->rank ?? 0); // 1 = most deprived ... total = least
-        $pct  = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
+        $pct = $rank ? max(0, min(100, (int) round((1 - (($rank - 1) / $total)) * 100))) : null;
 
         $domains = [
             ['label' => 'Income',                'rank' => $row->income_rank ?? null],
@@ -494,13 +517,14 @@ class DeprivationController extends Controller
         ];
 
         return view('deprivation.wales_show', [
-            'lsoa'    => $lsoa,
-            'row'     => $row,
-            'total'   => $total,
-            'pct'     => $pct,
+            'lsoa' => $lsoa,
+            'row' => $row,
+            'total' => $total,
+            'pct' => $pct,
             'domains' => $domains,
         ]);
     }
+
     public function showNorthernIreland(string $sa)
     {
         // Fetch deprivation row for this Northern Ireland Small Area (SA2011)
@@ -508,13 +532,14 @@ class DeprivationController extends Controller
             ->where('SA2011', $sa)
             ->first();
 
-        if (!$row) {
+        if (! $row) {
             abort(404, 'Area not found');
         }
 
         // Total number of areas for rank/percentile context
         $total = Cache::rememberForever('nimdm.total_rank', function () {
             $n = (int) (DB::table('ni_deprivation')->max('MDM_rank') ?? 0);
+
             return $n ?: 4537; // fallback to full NI Small Area count
         });
 
@@ -524,19 +549,19 @@ class DeprivationController extends Controller
         // P4_Education_rank, P5_Access_rank,
         // D6_LivEnv_rank, D7_CD_rank
         $domains = [
-            [ 'label' => 'Income',              'rank' => $row->D1_Income_rank      ?? null ],
-            [ 'label' => 'Employment',          'rank' => $row->D2_Empl_rank        ?? null ],
-            [ 'label' => 'Health',              'rank' => $row->D3_Health_rank      ?? null ],
-            [ 'label' => 'Education',           'rank' => $row->P4_Education_rank   ?? null ],
-            [ 'label' => 'Access to Services',  'rank' => $row->P5_Access_rank      ?? null ],
-            [ 'label' => 'Living Environment',  'rank' => $row->D6_LivEnv_rank      ?? null ],
-            [ 'label' => 'Crime & Disorder',    'rank' => $row->D7_CD_rank          ?? null ],
+            ['label' => 'Income',              'rank' => $row->D1_Income_rank ?? null],
+            ['label' => 'Employment',          'rank' => $row->D2_Empl_rank ?? null],
+            ['label' => 'Health',              'rank' => $row->D3_Health_rank ?? null],
+            ['label' => 'Education',           'rank' => $row->P4_Education_rank ?? null],
+            ['label' => 'Access to Services',  'rank' => $row->P5_Access_rank ?? null],
+            ['label' => 'Living Environment',  'rank' => $row->D6_LivEnv_rank ?? null],
+            ['label' => 'Crime & Disorder',    'rank' => $row->D7_CD_rank ?? null],
         ];
 
         return view('deprivation.ni_show', [
-            'sa'      => $sa,
-            'row'     => $row,
-            'total'   => $total,
+            'sa' => $sa,
+            'row' => $row,
+            'total' => $total,
             'domains' => $domains,
         ]);
     }
